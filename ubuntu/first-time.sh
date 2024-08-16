@@ -15,11 +15,12 @@ sudo apt-get --assume-yes install \
   g++ \
   gnome-tweak-tool \
   build-essential \
+  htop \
 ;
 
 echo "Packages installed"
 
-git clone https://github.com/terxor/setup
+git clone https://github.com/zyoNoob/setup
 
 # ydiff
 curl -L https://raw.github.com/ymattw/ydiff/master/ydiff.py > ~/bin/ydiff
