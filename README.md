@@ -15,12 +15,15 @@ Present value is `~/workspace/setup`
 # Before
 sudo apt update
 
+# Drivers
+sudo ubuntu-drivers install
+sudo reboot
+
 # Basic/pre-requisites
 sudo apt install git curl
-sudo apt install htop
 
 # Shell/utility
-sudo apt install zsh fzf silversearcher-ag vim-gtk3 tree
+sudo apt install zsh fzf silversearcher-ag vim-gtk3 tree htop
 
 # Misc.
 sudo apt install g++
