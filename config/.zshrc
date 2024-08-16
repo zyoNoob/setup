@@ -25,6 +25,7 @@ alias deactivate="conda deactivate"
 export LD_LIBRARY_PATH=/usr/lib/wsl/lib:$LD_LIBRARY_PATH
 export VIDEO_CODEC_SDK_PATH=/home/zyon/nvidia/video/codec/sdk
 export PATH="/usr/local/cuda/bin:$PATH"
+
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
 __conda_setup="$('/home/zyon/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
@@ -39,4 +40,3 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
-

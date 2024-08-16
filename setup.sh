@@ -34,3 +34,6 @@ make_link .zshenv
 make_link .vimrc
 make_link .zshrc
 copy_file .netrc
+# Disable auto-activation of base environment
+conda config --set auto_activate_base false
+echo "Auto-activation of base environment disabled"

@@ -23,7 +23,9 @@ sudo apt-get --assume-yes install \
   gnome-tweak-tool \
   build-essential \
   htop \
-  apt-transport-https
+  apt-transport-https \
+  tree \
+  speedtest-cli
 
 echo "Packages installed"
 
@@ -114,9 +116,6 @@ if [ ! -d "$HOME/miniconda3" ]; then
     $HOME/miniconda3/bin/conda init zsh
     echo "Miniconda initialized for zsh"
     
-    # Disable auto-activation of base environment
-    conda config --set auto_activate_base false
-    echo "Auto-activation of base environment disabled"
 else
     echo "Miniconda is already installed"
 fi
