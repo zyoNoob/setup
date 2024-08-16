@@ -9,6 +9,10 @@ Running `./setup.sh` will create symlinks for some dotfiles present in `/configs
 The env var `SETUP_REPO` is set in `.zshenv` and may need modification.
 Present value is `~/workspace/setup`
 
+### Run Init Script 
+```
+sh -c "$(wget -qO- https://raw.githubusercontent.com/zyoNoob/setup/main/ubuntu/first-time.sh)"
+```
 ### Packages
 
 ```
