@@ -17,6 +17,7 @@ sudo apt update
 
 # Basic/pre-requisites
 sudo apt install git curl
+sudo apt install htop
 
 # Shell/utility
 sudo apt install zsh fzf silversearcher-ag vim-gtk3 tree
