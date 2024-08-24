@@ -51,15 +51,15 @@ install_package speedtest-cli
 install_package net-tools
 
 # Install VS Code
-if ! command -v code &> /dev/null; then
+if is_installed code; then
+    print_status "install code" skip
+else
     wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg 2>/dev/null
     sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg 2>/dev/null
     echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null 2>&1
     rm -f packages.microsoft.gpg
     sudo apt update -qq >/dev/null 2>&1
     install_package code
-else
-    print_status "install code" skip
 fi
 
 # Install ydiff
@@ -103,7 +103,7 @@ for entry in $plugins; do
         # Special handling for zsh-autocomplete
         if [ ! -d "$plugin_dir" ]; then
             # Replace this command with your customized one
-            git clone --depth 1 -- "$url" "$plugin_dir"
+            git clone -q --depth 1 -- "$url" "$plugin_dir"
             echo "$plugin plugin installed with custom command"
         else
             echo "$plugin plugin is already installed"
@@ -111,7 +111,7 @@ for entry in $plugins; do
     else
         # Default handling for other plugins
         if [ ! -d "$plugin_dir" ]; then
-            git clone "$url" "$plugin_dir"
+            git clone -q "$url" "$plugin_dir"
             echo "$plugin plugin installed"
         else
             echo "$plugin plugin is already installed"
@@ -121,7 +121,6 @@ done
 
 # Restore the original IFS
 IFS="$OLDIFS"
-
 
 # --------------------------------
 # configs setup
