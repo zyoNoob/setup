@@ -12,11 +12,6 @@ Present value is `~/workspace/setup`
 ### Run Init Script 
 ```
 sh -c "$(wget -qO- https://raw.githubusercontent.com/zyoNoob/setup/main/setup.sh)"
-
-# Change to setup directory and assign config files.
-cd setup
-rm ~/.zshrc
-./setup.sh
 ```
 
 ### Terminal
