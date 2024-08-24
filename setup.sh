@@ -104,17 +104,17 @@ for entry in $plugins; do
         if [ ! -d "$plugin_dir" ]; then
             # Replace this command with your customized one
             git clone -q --depth 1 -- "$url" "$plugin_dir"
-            echo "$plugin plugin installed with custom command"
+            print_status "install $plugin"
         else
-            echo "$plugin plugin is already installed"
+            print_status "install $plugin" skip
         fi
     else
         # Default handling for other plugins
         if [ ! -d "$plugin_dir" ]; then
             git clone -q "$url" "$plugin_dir"
-            echo "$plugin plugin installed"
+            print_status "install $plugin"
         else
-            echo "$plugin plugin is already installed"
+            print_status "install $plugin" skip
         fi
     fi
 done
