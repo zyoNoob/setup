@@ -82,38 +82,46 @@ else
 fi
 
 # Install oh-my-zsh plugins if not already installed
-plugins="
-fzf-tab https://github.com/Aloxaf/fzf-tab
+plugins="fzf-tab https://github.com/Aloxaf/fzf-tab
 zsh-autosuggestions https://github.com/zsh-users/zsh-autosuggestions
 zsh-autocomplete https://github.com/marlonrichert/zsh-autocomplete.git
 F-Sy-H https://github.com/z-shell/F-Sy-H.git
-conda-zsh-completion https://github.com/conda-incubator/conda-zsh-completion
+conda-zsh-completion https://github.com/conda-incubator/conda-zsh-completion"
+
+# Save the original IFS
+OLDIFS="$IFS"
+# Set IFS to newline to correctly handle plugin entries
+IFS="
 "
 
 for entry in $plugins; do
-    plugin=$(echo $entry | awk '{print $1}')
-    url=$(echo $entry | awk '{print $2}')
+    plugin=$(echo "$entry" | awk '{print $1}')
+    url=$(echo "$entry" | awk '{print $2}')
     plugin_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/$plugin"
 
     if [ "$plugin" = "zsh-autocomplete" ]; then
         # Special handling for zsh-autocomplete
         if [ ! -d "$plugin_dir" ]; then
             # Replace this command with your customized one
-            git clone --depth 1 -- "$url" "$plugin_dir" >/dev/null 2>&1
-            print_status "install $plugin"
+            git clone --depth 1 -- "$url" "$plugin_dir"
+            echo "$plugin plugin installed with custom command"
         else
-            print_status "install $plugin" skip
+            echo "$plugin plugin is already installed"
         fi
     else
         # Default handling for other plugins
         if [ ! -d "$plugin_dir" ]; then
-            git clone "$url" "$plugin_dir" >/dev/null 2>&1
-            print_status "install $plugin"
+            git clone "$url" "$plugin_dir"
+            echo "$plugin plugin installed"
         else
-            print_status "install $plugin" skip
+            echo "$plugin plugin is already installed"
         fi
     fi
 done
+
+# Restore the original IFS
+IFS="$OLDIFS"
+
 
 # --------------------------------
 # configs setup
