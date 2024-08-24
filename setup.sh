@@ -17,7 +17,7 @@ print_status() {
   fi
 }
 
-sudo apt-get update -y >/dev/null 2>&1
+sudo apt update -y >/dev/null 2>&1
 print_status "update package list"
 
 is_installed() {
@@ -31,7 +31,7 @@ install_package() {
   if is_installed "$package"; then
     print_status "$action_name" skip
   else
-    sudo apt-get install -y "$package" >/dev/null 2>&1
+    sudo apt install -y "$package" >/dev/null 2>&1
     print_status "$action_name"
   fi
 }
@@ -48,6 +48,7 @@ install_package build-essential
 install_package zsh
 install_package apt-transport-https
 install_package speedtest-cli
+install_package net-tools
 
 # Install VS Code
 if ! command -v code &> /dev/null; then
