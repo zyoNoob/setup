@@ -21,7 +21,7 @@ sudo apt update -y >/dev/null 2>&1
 print_status "update package list"
 
 is_installed() {
-  dpkg -l | grep -qw "$1"
+  [ "$(dpkg-query -W -f='${Status}' "$1" 2>/dev/null)" = "install ok installed" ]
 }
 
 install_package() {
@@ -52,12 +52,11 @@ install_package net-tools
 
 # Install VS Code
 if ! command -v code &> /dev/null; then
-    echo "Installing VS-Code"
-    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-    sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
-    echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
+    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg 2>/dev/null
+    sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg 2>/dev/null
+    echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null 2>&1
     rm -f packages.microsoft.gpg
-    sudo apt update
+    sudo apt update -qq >/dev/null 2>&1
     install_package code
 else
     print_status "install code" skip
@@ -161,17 +160,17 @@ copy_file .netrc
 
 # Install Miniconda if not installed
 if [ ! -d "$HOME/miniconda3" ]; then
-    echo "Installing Miniconda"
-    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-    bash ~/miniconda.sh -b -p $HOME/miniconda3
+    wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh >/dev/null 2>&1
+    bash ~/miniconda.sh -b -p $HOME/miniconda3 >/dev/null 2>&1
     rm ~/miniconda.sh
     
     # Initialize Miniconda for zsh
-    $HOME/miniconda3/bin/conda init zsh
+    $HOME/miniconda3/bin/conda init zsh >/dev/null 2>&1
     print_status "install miniconda"
 else
     print_status "install miniconda" skip
 fi
+
 
 if [ "$SHELL" != "$(which zsh)" ]; then
     chsh -s "$(which zsh)"
