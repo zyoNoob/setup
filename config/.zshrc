@@ -1,7 +1,20 @@
 # Minimal version
 # Full template: https://github.com/ohmyzsh/ohmyzsh/blob/master/templates/zshrc.zsh-template
 
-DISABLE_MAGIC_FUNCTIONS=true
+# DISABLE_MAGIC_FUNCTIONS=true
+
+# Use the above flag or the bottom block
+
+# Disable zsh-autocompletion on paste
+pasteinit() {
+  OLD_SELF_INSERT=${${(s.:.)widgets[self-insert]}[2,3]}
+  zle -N self-insert url-quote-magic # I wonder if you'd need `.url-quote-magic`?
+}
+pastefinish() {
+   zle -N self-insert $OLD_SELF_INSERT
+}
+zstyle :bracketed-paste-magic paste-init pasteinit
+zstyle :bracketed-paste-magic paste-finish pastefinish
 
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="robbyrussell"
