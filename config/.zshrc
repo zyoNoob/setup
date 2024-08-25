@@ -1,6 +1,8 @@
 # Minimal version
 # Full template: https://github.com/ohmyzsh/ohmyzsh/blob/master/templates/zshrc.zsh-template
 
+DISABLE_MAGIC_FUNCTIONS=true
+
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="robbyrussell"
 plugins=(git zsh-autosuggestions zsh-autocomplete F-Sy-H conda-zsh-completion fzf fzf-tab)
