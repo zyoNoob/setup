@@ -5,6 +5,11 @@ export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="robbyrussell"
 plugins=(git zsh-autosuggestions zsh-autocomplete F-Sy-H conda-zsh-completion fzf fzf-tab)
 
+# Add unhandled widgets to be ignored by F-Sy-H
+zle -N insert-unambiguous-or-complete
+zle -N menu-search
+zle -N recent-paths
+
 source $ZSH/oh-my-zsh.sh
 
 # There is a newline in the prompt
