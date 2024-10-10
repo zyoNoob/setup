@@ -49,6 +49,7 @@ install_package zsh
 install_package apt-transport-https
 install_package speedtest-cli
 install_package net-tools
+install_package pkg-config
 
 # Install VS Code
 if is_installed code; then
