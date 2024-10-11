@@ -50,6 +50,8 @@ install_package apt-transport-https
 install_package speedtest-cli
 install_package net-tools
 install_package pkg-config
+install_package screen
+install_package unzip
 
 # Install ydiff
 if [ -f "$HOME/bin/ydiff" ]; then
