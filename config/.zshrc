@@ -41,11 +41,6 @@ cd ~
 alias zshconfig="source ~/.zshrc"
 alias deactivate="conda deactivate"
 
-# Custome Export Paths
-export LD_LIBRARY_PATH=/usr/lib/wsl/lib:$LD_LIBRARY_PATH
-export VIDEO_CODEC_SDK_PATH=/home/zyon/nvidia/video/codec/sdk
-export PATH="/usr/local/cuda/bin:$PATH"
-
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
 __conda_setup="$('/home/zyon/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
@@ -60,3 +55,8 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
+
+# Custome Export Paths
+export VIDEO_CODEC_SDK_PATH=/home/zyon/nvidia/video/codec/sdk
+export PATH="/usr/local/cuda/bin:/usr/local/TensorRT-10.5.0.18/bin:$PATH"
+export LD_LIBRARY_PATH="/usr/lib/wsl/lib:/usr/local/cuda/lib64:/usr/local/TensorRT-10.5.0.18/lib:$LD_LIBRARY_PATH"
