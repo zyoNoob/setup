@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# --------------------------------
+# Status printing helper function
+# --------------------------------
 print_status() {
   local status=$?
   local message=$1
@@ -17,6 +20,20 @@ print_status() {
   fi
 }
 
+# --------------------------------
+# WSL check
+# --------------------------------
+is_wsl() {
+    case "$(uname -r)" in
+    *microsoft* ) return 0 ;; # WSL 2
+    *Microsoft* ) return 0 ;; # WSL 1
+    * ) return 1 ;;
+    esac
+}
+
+# --------------------------------
+# package helper functions
+# --------------------------------
 sudo apt update -y >/dev/null 2>&1
 print_status "update package list"
 
@@ -48,6 +65,9 @@ remove_package() {
   fi
 }
 
+# --------------------------------
+# package setup
+# --------------------------------
 remove_package unattended-upgrades
 
 install_package git
@@ -70,16 +90,20 @@ install_package unzip
 install_package keychain
 
 
-# Install VS Code
-if is_installed code; then
-    print_status "install code" skip
+# Install VS Code only if not in WSL
+if is_wsl; then
+    print_status "install code" "skip (WSL detected)"
 else
-    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg 2>/dev/null
-    sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg 2>/dev/null
-    echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null 2>&1
-    rm -f packages.microsoft.gpg
-    sudo apt update -qq >/dev/null 2>&1
-    install_package code
+    if is_installed code; then
+        print_status "install code" skip
+    else
+        wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg 2>/dev/null
+        sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg 2>/dev/null
+        echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null 2>&1
+        rm -f packages.microsoft.gpg
+        sudo apt update -qq >/dev/null 2>&1
+        install_package code
+    fi
 fi
 
 # Install ydiff

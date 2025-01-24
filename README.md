@@ -12,9 +12,10 @@ Present value is `~/workspace/setup`
 ### Run Init Script 
 
 ```
+# Stable Config
 sh -c "$(wget -qO- https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/main/setup.sh)"
-sh -c "$(wget -qO- https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/main/setup_wsl.sh)"
 
+# Dev Config
 sh -c "$(wget -qO- https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/update/sync_wsl_state/setup.sh)"
 ```
 
