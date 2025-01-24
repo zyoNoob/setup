@@ -207,6 +207,17 @@ else
     print_status "install rust"
 fi
 
+# Generate SSH key if it doesn't exist
+if [ -f "$HOME/.ssh/id_rsa" ]; then
+    print_status "generate ssh key" skip
+else
+    mkdir -p "$HOME/.ssh"
+    ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N "" >/dev/null 2>&1
+    chmod 600 "$HOME/.ssh/id_rsa"
+    chmod 644 "$HOME/.ssh/id_rsa.pub"
+    print_status "generate ssh key"
+fi
+
 # Switch to zsh
 if [ "$SHELL" != "$(which zsh)" ]; then
     chsh -s "$(which zsh)"
