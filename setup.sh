@@ -1,5 +1,7 @@
 #!/bin/sh
 
+SETUP_BRANCH="update/sync_wsl_state"
+
 print_status() {
   local status=$?
   local message=$1
@@ -149,7 +151,7 @@ SETUP_REPO=$HOME/workspace/setup
 
 if [ ! -d $SETUP_REPO ]; then
     mkdir -p $SETUP_REPO
-    git clone https://github.com/zyoNoob/setup $SETUP_REPO >/dev/null 2>&1
+    git clone -b main https://github.com/zyoNoob/setup $SETUP_REPO >/dev/null 2>&1
     print_status "clone setup repo"
 else
     print_status "clone setup repo" skip
