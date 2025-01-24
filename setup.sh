@@ -169,8 +169,15 @@ IFS="$OLDIFS"
 # --------------------------------
 # configs setup
 # --------------------------------
+
+# Directory of the setup repo
 SETUP_REPO=$HOME/workspace/setup
-SETUP_BRANCH="update/sync_wsl_state"
+
+# Extract branch from the download URL if available
+SETUP_BRANCH=${SETUP_DOWNLOAD_URL##*/refs/heads/}
+SETUP_BRANCH=${SETUP_BRANCH%%/setup.sh}
+# Default to "main" if branch cannot be determined
+SETUP_BRANCH=${SETUP_BRANCH:-main}
 
 if [ ! -d $SETUP_REPO ]; then
     mkdir -p $SETUP_REPO
