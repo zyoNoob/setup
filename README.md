@@ -13,10 +13,10 @@ Present value is `~/workspace/setup`
 
 ```
 # Stable Config
-SETUP_DOWNLOAD_URL="https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/main/setup.sh" sh -c "$(wget -qO- $SETUP_DOWNLOAD_URL)"
+sh -c "$(wget -qO- https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/main/setup.sh)" "" SETUP_DOWNLOAD_URL="https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/main/setup.sh"
 
 # Dev Config
-SETUP_DOWNLOAD_URL="https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/dev/setup.sh" sh -c "$(wget -qO- $SETUP_DOWNLOAD_URL)"
+sh -c "$(wget -qO- https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/dev/setup.sh)" "" SETUP_DOWNLOAD_URL="https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/dev/setup.sh"
 ```
 
 ### Terminal
