@@ -1,7 +1,5 @@
 #!/bin/sh
 
-SETUP_BRANCH="main"
-
 print_status() {
   local status=$?
   local message=$1
@@ -135,6 +133,7 @@ IFS="$OLDIFS"
 # configs setup
 # --------------------------------
 SETUP_REPO=$HOME/workspace/setup
+SETUP_BRANCH="main"
 
 if [ ! -d $SETUP_REPO ]; then
     mkdir -p $SETUP_REPO

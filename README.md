@@ -13,6 +13,8 @@ Present value is `~/workspace/setup`
 ```
 sh -c "$(wget -qO- https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/main/setup.sh)"
 sh -c "$(wget -qO- https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/main/setup_wsl.sh)"
+
+sh -c "$(wget -qO- https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/update/sync_wsl_state/setup_wsl.sh)"
 ```
 
 ### Terminal
