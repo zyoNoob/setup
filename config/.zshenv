@@ -33,5 +33,7 @@ PATH="$SETUP_REPO/utils:$PATH"
 # Texlive
 # PATH="/usr/local/texlive/2024/bin/x86_64-linux:$PATH"
 
-#aliases
-#alias ssh_remote="ssh user@domain"
+# Aliases
+# alias ssh_remote="ssh user@domain"
+alias zshconfig="source ~/.zshrc"
+alias deactivate="conda deactivate"

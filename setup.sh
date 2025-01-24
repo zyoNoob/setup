@@ -249,3 +249,10 @@ if [ "$SHELL" != "$(which zsh)" ]; then
 else
     print_status "switch to zsh" skip
 fi
+
+# End if WSL else logout of session
+if is_wsl; then
+    print_status "setup complete"
+else
+    gnome-session-quit --no-prompt
+fi
