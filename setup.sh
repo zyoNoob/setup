@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# --------------------------------
+# Status printing helper function
+# --------------------------------
 print_status() {
   local status=$?
   local message=$1
@@ -17,6 +20,20 @@ print_status() {
   fi
 }
 
+# --------------------------------
+# WSL check
+# --------------------------------
+is_wsl() {
+    case "$(uname -r)" in
+    *microsoft* ) return 0 ;; # WSL 2
+    *Microsoft* ) return 0 ;; # WSL 1
+    * ) return 1 ;;
+    esac
+}
+
+# --------------------------------
+# package helper functions
+# --------------------------------
 sudo apt update -y >/dev/null 2>&1
 print_status "update package list"
 
@@ -36,7 +53,25 @@ install_package() {
   fi
 }
 
+remove_package() {
+  local package=$1
+  local action_name="remove $package"
+
+  if is_installed "$package"; then
+    sudo apt remove -y "$package" >/dev/null 2>&1
+    print_status "$action_name"
+  else
+    print_status "$action_name" skip
+  fi
+}
+
+# --------------------------------
+# package setup
+# --------------------------------
+remove_package unattended-upgrades
+
 install_package git
+install_package git-lfs
 install_package curl
 install_package tree # Recursive directory listing command
 install_package htop # Interactive process viewer
@@ -52,17 +87,23 @@ install_package net-tools
 install_package pkg-config
 install_package screen
 install_package unzip
+install_package keychain
 
-# Install VS Code
-if is_installed code; then
-    print_status "install code" skip
+
+# Install VS Code only if not in WSL
+if is_wsl; then
+    print_status "install code" "skip (WSL detected)"
 else
-    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg 2>/dev/null
-    sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg 2>/dev/null
-    echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null 2>&1
-    rm -f packages.microsoft.gpg
-    sudo apt update -qq >/dev/null 2>&1
-    install_package code
+    if is_installed code; then
+        print_status "install code" skip
+    else
+        wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg 2>/dev/null
+        sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg 2>/dev/null
+        echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null 2>&1
+        rm -f packages.microsoft.gpg
+        sudo apt update -qq >/dev/null 2>&1
+        install_package code
+    fi
 fi
 
 # Install ydiff
@@ -128,11 +169,19 @@ IFS="$OLDIFS"
 # --------------------------------
 # configs setup
 # --------------------------------
+
+# Directory of the setup repo
 SETUP_REPO=$HOME/workspace/setup
+
+# Extract branch from the download URL if available
+SETUP_BRANCH=${SETUP_DOWNLOAD_URL##*/refs/heads/}
+SETUP_BRANCH=${SETUP_BRANCH%%/setup.sh}
+# Default to "main" if branch cannot be determined
+SETUP_BRANCH=${SETUP_BRANCH:-main}
 
 if [ ! -d $SETUP_REPO ]; then
     mkdir -p $SETUP_REPO
-    git clone https://github.com/zyoNoob/setup $SETUP_REPO >/dev/null 2>&1
+    git clone -b $SETUP_BRANCH https://github.com/zyoNoob/setup $SETUP_REPO >/dev/null 2>&1
     print_status "clone setup repo"
 else
     print_status "clone setup repo" skip
@@ -176,15 +225,44 @@ if [ ! -d "$HOME/miniconda3" ]; then
     
     # Initialize Miniconda for zsh
     $HOME/miniconda3/bin/conda init zsh >/dev/null 2>&1
+    
+    # Disable auto-activation of base environment
+    $HOME/miniconda3/bin/conda config --set auto_activate_base false >/dev/null 2>&1
     print_status "install miniconda"
 else
     print_status "install miniconda" skip
 fi
 
+# Install Rust if not installed
+if command -v rustc >/dev/null 2>&1; then
+    print_status "install rust" skip
+else
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y >/dev/null 2>&1
+    print_status "install rust"
+fi
 
+# Generate SSH key if it doesn't exist
+if [ -f "$HOME/.ssh/id_rsa" ]; then
+    print_status "generate ssh key" skip
+else
+    mkdir -p "$HOME/.ssh"
+    ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N "" >/dev/null 2>&1
+    chmod 600 "$HOME/.ssh/id_rsa"
+    chmod 644 "$HOME/.ssh/id_rsa.pub"
+    print_status "generate ssh key"
+fi
+
+# Switch to zsh
 if [ "$SHELL" != "$(which zsh)" ]; then
     chsh -s "$(which zsh)"
     print_status "switch to zsh"
 else
     print_status "switch to zsh" skip
+fi
+
+# End if WSL else logout of session
+if is_wsl; then
+    print_status "setup complete"
+else
+    gnome-session-quit --no-prompt
 fi

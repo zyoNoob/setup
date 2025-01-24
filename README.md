@@ -10,9 +10,13 @@ The env var `SETUP_REPO` is set in `.zshenv` and may need modification.
 Present value is `~/workspace/setup`
 
 ### Run Init Script 
+
 ```
-sh -c "$(wget -qO- https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/main/setup.sh)"
-sh -c "$(wget -qO- https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/main/setup_wsl.sh)"
+# Stable Config
+SETUP_DOWNLOAD_URL="https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/main/setup.sh" sh -c "$(wget -qO- $SETUP_DOWNLOAD_URL)"
+
+# Dev Config
+SETUP_DOWNLOAD_URL="https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/dev/setup.sh" sh -c "$(wget -qO- $SETUP_DOWNLOAD_URL)"
 ```
 
 ### Terminal
