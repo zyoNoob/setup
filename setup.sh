@@ -218,6 +218,9 @@ if [ ! -d "$HOME/miniconda3" ]; then
     
     # Initialize Miniconda for zsh
     $HOME/miniconda3/bin/conda init zsh >/dev/null 2>&1
+    
+    # Disable auto-activation of base environment
+    $HOME/miniconda3/bin/conda config --set auto_activate_base false >/dev/null 2>&1
     print_status "install miniconda"
 else
     print_status "install miniconda" skip
