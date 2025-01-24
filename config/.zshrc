@@ -60,3 +60,4 @@ unset __conda_setup
 export VIDEO_CODEC_SDK_PATH=/home/zyon/nvidia/video/codec/sdk
 export PATH="/usr/local/cuda/bin:/usr/local/TensorRT-10.5.0.18/bin:$PATH"
 export LD_LIBRARY_PATH="/usr/lib/wsl/lib:/usr/local/cuda/lib64:/usr/local/TensorRT-10.5.0.18/lib:$LD_LIBRARY_PATH"
+

@@ -36,7 +36,22 @@ install_package() {
   fi
 }
 
+remove_package() {
+  local package=$1
+  local action_name="remove $package"
+
+  if is_installed "$package"; then
+    sudo apt remove -y "$package" >/dev/null 2>&1
+    print_status "$action_name"
+  else
+    print_status "$action_name" skip
+  fi
+}
+
+remove_package unattended-upgrades
+
 install_package git
+install_package git-lfs
 install_package curl
 install_package tree # Recursive directory listing command
 install_package htop # Interactive process viewer
@@ -52,6 +67,7 @@ install_package net-tools
 install_package pkg-config
 install_package screen
 install_package unzip
+install_package keychain
 
 # Install ydiff
 if [ -f "$HOME/bin/ydiff" ]; then
@@ -169,7 +185,15 @@ else
     print_status "install miniconda" skip
 fi
 
+# Install Rust if not installed
+if command -v rustc >/dev/null 2>&1; then
+    print_status "install rust" skip
+else
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y >/dev/null 2>&1
+    print_status "install rust"
+fi
 
+# Switch to zsh
 if [ "$SHELL" != "$(which zsh)" ]; then
     chsh -s "$(which zsh)"
     print_status "switch to zsh"
