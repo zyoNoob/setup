@@ -1,0 +1,218 @@
+# i3 config file (user configuration)
+# For a full reference, see https://i3wm.org/docs/userguide.html
+
+set $mod Mod4 # Use Super key as Mod key (Windows key)
+
+# Font for window titles and bar (unless specified in bar{} block)
+font pango:MesloLGS NF 10
+
+# Load monitor configuration
+exec_always --no-startup-id "source ~/.config/monitors.conf"
+
+# Load Xresources for DPI scaling
+exec --no-startup-id xrdb -merge ~/.Xresources
+
+# Start autorandr to automatically apply monitor config on changes
+exec --no-startup-id autorandr --change
+# Load your "user_profile" autorandr profile after startup (wait a bit for X to settle)
+exec --no-startup-id sleep 2 && autorandr --load user_profile
+
+# Wallpaper (nitrogen)
+exec --no-startup-id /usr/bin/nitrogen --restore &
+
+# Notification Daemon (dunst)
+exec --no-startup-id dunst &
+
+# Volume Control (pavucontrol)
+exec --no-startup-id pavucontrol &
+
+# Compositor for transparency
+exec --no-startup-id picom -b
+
+# Application Launcher (rofi)
+bindsym $mod+d exec rofi -show drun -display-drun "Applications" -show-icons
+
+# Terminal (tmux)
+bindsym $mod+Return exec tmux
+
+# Kill focused window
+bindsym $mod+Shift+q kill
+
+# Change focus
+bindsym $mod+j focus left
+bindsym $mod+k focus down
+bindsym $mod+l focus up
+bindsym $mod+semicolon focus right
+
+# Move focused window
+bindsym $mod+Shift+j move left
+bindsym $mod+Shift+k move down
+bindsym $mod+Shift+l move up
+bindsym $mod+Shift+semicolon move right
+
+# Split orientation
+bindsym $mod+v split v
+bindsym $mod+h split h
+bindsym $mod+Shift+space floating toggle
+
+# Change container layout
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+
+# Fullscreen
+bindsym $mod+f fullscreen toggle
+
+# Focus between tiling / floating windows
+bindsym $mod+space focus mode_toggle
+
+# Focus the parent container
+bindsym $mod+a focus parent
+
+# Refresh i3 config
+bindsym $mod+Shift+c reload
+# Restart i3 in place
+bindsym $mod+Shift+r restart
+# Exit i3
+bindsym $mod+Shift+e exit
+
+# Resize mode
+bindsym $mod+r mode "resize"
+mode "resize" {
+    bindsym j resize shrink width 10 px or 10 ppt
+    bindsym k resize grow height 10 px or 10 ppt
+    bindsym l resize shrink height 10 px or 10 ppt
+    bindsym semicolon resize grow width 10 px or 10 ppt
+    bindsym Shift+j resize shrink width 100 px or 10 ppt
+    bindsym Shift+k resize grow height 100 px or 10 ppt
+    bindsym Shift+l resize shrink height 100 px or 10 ppt
+    bindsym Shift+semicolon resize grow width 100 px or 10 ppt
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+# Gaps (optional - adjust to your liking)
+gaps inner 5
+gaps outer 0
+smart_gaps on
+
+# Default border style
+default_border pixel 1
+client.focused          #88c0d0 #88c0d0 #2e3440 #88c0d0
+client.focused_inactive #4c566a #4c566a #d8dee9 #4c566a
+client.unfocused        #3b4252 #3b4252 #d8dee9 #3b4252
+client.urgent           #bf616a #bf616a #2e3440 #bf616a
+
+# Workspace setup for dual monitors
+
+# Define workspace names with icons
+set $ws1 "1 "
+set $ws2 "2 "
+set $ws3 "3 "
+set $ws4 "4 "
+set $ws5 "5 "
+set $ws6 "6 "
+set $ws7 "7 "
+set $ws8 "8 "
+set $ws9 "9 "
+set $ws10 "10 "
+
+set $ws11 "11 "
+set $ws12 "12 "
+set $ws13 "13 "
+set $ws14 "14 "
+set $ws15 "15 "
+set $ws16 "16 "
+set $ws17 "17 "
+set $ws18 "18 "
+set $ws19 "19 "
+set $ws20 "20 "
+
+# Primary Monitor (Workspaces 1-10)
+workspace $ws1 output $PRIMARY_MONITOR
+workspace $ws2 output $PRIMARY_MONITOR
+workspace $ws3 output $PRIMARY_MONITOR
+workspace $ws4 output $PRIMARY_MONITOR
+workspace $ws5 output $PRIMARY_MONITOR
+workspace $ws6 output $PRIMARY_MONITOR
+workspace $ws7 output $PRIMARY_MONITOR
+workspace $ws8 output $PRIMARY_MONITOR
+workspace $ws9 output $PRIMARY_MONITOR
+workspace $ws10 output $PRIMARY_MONITOR
+
+# Secondary Monitor (Workspaces 11-20)
+workspace $ws11 output $SECONDARY_MONITOR
+workspace $ws12 output $SECONDARY_MONITOR
+workspace $ws13 output $SECONDARY_MONITOR
+workspace $ws14 output $SECONDARY_MONITOR
+workspace $ws15 output $SECONDARY_MONITOR
+workspace $ws16 output $SECONDARY_MONITOR
+workspace $ws17 output $SECONDARY_MONITOR
+workspace $ws18 output $SECONDARY_MONITOR
+workspace $ws19 output $SECONDARY_MONITOR
+workspace $ws20 output $SECONDARY_MONITOR
+
+# Workspace shortcuts for primary monitor (Mod + 1-0)
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+6 workspace $ws6
+bindsym $mod+7 workspace $ws7
+bindsym $mod+8 workspace $ws8
+bindsym $mod+9 workspace $ws9
+bindsym $mod+0 workspace $ws10
+
+# Workspace shortcuts for secondary monitor (Ctrl+Mod + 1-0)
+bindsym Ctrl+$mod+1 workspace $ws11
+bindsym Ctrl+$mod+2 workspace $ws12
+bindsym Ctrl+$mod+3 workspace $ws13
+bindsym Ctrl+$mod+4 workspace $ws14
+bindsym Ctrl+$mod+5 workspace $ws15
+bindsym Ctrl+$mod+6 workspace $ws16
+bindsym Ctrl+$mod+7 workspace $ws17
+bindsym Ctrl+$mod+8 workspace $ws18
+bindsym Ctrl+$mod+9 workspace $ws19
+bindsym Ctrl+$mod+0 workspace $ws20
+
+# Move containers to workspaces on primary monitor (Mod+Shift + 1-0)
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+bindsym $mod+Shift+6 move container to workspace $ws6
+bindsym $mod+Shift+7 move container to workspace $ws7
+bindsym $mod+Shift+8 move container to workspace $ws8
+bindsym $mod+Shift+9 move container to workspace $ws9
+bindsym $mod+Shift+0 move container to workspace $ws10
+
+# Move containers to workspaces on secondary monitor (Ctrl+Mod+Shift + 1-0)
+bindsym Ctrl+$mod+Shift+1 move container to workspace $ws11
+bindsym Ctrl+$mod+Shift+2 move container to workspace $ws12
+bindsym Ctrl+$mod+Shift+3 move container to workspace $ws13
+bindsym Ctrl+$mod+Shift+4 move container to workspace $ws14
+bindsym Ctrl+$mod+Shift+5 move container to workspace $ws15
+bindsym Ctrl+$mod+Shift+6 move container to workspace $ws16
+bindsym Ctrl+$mod+Shift+7 move container to workspace $ws17
+bindsym Ctrl+$mod+Shift+8 move container to workspace $ws18
+bindsym Ctrl+$mod+Shift+9 move container to workspace $ws19
+bindsym Ctrl+$mod+Shift+0 move container to workspace $ws20
+
+# i3bar configuration
+bar {
+    font pango:MesloLGS NF 10
+    position top
+    status_command i3status
+    colors {
+        background #2e3440
+        statusline #d8dee9
+        separator  #4c566a
+
+        focused_workspace  #88c0d0 #88c0d0 #2e3440
+        active_workspace   #4c566a #4c566a #d8dee9
+        inactive_workspace #3b4252 #3b4252 #d8dee9
+        urgent_workspace   #bf616a #bf616a #2e3440
+    }
+}

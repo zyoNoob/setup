@@ -89,6 +89,16 @@ install_package screen
 install_package unzip
 install_package keychain
 
+# i3 window manager and related packages
+install_package i3
+install_package arandr
+install_package autorandr
+install_package pavucontrol
+install_package nitrogen
+install_package dunst
+install_package rofi
+install_package lxappearance
+install_package picom
 
 # Install VS Code only if not in WSL
 if is_wsl; then
@@ -215,6 +225,7 @@ make_link .gitconfig
 make_link .zshenv
 make_link .vimrc
 make_link .zshrc
+make_link .Xresources
 copy_file .netrc
 
 # Install Miniconda if not installed
@@ -258,6 +269,59 @@ if [ "$SHELL" != "$(which zsh)" ]; then
     print_status "switch to zsh"
 else
     print_status "switch to zsh" skip
+fi
+
+# Install Meslo Nerd Font and Icons
+if [ -f "$HOME/.local/share/fonts/MesloLGS NF Regular.ttf" ]; then
+    print_status "install meslo nerd font" skip
+else
+    # Create fonts directory if it doesn't exist
+    mkdir -p "$HOME/.local/share/fonts"
+    
+    # Create temporary directory for font download
+    FONT_TMP_DIR=$(mktemp -d)
+    
+    # Download and extract complete Nerd Fonts package
+    wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Meslo.zip" -P "$FONT_TMP_DIR" >/dev/null 2>&1
+    unzip -q "$FONT_TMP_DIR/Meslo.zip" -d "$HOME/.local/share/fonts/meslo-nerd-font" >/dev/null 2>&1
+    
+    # Download Meslo LG fonts
+    wget -q "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf" -P "$HOME/.local/share/fonts/" >/dev/null 2>&1
+    wget -q "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf" -P "$HOME/.local/share/fonts/" >/dev/null 2>&1
+    wget -q "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf" -P "$HOME/.local/share/fonts/" >/dev/null 2>&1
+    wget -q "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf" -P "$HOME/.local/share/fonts/" >/dev/null 2>&1
+    
+    # Cleanup
+    rm -rf "$FONT_TMP_DIR"
+    
+    # Update font cache
+    fc-cache -f >/dev/null 2>&1
+    print_status "install meslo nerd font"
+fi
+
+# Setup i3 configuration
+if [ ! -d "$HOME/.config/i3" ]; then
+    mkdir -p "$HOME/.config/i3"
+fi
+
+if [ -L "$HOME/.config/i3/config" ]; then
+    print_status "setup i3 config" skip
+else
+    ln -s $SETUP_REPO/config/i3/config "$HOME/.config/i3/config"
+    print_status "setup i3 config"
+fi
+
+# Configure monitors and save autorandr profile
+if is_wsl; then
+    print_status "setup monitors" "skip (WSL detected)"
+else
+    # Run the monitor setup script
+    $SETUP_REPO/scripts/set_monitors.sh
+    print_status "setup monitors"
+    
+    # Save the monitor configuration as an autorandr profile
+    autorandr --save user_profile >/dev/null 2>&1
+    print_status "save monitor profile"
 fi
 
 # End if WSL else logout of session
