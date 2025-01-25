@@ -320,7 +320,7 @@ else
     print_status "setup monitors"
     
     # Save the monitor configuration as an autorandr profile
-    autorandr --save user_profile >/dev/null 2>&1
+    autorandr --save user_profile --force >/dev/null 2>&1
     print_status "save monitor profile"
 fi
 
