@@ -1,7 +1,4 @@
-# DPI setting for 150% scaling (157.35 DPI)
 Xft.dpi: 157.35
-
-# Font rendering settings
 Xft.antialias: 1
 Xft.hinting: 1
 Xft.rgba: rgb
