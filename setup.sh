@@ -1,6 +1,23 @@
 #!/bin/sh
 
 # --------------------------------
+# Setup variables
+# --------------------------------
+
+# Directory of the setup repo
+SETUP_REPO=$HOME/workspace/setup
+
+# Extract branch from the download URL if available
+SETUP_BRANCH=${SETUP_DOWNLOAD_URL##*/refs/heads/}
+SETUP_BRANCH=${SETUP_BRANCH%%/setup.sh}
+# Default to "main" if branch cannot be determined
+SETUP_BRANCH=${SETUP_BRANCH:-main}
+
+printf "SETUP_DOWNLOAD_URL: $SETUP_DOWNLOAD_URL\n"
+printf "SETUP_REPO: $SETUP_REPO\n"
+printf "SETUP_BRANCH: $SETUP_BRANCH\n"
+
+# --------------------------------
 # Status printing helper function
 # --------------------------------
 print_status() {
@@ -183,25 +200,26 @@ IFS="$OLDIFS"
 # configs setup
 # --------------------------------
 
-# Directory of the setup repo
-SETUP_REPO=$HOME/workspace/setup
-
-# Extract branch from the download URL if available
-SETUP_BRANCH=${SETUP_DOWNLOAD_URL##*/refs/heads/}
-SETUP_BRANCH=${SETUP_BRANCH%%/setup.sh}
-# Default to "main" if branch cannot be determined
-SETUP_BRANCH=${SETUP_BRANCH:-main}
-
 if [ ! -d $SETUP_REPO ]; then
     mkdir -p $SETUP_REPO
     git clone -b $SETUP_BRANCH https://github.com/zyoNoob/setup $SETUP_REPO >/dev/null 2>&1
     # Set up branch tracking
     cd $SETUP_REPO
-    git branch --set-upstream-to=origin/$SETUP_BRANCH $SETUP_BRANCH >/dev/null 2>&1
+    git checkout $SETUP_BRANCH >/dev/null 2>&1
     cd - >/dev/null
     print_status "clone setup repo"
 else
-    print_status "clone setup repo" skip
+    # Check if we're on the correct branch
+    cd $SETUP_REPO
+    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$CURRENT_BRANCH" != "$SETUP_BRANCH" ]; then
+        git fetch origin $SETUP_BRANCH >/dev/null 2>&1
+        git checkout $SETUP_BRANCH >/dev/null 2>&1
+        print_status "switch to branch $SETUP_BRANCH"
+    else
+        print_status "clone setup repo" skip
+    fi
+    cd - >/dev/null
 fi
 
 copy_file() {
