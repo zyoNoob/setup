@@ -332,5 +332,10 @@ fi
 if is_wsl; then
     print_status "setup complete"
 else
-    gnome-session-quit --no-prompt
+    # Check current session type
+    if [ "$XDG_SESSION_DESKTOP" = "i3" ] || [ "$DESKTOP_SESSION" = "i3" ]; then
+        i3-msg exit
+    else
+        gnome-session-quit --no-prompt
+    fi
 fi
