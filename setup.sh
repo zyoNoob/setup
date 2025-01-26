@@ -370,7 +370,7 @@ if is_wsl; then
 else
     # Check current session type
     if [ "$XDG_SESSION_DESKTOP" = "i3" ] || [ "$DESKTOP_SESSION" = "i3" ]; then
-        i3-msg exit
+        i3-msg reload
     else
         gnome-session-quit --no-prompt
     fi
