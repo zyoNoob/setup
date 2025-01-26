@@ -30,7 +30,7 @@ tiling_drag modifier titlebar
 exec_always --no-startup-id "source ~/.config/monitors.conf"
 exec --no-startup-id xrdb -merge ~/.Xresources
 exec --no-startup-id sleep 1 && autorandr --change
-# exec --no-startup-id sleep 3 && autorandr --force --load user_profile
+exec --no-startup-id sleep 5 && autorandr --force --load user_profile
 
 # Startup Applications
 exec --no-startup-id /usr/bin/nitrogen --restore &
