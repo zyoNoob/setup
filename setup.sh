@@ -262,7 +262,7 @@ fi
 if command -v zig >/dev/null 2>&1; then
     print_status "install zig" skip
 else
-    ZIG_VERSION="0.11.0"
+    ZIG_VERSION="0.13.0"
     mkdir -p "$HOME/bin/zig-${ZIG_VERSION}"
     wget -q "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" -O /tmp/zig.tar.xz >/dev/null 2>&1
     tar xf /tmp/zig.tar.xz -C /tmp >/dev/null 2>&1
@@ -279,25 +279,14 @@ else
         print_status "install ghostty" skip
     else
         # Install build dependencies
-        install_package libfontconfig-dev
-        install_package libfreetype-dev
-        install_package libxkbcommon-dev
-        install_package libxkbcommon-x11-dev
-        install_package libxcb-util-dev
-        install_package libxcb-xfixes0-dev
-        install_package libxcb-shape0-dev
-        install_package libxcb-cursor-dev
-        install_package libxcb-render0-dev
-        install_package libxcb-image0-dev
-        install_package libpixman-1-dev
+        install_package libgtk-4-dev
+        install_package libadwaita-1-dev
 
         # Clone and build Ghostty
-        mkdir -p "$HOME/bin/ghostty"
-        git clone https://github.com/mitchellh/ghostty.git "$HOME/bin/ghostty/src" >/dev/null 2>&1
-        cd "$HOME/bin/ghostty/src"
-        "$HOME/bin/zig-${ZIG_VERSION}/zig" build -Doptimize=ReleaseSafe >/dev/null 2>&1
-        mkdir -p "$HOME/bin/ghostty/bin"
-        cp zig-out/bin/ghostty "$HOME/bin/ghostty/bin/"
+        git clone https://github.com/mitchellh/ghostty.git "$HOME/bin/ghostty" >/dev/null 2>&1
+        cd "$HOME/bin/ghostty"
+        "zig" build -p $HOME/.local -Doptimize=ReleaseFast >/dev/null 2>&1
+        rm -rf "$HOME/bin/ghostty"
         print_status "install ghostty"
     fi
 fi

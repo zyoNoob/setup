@@ -17,11 +17,6 @@ if [ -d "$HOME/bin/zig-0.11.0" ]; then
     export PATH="$HOME/bin/zig-0.11.0:$PATH"
 fi
 
-# Add Ghostty to PATH
-if [ -d "$HOME/bin/ghostty/bin" ]; then
-    export PATH="$HOME/bin/ghostty/bin:$PATH"
-fi
-
 # git-lfs credentials
 # export AWS_S3_BUCKET_URL="https://bucket.amazonaws.com"
 # export AWS_S3_ENDPOINT="https://s3.{region}.amazonaws.com"
