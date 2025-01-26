@@ -15,13 +15,13 @@ Present value is `~/workspace/setup`
 # Stable Config
 export SETUP_DOWNLOAD_URL="https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/main/setup.sh" && \
 wget -qO /tmp/setup.sh $SETUP_DOWNLOAD_URL && \
-sudo -E env "PATH=$PATH" sh /tmp/setup.sh && \
+sh /tmp/setup.sh && \
 rm /tmp/setup.sh
 
 # Dev Config
 export SETUP_DOWNLOAD_URL="https://raw.githubusercontent.com/zyoNoob/setup/refs/heads/dev/setup.sh" && \
 wget -qO /tmp/setup.sh $SETUP_DOWNLOAD_URL && \
-sudo -E env "PATH=$PATH" sh /tmp/setup.sh && \
+sh /tmp/setup.sh && \
 rm /tmp/setup.sh
 ```
 
