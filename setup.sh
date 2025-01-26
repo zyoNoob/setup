@@ -98,7 +98,7 @@ install_package picom
 
 # Terminal | Development Environment Packages
 install_package zsh
-install_pockage tmux
+install_package tmux
 install_package fzf
 install_package silversearcher-ag
 install_package tree # Recursive directory listing command
