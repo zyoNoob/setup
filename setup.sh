@@ -286,6 +286,7 @@ else
         git clone https://github.com/mitchellh/ghostty.git "$HOME/bin/ghostty" >/dev/null 2>&1
         cd "$HOME/bin/ghostty"
         "zig" build -p $HOME/.local -Doptimize=ReleaseFast >/dev/null 2>&1
+        cd $HOME >/dev/null
         rm -rf "$HOME/bin/ghostty"
         print_status "install ghostty"
     fi
