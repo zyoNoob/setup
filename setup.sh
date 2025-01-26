@@ -192,6 +192,10 @@ SETUP_BRANCH=${SETUP_BRANCH:-main}
 if [ ! -d $SETUP_REPO ]; then
     mkdir -p $SETUP_REPO
     git clone -b $SETUP_BRANCH https://github.com/zyoNoob/setup $SETUP_REPO >/dev/null 2>&1
+    # Set up branch tracking
+    cd $SETUP_REPO
+    git branch --set-upstream-to=origin/$SETUP_BRANCH $SETUP_BRANCH >/dev/null 2>&1
+    cd - >/dev/null
     print_status "clone setup repo"
 else
     print_status "clone setup repo" skip
@@ -307,7 +311,7 @@ fi
 if [ -L "$HOME/.config/i3/config" ]; then
     print_status "setup i3 config" skip
 else
-    ln -s $SETUP_REPO/config/i3/config_default "$HOME/.config/i3/config"
+    ln -s $SETUP_REPO/config/i3/config_custom "$HOME/.config/i3/config"
     print_status "setup i3 config"
 fi
 
