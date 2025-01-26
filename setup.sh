@@ -307,7 +307,7 @@ fi
 if [ -L "$HOME/.config/i3/config" ]; then
     print_status "setup i3 config" skip
 else
-    ln -s $SETUP_REPO/config/i3/config "$HOME/.config/i3/config"
+    ln -s $SETUP_REPO/config/i3/config_default "$HOME/.config/i3/config"
     print_status "setup i3 config"
 fi
 
