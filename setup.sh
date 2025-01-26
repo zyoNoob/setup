@@ -70,17 +70,13 @@ remove_package() {
 # --------------------------------
 remove_package unattended-upgrades
 
+# Generic Packagaes
 install_package git
 install_package git-lfs
 install_package curl
-install_package tree # Recursive directory listing command
 install_package htop # Interactive process viewer
-install_package fzf
-install_package silversearcher-ag
-install_package vim-gtk3
 install_package g++
 install_package build-essential
-install_package zsh
 install_package apt-transport-https
 install_package speedtest-cli
 install_package net-tools
@@ -99,6 +95,13 @@ install_package dunst
 install_package rofi
 install_package lxappearance
 install_package picom
+
+# Terminal | Development Environment Packages
+install_package zsh
+install_pockage tmux
+install_package fzf
+install_package silversearcher-ag
+install_package tree # Recursive directory listing command
 
 # Install VS Code only if not in WSL
 if is_wsl; then
@@ -227,7 +230,6 @@ make_link() {
 
 make_link .gitconfig
 make_link .zshenv
-make_link .vimrc
 make_link .zshrc
 make_link .Xresources
 copy_file .netrc
@@ -254,6 +256,50 @@ if command -v rustc >/dev/null 2>&1; then
 else
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y >/dev/null 2>&1
     print_status "install rust"
+fi
+
+# Install Zig compiler if not in WSL
+if command -v zig >/dev/null 2>&1; then
+    print_status "install zig" skip
+else
+    ZIG_VERSION="0.11.0"
+    mkdir -p "$HOME/bin/zig-${ZIG_VERSION}"
+    wget -q "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" -O /tmp/zig.tar.xz >/dev/null 2>&1
+    tar xf /tmp/zig.tar.xz -C /tmp >/dev/null 2>&1
+    cp -r /tmp/zig-linux-x86_64-${ZIG_VERSION}/* "$HOME/bin/zig-${ZIG_VERSION}/"
+    rm -rf /tmp/zig.tar.xz /tmp/zig-linux-x86_64-${ZIG_VERSION}
+    print_status "install zig"
+fi
+
+# Install Ghostty if not in WSL
+if is_wsl; then
+    print_status "install ghostty" "skip (WSL detected)"
+else
+    if [ -f "$HOME/bin/ghostty/bin/ghostty" ]; then
+        print_status "install ghostty" skip
+    else
+        # Install build dependencies
+        install_package libfontconfig-dev
+        install_package libfreetype-dev
+        install_package libxkbcommon-dev
+        install_package libxkbcommon-x11-dev
+        install_package libxcb-util-dev
+        install_package libxcb-xfixes0-dev
+        install_package libxcb-shape0-dev
+        install_package libxcb-cursor-dev
+        install_package libxcb-render0-dev
+        install_package libxcb-image0-dev
+        install_package libpixman-1-dev
+
+        # Clone and build Ghostty
+        mkdir -p "$HOME/bin/ghostty"
+        git clone https://github.com/mitchellh/ghostty.git "$HOME/bin/ghostty/src" >/dev/null 2>&1
+        cd "$HOME/bin/ghostty/src"
+        "$HOME/bin/zig-${ZIG_VERSION}/zig" build -Doptimize=ReleaseSafe >/dev/null 2>&1
+        mkdir -p "$HOME/bin/ghostty/bin"
+        cp zig-out/bin/ghostty "$HOME/bin/ghostty/bin/"
+        print_status "install ghostty"
+    fi
 fi
 
 # Generate SSH key if it doesn't exist
