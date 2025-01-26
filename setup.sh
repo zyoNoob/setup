@@ -275,7 +275,7 @@ fi
 if is_wsl; then
     print_status "install ghostty" "skip (WSL detected)"
 else
-    if [ -f "$HOME/bin/ghostty/bin/ghostty" ]; then
+    if command -v ghostty >/dev/null 2>&1; then
         print_status "install ghostty" skip
     else
         # Install build dependencies
