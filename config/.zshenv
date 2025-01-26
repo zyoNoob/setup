@@ -12,11 +12,6 @@ fi
 export SETUP_REPO=$HOME/workspace/setup
 PATH="$SETUP_REPO/utils:$PATH"
 
-# Add Zig to PATH
-if [ -d "$HOME/bin/zig-0.11.0" ]; then
-    export PATH="$HOME/bin/zig-0.11.0:$PATH"
-fi
-
 # git-lfs credentials
 # export AWS_S3_BUCKET_URL="https://bucket.amazonaws.com"
 # export AWS_S3_ENDPOINT="https://s3.{region}.amazonaws.com"

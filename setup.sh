@@ -263,11 +263,11 @@ if command -v zig >/dev/null 2>&1; then
     print_status "install zig" skip
 else
     ZIG_VERSION="0.13.0"
-    mkdir -p "$HOME/bin/zig-${ZIG_VERSION}"
     wget -q "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" -O /tmp/zig.tar.xz >/dev/null 2>&1
-    tar xf /tmp/zig.tar.xz -C /tmp >/dev/null 2>&1
-    cp -r /tmp/zig-linux-x86_64-${ZIG_VERSION}/* "$HOME/bin/zig-${ZIG_VERSION}/"
-    rm -rf /tmp/zig.tar.xz /tmp/zig-linux-x86_64-${ZIG_VERSION}
+    sudo mkdir -p /usr/local/zig
+    sudo tar xf /tmp/zig.tar.xz -C /usr/local/zig --strip-components=1
+    sudo ln -s /usr/local/zig/zig /usr/local/bin/zig
+    rm -rf /tmp/zig.tar.xz
     print_status "install zig"
 fi
 

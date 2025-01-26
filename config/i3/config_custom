@@ -38,7 +38,7 @@ exec --no-startup-id dunst &
 exec --no-startup-id picom -b
 
 # Application Shortcuts
-bindsym $mod+Return exec tmux
+bindsym $mod+Return exec ghostty
 bindsym $mod+d exec rofi -show drun -display-drun "Applications" -show-icons
 bindsym $mod+q kill
 
