@@ -26,7 +26,7 @@ timestamp() {
 }
 
 # ========================================
-# 1. Core Functions and Utilities
+# Core Functions and Utilities
 # ========================================
 
 # Directory of the setup repo
@@ -120,12 +120,12 @@ make_link() {
 }
 
 # ========================================
-# 2. Initial System Setup
+# Initial System Setup
 # ========================================
 
 initial_system_setup() {
     echo "--------------------------------"
-    echo "# 2. Initial System Setup"
+    echo "# Initial System Setup"
     echo "--------------------------------"
 
     # Update package list
@@ -164,12 +164,12 @@ initial_system_setup() {
 }
 
 # ========================================
-# 3. Essential Package Installation
+# Essential Package Installation
 # ========================================
 
 install_essential_packages() {
     echo "--------------------------------"
-    echo "# 3. Essential Package Installation"
+    echo "# Essential Package Installation"
     echo "--------------------------------"
 
     # Core development tools
@@ -223,12 +223,12 @@ install_essential_packages() {
 }
 
 # ========================================
-# 4. Desktop Environment Setup
+# Desktop Environment Setup
 # ========================================
 
 setup_desktop_environment() {
     echo "--------------------------------"
-    echo "# 4. Desktop Environment Setup"
+    echo "# Desktop Environment Setup"
     echo "--------------------------------"
 
     # Configure monitors (non-WSL only)
@@ -243,12 +243,12 @@ setup_desktop_environment() {
 }
 
 # ========================================
-# 5. Development Tools Setup
+# Development Tools Setup
 # ========================================
 
 setup_development_tools() {
     echo "--------------------------------"
-    echo "# 5. Development Tools Setup"
+    echo "# Development Tools Setup"
     echo "--------------------------------"
 
     # Install VS Code (non-WSL only)
@@ -312,12 +312,12 @@ setup_development_tools() {
 }
 
 # ========================================
-# 6. Shell Environment Setup
+# Shell Environment Setup
 # ========================================
 
 setup_shell_environment() {
     echo "--------------------------------"
-    echo "# 6. Shell Environment Setup"
+    echo "# Shell Environment Setup"
     echo "--------------------------------"
 
     # Install Ghostty if not in WSL
@@ -383,12 +383,12 @@ setup_shell_environment() {
 }
 
 # ========================================
-# 7. Configuration and Dotfiles
+# Configuration and Dotfiles
 # ========================================
 
 configure_dotfiles() {
     echo "--------------------------------"
-    echo "# 7. Configuration and Dotfiles"
+    echo "# Configuration and Dotfiles"
     echo "--------------------------------"
 
     # Stow dotfiles with explicit target directory and adopt existing files
@@ -426,12 +426,12 @@ configure_dotfiles() {
 }
 
 # ========================================
-# 8. Final Setup and Cleanup
+# Final Setup and Cleanup
 # ========================================
 
 final_setup() {
     echo "--------------------------------"
-    echo "# 8. Final Setup and Cleanup"
+    echo "# Final Setup and Cleanup"
     echo "--------------------------------"
 
     # Switch to zsh
@@ -457,7 +457,7 @@ final_setup() {
 }
 
 # ========================================
-# 9. Main Execution Flow
+# Main Execution Flow
 # ========================================
 
 main() {
