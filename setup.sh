@@ -448,8 +448,10 @@ final_setup() {
     else
         if [ "$XDG_SESSION_DESKTOP" = "i3" ] || [ "$DESKTOP_SESSION" = "i3" ]; then
             i3-msg reload >/dev/null 2>&1
+            print_status "setup complete"
         else
-            gnome-session-quit --no-prompt
+            gnome-session-quit --no-prompt >/dev/null 2>&1
+            print_status "setup complete"
         fi
     fi
 }
@@ -459,7 +461,7 @@ final_setup() {
 # ========================================
 
 main() {
-    echo "$(timestamp) | Starting setup..."
+    print_status "Starting setup..."
 
     initial_system_setup
     install_essential_packages
@@ -468,8 +470,6 @@ main() {
     setup_development_tools
     setup_shell_environment
     final_setup
-
-    echo "$(timestamp) | Setup complete!"
 }
 
 # Invoke the main function
