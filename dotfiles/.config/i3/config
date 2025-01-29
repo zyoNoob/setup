@@ -4,7 +4,7 @@
 set $mod Mod4
 
 # Font for window titles and bar
-font pango:MesloLGS NF 10
+font pango:MesloLGS Nerd Font Bold 12
 
 # Start XDG autostart .desktop files using dex
 exec --no-startup-id dex --autostart --environment i3
@@ -195,7 +195,7 @@ bindsym Ctrl+$mod+Shift+0 move container to workspace $ws20
 
 # Bar Configuration
 bar {
-    font pango:MesloLGS NF 10
+    font pango:MesloLGS Nerd Font 12
     position top
     status_command i3status
     colors {

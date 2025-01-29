@@ -1,45 +1,59 @@
-#!/bin/sh
+#!/bin/bash
 
 # --------------------------------
-# Setup variables
+# setup/setup.sh
 # --------------------------------
+
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# ========================================
+# Configuration Variables
+# ========================================
+
+# Log file path
+LOG_FILE="$HOME/setup.log"
+
+# Redirect all output and errors to the log file and the console
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+# Timestamp for log entries
+timestamp() {
+    date +"%Y-%m-%d %H:%M:%S"
+}
+
+# ========================================
+# 1. Core Functions and Utilities
+# ========================================
 
 # Directory of the setup repo
-SETUP_REPO=$HOME/workspace/setup
+SETUP_DIR="$HOME/workspace/setup"
 
 # Extract branch from the download URL if available
 SETUP_BRANCH=${SETUP_DOWNLOAD_URL##*/refs/heads/}
 SETUP_BRANCH=${SETUP_BRANCH%%/setup.sh}
-# Default to "main" if branch cannot be determined
 SETUP_BRANCH=${SETUP_BRANCH:-main}
 
-printf "SETUP_DOWNLOAD_URL: $SETUP_DOWNLOAD_URL\n"
-printf "SETUP_REPO: $SETUP_REPO\n"
-printf "SETUP_BRANCH: $SETUP_BRANCH\n"
-
-# --------------------------------
-# Status printing helper function
-# --------------------------------
+# Status printing helper with timestamp
 print_status() {
-  local status=$?
-  local message=$1
-  local skip=$2
-  local width=40
+    local status=$?
+    local message=$1
+    local skip=$2
+    local width=40
+    local time_stamp=$(timestamp)
 
-  if [ "$skip" = "skip" ]; then
-    printf "%-${width}s \e[90mSKIPPED\e[0m\n" "$message"
-  else
-    if [ "$status" -eq 0 ]; then
-      printf "%-${width}s \e[32mDONE\e[0m\n" "$message"
+    if [ "$skip" = "skip" ]; then
+        printf "%s | %-${width}s \e[90mSKIPPED\e[0m\n" "$time_stamp" "$message"
     else
-      printf "%-${width}s \e[31mFAILED\e[0m\n" "$message"
+        if [ "$status" -eq 0 ]; then
+            printf "%s | %-${width}s \e[32mDONE\e[0m\n" "$time_stamp" "$message"
+        else
+            printf "%s | %-${width}s \e[31mFAILED\e[0m\n" "$time_stamp" "$message"
+        fi
     fi
-  fi
 }
 
-# --------------------------------
-# WSL check
-# --------------------------------
+# Environment detection
 is_wsl() {
     case "$(uname -r)" in
     *microsoft* ) return 0 ;; # WSL 2
@@ -48,348 +62,420 @@ is_wsl() {
     esac
 }
 
-# --------------------------------
-# package helper functions
-# --------------------------------
-sudo apt update -y >/dev/null 2>&1
-print_status "update package list"
-
+# Package management helpers
 is_installed() {
-  [ "$(dpkg-query -W -f='${Status}' "$1" 2>/dev/null)" = "install ok installed" ]
+    dpkg -s "$1" &> /dev/null
 }
 
 install_package() {
-  local package=$1
-  local action_name="install $package"
+    local package=$1
+    local action_name="install $package"
 
-  if is_installed "$package"; then
-    print_status "$action_name" skip
-  else
-    sudo apt install -y "$package" >/dev/null 2>&1
-    print_status "$action_name"
-  fi
+    if is_installed "$package"; then
+        print_status "$action_name" skip
+    else
+        sudo apt install -y "$package" >/dev/null 2>&1
+        print_status "$action_name"
+    fi
 }
 
 remove_package() {
-  local package=$1
-  local action_name="remove $package"
+    local package=$1
+    local action_name="remove $package"
 
-  if is_installed "$package"; then
-    sudo apt remove -y "$package" >/dev/null 2>&1
-    print_status "$action_name"
-  else
-    print_status "$action_name" skip
-  fi
+    if is_installed "$package"; then
+        sudo apt remove -y "$package" >/dev/null 2>&1
+        print_status "$action_name"
+    else
+        print_status "$action_name" skip
+    fi
 }
 
-# --------------------------------
-# package setup
-# --------------------------------
-remove_package unattended-upgrades
-
-# Generic Packagaes
-install_package git
-install_package git-lfs
-install_package curl
-install_package htop # Interactive process viewer
-install_package g++
-install_package build-essential
-install_package apt-transport-https
-install_package speedtest-cli
-install_package net-tools
-install_package pkg-config
-install_package screen
-install_package unzip
-install_package keychain
-
-# i3 window manager and related packages
-install_package i3
-install_package arandr
-install_package autorandr
-install_package pavucontrol
-install_package nitrogen
-install_package dunst
-install_package rofi
-install_package lxappearance
-install_package picom
-
-# Terminal | Development Environment Packages
-install_package zsh
-install_package tmux
-install_package fzf
-install_package silversearcher-ag
-install_package tree # Recursive directory listing command
-
-# Install VS Code only if not in WSL
-if is_wsl; then
-    print_status "install code" "skip (WSL detected)"
-else
-    if is_installed code; then
-        print_status "install code" skip
-    else
-        wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg 2>/dev/null
-        sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg 2>/dev/null
-        echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null 2>&1
-        rm -f packages.microsoft.gpg
-        sudo apt update -qq >/dev/null 2>&1
-        install_package code
-    fi
-fi
-
-# Install ydiff
-if [ -f "$HOME/bin/ydiff" ]; then
-  print_status "install ydiff" skip
-else
-  mkdir -p "$HOME/bin"
-  curl -L https://raw.github.com/ymattw/ydiff/master/ydiff.py > "$HOME/bin/ydiff" >/dev/null 2>&1
-  chmod +x "$HOME/bin/ydiff"
-  print_status "install ydiff"
-fi
-
-if [ -d "$HOME/.oh-my-zsh" ]; then
-  print_status "install omz" skip
-else
-  sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended >/dev/null 2>&1
-  print_status "install omz"
-  # OMZ installation creates a default .zshrc
-  rm -f "$HOME/.zshrc"
-fi
-
-# Install oh-my-zsh plugins if not already installed
-plugins="fzf-tab https://github.com/Aloxaf/fzf-tab
-zsh-autosuggestions https://github.com/zsh-users/zsh-autosuggestions
-zsh-autocomplete https://github.com/marlonrichert/zsh-autocomplete.git
-F-Sy-H https://github.com/z-shell/F-Sy-H.git
-conda-zsh-completion https://github.com/conda-incubator/conda-zsh-completion"
-
-# Save the original IFS
-OLDIFS="$IFS"
-# Set IFS to newline to correctly handle plugin entries
-IFS="
-"
-
-for entry in $plugins; do
-    plugin=$(echo "$entry" | awk '{print $1}')
-    url=$(echo "$entry" | awk '{print $2}')
-    plugin_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/$plugin"
-
-    if [ "$plugin" = "zsh-autocomplete" ]; then
-        # Special handling for zsh-autocomplete
-        if [ ! -d "$plugin_dir" ]; then
-            # Replace this command with your customized one
-            git clone -q --depth 1 -- "$url" "$plugin_dir"
-            print_status "install $plugin"
-        else
-            print_status "install $plugin" skip
-        fi
-    else
-        # Default handling for other plugins
-        if [ ! -d "$plugin_dir" ]; then
-            git clone -q "$url" "$plugin_dir"
-            print_status "install $plugin"
-        else
-            print_status "install $plugin" skip
-        fi
-    fi
-done
-
-# Restore the original IFS
-IFS="$OLDIFS"
-
-# --------------------------------
-# configs setup
-# --------------------------------
-
-if [ ! -d $SETUP_REPO ]; then
-    mkdir -p $SETUP_REPO
-    git clone -b $SETUP_BRANCH https://github.com/zyoNoob/setup $SETUP_REPO >/dev/null 2>&1
-    # Set up branch tracking
-    cd $SETUP_REPO
-    git checkout $SETUP_BRANCH >/dev/null 2>&1
-    cd - >/dev/null
-    print_status "clone setup repo"
-else
-    # Check if we're on the correct branch
-    cd $SETUP_REPO
-    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-    if [ "$CURRENT_BRANCH" != "$SETUP_BRANCH" ]; then
-        git fetch origin $SETUP_BRANCH >/dev/null 2>&1
-        git checkout $SETUP_BRANCH >/dev/null 2>&1
-        print_status "switch to branch $SETUP_BRANCH"
-    else
-        print_status "clone setup repo" skip
-    fi
-    cd - >/dev/null
-fi
-
+# File management helpers
 copy_file() {
-  local src=$SETUP_REPO/config/$1
-  local tgt=$HOME/$1
+    local src="$SETUP_DIR/config/$1"
+    local tgt="$HOME/$1"
 
-  if [ -e "$tgt" ]; then
-    print_status "copy config $1" skip
-  else
-    cp $src $tgt
-    print_status "copy config $1"
-  fi
+    if [ -e "$tgt" ]; then
+        print_status "copy config $1" skip
+    else
+        cp "$src" "$tgt"
+        print_status "copy config $1"
+    fi
 }
 
 make_link() {
-  local src=$SETUP_REPO/config/$1
-  local tgt=$HOME/$1
+    local src="$SETUP_DIR/config/$1"
+    local tgt="$HOME/$1"
 
-  if [ -L "$tgt" ]; then
-    print_status "make symlink $1" skip
-  else
-    ln -s $src $tgt >/dev/null 2>&1
-    print_status "make symlink $1"
-  fi
+    if [ -L "$tgt" ]; then
+        print_status "make symlink $1" skip
+    else
+        ln -s "$src" "$tgt" >/dev/null 2>&1
+        print_status "make symlink $1"
+    fi
 }
 
-make_link .gitconfig
-make_link .zshenv
-make_link .zshrc
-make_link .Xresources
-copy_file .netrc
+# ========================================
+# 2. Initial System Setup
+# ========================================
 
-# Install Miniconda if not installed
-if [ ! -d "$HOME/miniconda3" ]; then
-    wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh >/dev/null 2>&1
-    bash ~/miniconda.sh -b -p $HOME/miniconda3 >/dev/null 2>&1
-    rm ~/miniconda.sh
-    
-    # Initialize Miniconda for zsh
-    $HOME/miniconda3/bin/conda init zsh >/dev/null 2>&1
-    
-    # Disable auto-activation of base environment
-    $HOME/miniconda3/bin/conda config --set auto_activate_base false >/dev/null 2>&1
-    print_status "install miniconda"
-else
-    print_status "install miniconda" skip
-fi
+initial_system_setup() {
+    echo "--------------------------------"
+    echo "# 2. Initial System Setup"
+    echo "--------------------------------"
 
-# Install Rust if not installed
-if command -v rustc >/dev/null 2>&1; then
-    print_status "install rust" skip
-else
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y >/dev/null 2>&1
-    print_status "install rust"
-fi
+    # Update package list
+    sudo apt update -y >/dev/null 2>&1
+    print_status "update package list"
 
-# Install Zig compiler if not in WSL
-if command -v zig >/dev/null 2>&1; then
-    print_status "install zig" skip
-else
-    ZIG_VERSION="0.13.0"
-    wget -q "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" -O /tmp/zig.tar.xz >/dev/null 2>&1
-    sudo mkdir -p /usr/local/zig
-    sudo tar xf /tmp/zig.tar.xz -C /usr/local/zig --strip-components=1
-    sudo ln -s /usr/local/zig/zig /usr/local/bin/zig
-    rm -rf /tmp/zig.tar.xz
-    print_status "install zig"
-fi
+    # Remove unnecessary packages
+    remove_package "unattended-upgrades"
 
-# Install Ghostty if not in WSL
-if is_wsl; then
-    print_status "install ghostty" "skip (WSL detected)"
-else
-    if command -v ghostty >/dev/null 2>&1; then
-        print_status "install ghostty" skip
+    # Install git first
+    install_package "git"
+    install_package "git-lfs"
+
+    # Clone setup repository
+    if [ ! -d "$SETUP_DIR" ]; then
+        mkdir -p "$SETUP_DIR"
+        git clone -b "$SETUP_BRANCH" https://github.com/zyoNoob/setup "$SETUP_DIR" >/dev/null 2>&1
+        cd "$SETUP_DIR"
+        git checkout "$SETUP_BRANCH" >/dev/null 2>&1
+        cd - >/dev/null
+        print_status "clone setup repo"
     else
-        # Install build dependencies
-        install_package libgtk-4-dev
-        install_package libadwaita-1-dev
-
-        # Clone and build Ghostty
-        git clone https://github.com/mitchellh/ghostty.git "$HOME/bin/ghostty" >/dev/null 2>&1
-        cd "$HOME/bin/ghostty"
-        "zig" build -p $HOME/.local -Doptimize=ReleaseFast >/dev/null 2>&1
-        cd $HOME >/dev/null
-        rm -rf "$HOME/bin/ghostty"
-        print_status "install ghostty"
+        cd "$SETUP_DIR"
+        CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        if [ "$CURRENT_BRANCH" != "$SETUP_BRANCH" ]; then
+            git fetch origin "$SETUP_BRANCH" >/dev/null 2>&1
+            git checkout "$SETUP_BRANCH" >/dev/null 2>&1
+            print_status "switch to branch $SETUP_BRANCH"
+        else
+            print_status "clone setup repo" skip
+        fi
+        cd - >/dev/null
     fi
-fi
+}
 
-# Generate SSH key if it doesn't exist
-if [ -f "$HOME/.ssh/id_rsa" ]; then
-    print_status "generate ssh key" skip
-else
-    mkdir -p "$HOME/.ssh"
-    ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N "" >/dev/null 2>&1
-    chmod 600 "$HOME/.ssh/id_rsa"
-    chmod 644 "$HOME/.ssh/id_rsa.pub"
-    print_status "generate ssh key"
-fi
+# ========================================
+# 3. Essential Package Installation
+# ========================================
 
-# Switch to zsh
-if [ "$SHELL" != "$(which zsh)" ]; then
-    chsh -s "$(which zsh)"
-    print_status "switch to zsh"
-else
-    print_status "switch to zsh" skip
-fi
+install_essential_packages() {
+    echo "--------------------------------"
+    echo "# 3. Essential Package Installation"
+    echo "--------------------------------"
 
-# Install Meslo Nerd Font and Icons
-if [ -f "$HOME/.local/share/fonts/MesloLGS NF Regular.ttf" ]; then
-    print_status "install meslo nerd font" skip
-else
-    # Create fonts directory if it doesn't exist
-    mkdir -p "$HOME/.local/share/fonts"
-    
-    # Create temporary directory for font download
-    FONT_TMP_DIR=$(mktemp -d)
-    
-    # Download and extract complete Nerd Fonts package
-    wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Meslo.zip" -P "$FONT_TMP_DIR" >/dev/null 2>&1
-    unzip -q "$FONT_TMP_DIR/Meslo.zip" -d "$HOME/.local/share/fonts/meslo-nerd-font" >/dev/null 2>&1
-    
-    # Download Meslo LG fonts
-    wget -q "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf" -P "$HOME/.local/share/fonts/" >/dev/null 2>&1
-    wget -q "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf" -P "$HOME/.local/share/fonts/" >/dev/null 2>&1
-    wget -q "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf" -P "$HOME/.local/share/fonts/" >/dev/null 2>&1
-    wget -q "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf" -P "$HOME/.local/share/fonts/" >/dev/null 2>&1
-    
-    # Cleanup
-    rm -rf "$FONT_TMP_DIR"
-    
-    # Update font cache
-    fc-cache -f >/dev/null 2>&1
-    print_status "install meslo nerd font"
-fi
+    # Core development tools
+    local packages_core=(
+        curl
+        g++
+        build-essential
+        pkg-config
+        stow
+    )
 
-# Setup i3 configuration
-if [ ! -d "$HOME/.config/i3" ]; then
-    mkdir -p "$HOME/.config/i3"
-fi
+    # System utilities
+    local packages_system=(
+        htop
+        apt-transport-https
+        speedtest-cli
+        net-tools
+        screen
+        unzip
+        keychain
+    )
 
-if [ -L "$HOME/.config/i3/config" ]; then
-    print_status "setup i3 config" skip
-else
-    ln -s $SETUP_REPO/config/i3/config_custom "$HOME/.config/i3/config"
-    print_status "setup i3 config"
-fi
+    # Terminal environment
+    local packages_terminal=(
+        zsh
+        tmux
+        fzf
+        silversearcher-ag
+        tree
+        neovim
+    )
 
-# Configure monitors and save autorandr profile
-if is_wsl; then
-    print_status "setup monitors" "skip (WSL detected)"
-else
-    # Run the monitor setup script
-    $SETUP_REPO/scripts/set_monitors.sh
-    print_status "setup monitors"
-    
-    # Save the monitor configuration as an autorandr profile
-    autorandr --save user_profile --force >/dev/null 2>&1
-    print_status "save monitor profile"
-fi
+    # Desktop environment
+    local packages_desktop=(
+        i3
+        arandr
+        autorandr
+        pavucontrol
+        nitrogen
+        dunst
+        rofi
+        picom
+        polybar
+    )
 
-# End if WSL else logout of session
-if is_wsl; then
-    print_status "setup complete"
-else
-    # Check current session type
-    if [ "$XDG_SESSION_DESKTOP" = "i3" ] || [ "$DESKTOP_SESSION" = "i3" ]; then
-        i3-msg reload
+    # Install all packages
+    for pkg in "${packages_core[@]}" "${packages_system[@]}" "${packages_terminal[@]}" "${packages_desktop[@]}"; do
+        install_package "$pkg"
+    done
+}
+
+# ========================================
+# 4. Desktop Environment Setup
+# ========================================
+
+setup_desktop_environment() {
+    echo "--------------------------------"
+    echo "# 4. Desktop Environment Setup"
+    echo "--------------------------------"
+    # Add any additional desktop environment setup steps here if needed
+}
+
+# ========================================
+# 5. Development Tools Setup
+# ========================================
+
+setup_development_tools() {
+    echo "--------------------------------"
+    echo "# 5. Development Tools Setup"
+    echo "--------------------------------"
+
+    # Install VS Code (non-WSL only)
+    if ! is_wsl; then
+        if ! is_installed "code"; then
+            wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg 2>/dev/null
+            sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg 2>/dev/null
+            echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null 2>&1
+            rm -f packages.microsoft.gpg
+            sudo apt update -qq >/dev/null 2>&1
+            install_package "code"
+        else
+            print_status "install code" skip
+        fi
     else
-        gnome-session-quit --no-prompt
+        print_status "install code" "skip (WSL detected)"
     fi
-fi
+
+    # Install ydiff
+    if [ ! -f "$HOME/bin/ydiff" ]; then
+        mkdir -p "$HOME/bin"
+        curl -L https://raw.github.com/ymattw/ydiff/master/ydiff.py > "$HOME/bin/ydiff" >/dev/null 2>&1
+        chmod +x "$HOME/bin/ydiff"
+        print_status "install ydiff"
+    else
+        print_status "install ydiff" skip
+    fi
+
+    # Install Miniconda
+    if [ ! -d "$HOME/miniconda3" ]; then
+        wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh >/dev/null 2>&1
+        bash ~/miniconda.sh -b -p "$HOME/miniconda3" >/dev/null 2>&1
+        rm ~/miniconda.sh
+        "$HOME/miniconda3/bin/conda" init zsh >/dev/null 2>&1
+        "$HOME/miniconda3/bin/conda" config --set auto_activate_base false >/dev/null 2>&1
+        print_status "install miniconda"
+    else
+        print_status "install miniconda" skip
+    fi
+
+    # Install Rust
+    if ! command -v rustc >/dev/null 2>&1; then
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y >/dev/null 2>&1
+        print_status "install rust"
+    else
+        print_status "install rust" skip
+    fi
+
+    # Install Zig
+    if ! command -v zig >/dev/null 2>&1; then
+        ZIG_VERSION="0.13.0"
+        wget -q "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" -O /tmp/zig.tar.xz >/dev/null 2>&1
+        sudo mkdir -p /usr/local/zig
+        sudo tar xf /tmp/zig.tar.xz -C /usr/local/zig --strip-components=1
+        sudo ln -s /usr/local/zig/zig /usr/local/bin/zig
+        rm -rf /tmp/zig.tar.xz
+        print_status "install zig"
+    else
+        print_status "install zig" skip
+    fi
+}
+
+# ========================================
+# 6. Shell Environment Setup
+# ========================================
+
+setup_shell_environment() {
+    echo "--------------------------------"
+    echo "# 6. Shell Environment Setup"
+    echo "--------------------------------"
+
+    # Install Ghostty if not in WSL
+    if is_wsl; then
+        print_status "install ghostty" "skip (WSL detected)"
+    else
+        if command -v ghostty >/dev/null 2>&1; then
+            print_status "install ghostty" skip
+        else
+            # Install build dependencies
+            install_package "libgtk-4-dev"
+            install_package "libadwaita-1-dev"
+
+            # Clone and build Ghostty
+            git clone https://github.com/mitchellh/ghostty.git "$HOME/bin/ghostty" >/dev/null 2>&1
+            cd "$HOME/bin/ghostty"
+            zig build -p "$HOME/.local" -Doptimize=ReleaseFast >/dev/null 2>&1
+            cd "$HOME" >/dev/null
+            rm -rf "$HOME/bin/ghostty"
+            print_status "install ghostty"
+        fi
+    fi
+
+    # Install Oh My Zsh
+    if [ ! -d "$HOME/.oh-my-zsh" ]; then
+        sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended >/dev/null 2>&1
+        print_status "install omz"
+        rm -f "$HOME/.zshrc"
+    else
+        print_status "install omz" skip
+    fi
+
+    # Install Oh My Zsh plugins
+    local plugins=(
+        "fzf-tab https://github.com/Aloxaf/fzf-tab"
+        "zsh-autosuggestions https://github.com/zsh-users/zsh-autosuggestions"
+        "zsh-autocomplete https://github.com/marlonrichert/zsh-autocomplete.git"
+        "F-Sy-H https://github.com/z-shell/F-Sy-H.git"
+        "conda-zsh-completion https://github.com/conda-incubator/conda-zsh-completion"
+    )
+
+    OLDIFS="$IFS"
+    IFS=$'\n'
+
+    for entry in "${plugins[@]}"; do
+        plugin=$(echo "$entry" | awk '{print $1}')
+        url=$(echo "$entry" | awk '{print $2}')
+        plugin_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/$plugin"
+
+        if [ ! -d "$plugin_dir" ]; then
+            if [ "$plugin" = "zsh-autocomplete" ]; then
+                git clone -q --depth 1 -- "$url" "$plugin_dir"
+            else
+                git clone -q "$url" "$plugin_dir"
+            fi
+            print_status "install $plugin"
+        else
+            print_status "install $plugin" skip
+        fi
+    done
+
+    IFS="$OLDIFS"
+}
+
+# ========================================
+# 7. Configuration and Dotfiles
+# ========================================
+
+configure_dotfiles() {
+    echo "--------------------------------"
+    echo "# 7. Configuration and Dotfiles"
+    echo "--------------------------------"
+
+    # Stow dotfiles
+    stow dotfiles >/dev/null 2>&1
+    print_status "Stow dotfiles"
+
+    # Copy .netrc
+    copy_file ".netrc"
+
+    # Generate SSH key
+    if [ ! -f "$HOME/.ssh/id_rsa" ]; then
+        mkdir -p "$HOME/.ssh"
+        ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N "" >/dev/null 2>&1
+        chmod 600 "$HOME/.ssh/id_rsa"
+        chmod 644 "$HOME/.ssh/id_rsa.pub"
+        print_status "generate ssh key"
+    else
+        print_status "generate ssh key" skip
+    fi
+
+    # Install Meslo Nerd Font
+    if [ ! -f "$HOME/.local/share/fonts/MesloLGS\ NF\ Regular.ttf" ]; then
+        mkdir -p "$HOME/.local/share/fonts"
+        FONT_TMP_DIR=$(mktemp -d)
+        wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Meslo.zip" -P "$FONT_TMP_DIR" >/dev/null 2>&1
+        unzip -q "$FONT_TMP_DIR/Meslo.zip" -d "$HOME/.local/share/fonts/meslo-nerd-font" >/dev/null 2>&1
+        rm -rf "$FONT_TMP_DIR"
+        fc-cache -f >/dev/null 2>&1
+        print_status "install meslo nerd font"
+    else
+        print_status "install meslo nerd font" skip
+    fi
+
+    # Setup i3 configuration
+    if [ ! -d "$HOME/.config/i3" ]; then
+        mkdir -p "$HOME/.config/i3"
+    fi
+
+    if [ ! -L "$HOME/.config/i3/config" ]; then
+        ln -s "$SETUP_DIR/config/i3/config_custom" "$HOME/.config/i3/config"
+        print_status "setup i3 config"
+    else
+        print_status "setup i3 config" skip
+    fi
+}
+
+# ========================================
+# 8. Final Setup and Cleanup
+# ========================================
+
+final_setup() {
+    echo "--------------------------------"
+    echo "# 8. Final Setup and Cleanup"
+    echo "--------------------------------"
+
+    # Configure monitors (non-WSL only)
+    if ! is_wsl; then
+        "$SETUP_DIR/scripts/set_monitors.sh"
+        print_status "setup monitors"
+        autorandr --save user_profile --force >/dev/null 2>&1
+        print_status "save monitor profile"
+    else
+        print_status "setup monitors" "skip (WSL detected)"
+    fi
+
+    # Switch to zsh
+    if [ "$SHELL" != "$(which zsh)" ]; then
+        chsh -s "$(which zsh)"
+        print_status "switch to zsh"
+    else
+        print_status "switch to zsh" skip
+    fi
+
+    # Final actions
+    if is_wsl; then
+        print_status "setup complete"
+    else
+        if [ "$XDG_SESSION_DESKTOP" = "i3" ] || [ "$DESKTOP_SESSION" = "i3" ]; then
+            i3-msg reload
+        else
+            gnome-session-quit --no-prompt
+        fi
+    fi
+}
+
+# ========================================
+# 9. Main Execution Flow
+# ========================================
+
+main() {
+    echo "$(timestamp) | Starting setup..."
+
+    initial_system_setup
+    install_essential_packages
+    setup_desktop_environment
+    setup_development_tools
+    setup_shell_environment
+    configure_dotfiles
+    final_setup
+
+    echo "$(timestamp) | Setup complete!"
+}
+
+# Invoke the main function
+main
