@@ -461,10 +461,10 @@ main() {
 
     initial_system_setup
     install_essential_packages
+    configure_dotfiles
     setup_desktop_environment
     setup_development_tools
     setup_shell_environment
-    configure_dotfiles
     final_setup
 
     echo "$(timestamp) | Setup complete!"
