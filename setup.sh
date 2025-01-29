@@ -87,7 +87,7 @@ install_package() {
     if is_installed "$package"; then
         print_status "$action_name" skip
     else
-        sudo apt install -y "$package" >/dev/null
+        sudo apt install -y "$package" >/dev/null 2>&1
         print_status "$action_name"
     fi
 }
@@ -97,7 +97,7 @@ remove_package() {
     local action_name="remove $package"
 
     if is_installed "$package"; then
-        sudo apt remove -y "$package" >/dev/null
+        sudo apt remove -y "$package" >/dev/null 2>&1
         print_status "$action_name"
     else
         print_status "$action_name" skip
@@ -139,7 +139,7 @@ initial_system_setup() {
     echo "--------------------------------"
 
     # Update package list
-    sudo apt update -y >/dev/null
+    sudo apt update -y >/dev/null 2>&1
     print_status "update package list"
 
     # Remove unnecessary packages
