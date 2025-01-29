@@ -12,7 +12,7 @@ set -e
 # ========================================
 
 # Log file path
-LOG_FILE="$HOME/setup.log"
+LOG_FILE="/tmp/setup_$(date +%Y%m%d_%H%M%S).log"
 
 # Redirect all output and errors to the log file and the console
 exec > >(tee -a "$LOG_FILE") 2>&1

@@ -47,12 +47,6 @@ else
     update_monitor_config "$PRIMARY_MONITOR"
 fi
 
-# Load .Xresources for DPI scaling
-xrdb -merge ~/.Xresources
-
 # Export monitor variables for i3
 export PRIMARY_MONITOR
 export SECONDARY_MONITOR
-
-# Restart i3 to apply changes
-i3-msg restart
