@@ -11,11 +11,13 @@ set -e
 LOG_FILE="/tmp/setup_$(date +%Y%m%d_%H%M%S).log"
 DETAILED_LOG="/tmp/setup_$(date +%Y%m%d_%H%M%S)_detailed.log"
 
-# Redirect all output to the detailed log, and only status messages to both console and main log
-exec 3>&1  # Save original stdout
-exec 4>&2  # Save original stderr
-exec 2> >(tee -a "$DETAILED_LOG" >&2)  # Redirect stderr to detailed log and original stderr
-exec 1> >(tee -a "$DETAILED_LOG" | tee -a "$LOG_FILE" >&3)  # Redirect stdout to both logs and original stdout
+# Save original stdout and stderr
+exec 3>&1
+exec 4>&2
+
+# Redirect all command output to detailed log only
+exec 1> >(tee -a "$DETAILED_LOG" >/dev/null)
+exec 2> >(tee -a "$DETAILED_LOG" >/dev/null)
 
 # Trap errors to log them and perform cleanup
 trap 'echo "Error occurred at line $LINENO. Exit code: $?" | tee -a "$LOG_FILE" "$DETAILED_LOG"' ERR
@@ -41,24 +43,27 @@ SETUP_BRANCH=${SETUP_DOWNLOAD_URL##*/refs/heads/}
 SETUP_BRANCH=${SETUP_BRANCH%%/setup.sh}
 SETUP_BRANCH=${SETUP_BRANCH:-main}
 
-# Status printing helper with timestamp
+# Function to print status messages to both console and logs
 print_status() {
     local status=$?
     local message=$1
     local skip=$2
     local width=40
     local time_stamp=$(timestamp)
+    local output
 
     if [ "$skip" = "skip" ]; then
-        printf "%s | %-${width}s \e[90mSKIPPED\e[0m\n" "$time_stamp" "$message"
+        output=$(printf "%s | %-${width}s \e[90mSKIPPED\e[0m\n" "$time_stamp" "$message")
     else
         if [ "$status" -eq 0 ]; then
-            printf "%s | %-${width}s \e[32mDONE\e[0m\n" "$time_stamp" "$message"
+            output=$(printf "%s | %-${width}s \e[32mDONE\e[0m\n" "$time_stamp" "$message")
         else
-            printf "%s | %-${width}s \e[31mFAILED\e[0m\n" "$time_stamp" "$message"
-            echo "See detailed log at: $DETAILED_LOG" >&2
+            output=$(printf "%s | %-${width}s \e[31mFAILED\e[0m\n" "$time_stamp" "$message")
+            echo "See detailed log at: $DETAILED_LOG" >&4
         fi
     fi
+
+    echo "$output" | tee -a "$LOG_FILE" >&3
 }
 
 # Environment detection
