@@ -436,7 +436,7 @@ final_setup() {
 
     # Switch to zsh
     if [ "$SHELL" != "$(which zsh)" ]; then
-        chsh -s "$(which zsh)" >/dev/null
+        chsh -s "$(which zsh)"
         print_status "switch to zsh"
     else
         print_status "switch to zsh" skip
@@ -447,7 +447,7 @@ final_setup() {
         print_status "setup complete"
     else
         if [ "$XDG_SESSION_DESKTOP" = "i3" ] || [ "$DESKTOP_SESSION" = "i3" ]; then
-            i3-msg reload
+            i3-msg reload >/dev/null 2>&1
         else
             gnome-session-quit --no-prompt
         fi
