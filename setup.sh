@@ -290,7 +290,7 @@ setup_development_tools() {
     fi
 
     # Install Rust
-    if ! command -v rustc >/dev/null 2>&1; then
+    if [ ! -x "$(command -v rustc)" ]; then
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y >/dev/null 2>&1
         print_status "install rust"
     else
@@ -298,7 +298,7 @@ setup_development_tools() {
     fi
 
     # Install Zig
-    if ! command -v zig >/dev/null 2>&1; then
+    if [ ! -x "$(command -v zig)" ]; then
         ZIG_VERSION="0.13.0"
         wget -q "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" -O /tmp/zig.tar.xz >/dev/null 2>&1
         sudo mkdir -p /usr/local/zig
@@ -324,7 +324,7 @@ setup_shell_environment() {
     if is_wsl; then
         print_status "install ghostty" "skip (WSL detected)"
     else
-        if command -v ghostty >/dev/null 2>&1; then
+        if [ -x "$(command -v ghostty)" ]; then
             print_status "install ghostty" skip
         else
             # Install build dependencies
@@ -412,7 +412,7 @@ configure_dotfiles() {
     fi
 
     # Install Meslo Nerd Font
-    if [ ! -f "$HOME/.local/share/fonts/MesloLGS\ NF\ Regular.ttf" ]; then
+    if ! ls "$HOME/.local/share/fonts" 2>/dev/null | grep -q "meslo-nerd-font"; then
         mkdir -p "$HOME/.local/share/fonts"
         FONT_TMP_DIR=$(mktemp -d)
         wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Meslo.zip" -P "$FONT_TMP_DIR" >/dev/null 2>&1
