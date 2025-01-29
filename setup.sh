@@ -335,9 +335,9 @@ setup_shell_environment() {
             git clone https://github.com/mitchellh/ghostty.git "$HOME/bin/ghostty" >/dev/null 2>&1
             cd "$HOME/bin/ghostty"
             zig build -p "$HOME/.local" -Doptimize=ReleaseFast >/dev/null 2>&1
+            print_status "install ghostty"
             cd "$HOME" >/dev/null
             rm -rf "$HOME/bin/ghostty"
-            print_status "install ghostty"
         fi
     fi
 
@@ -391,9 +391,11 @@ configure_dotfiles() {
     echo "# 7. Configuration and Dotfiles"
     echo "--------------------------------"
 
-    # Stow dotfiles
-    stow "$SETUP_DIR/dotfiles" >/dev/null 2>&1
-    print_status "Stow dotfiles"
+    # Stow dotfiles with explicit target directory and adopt existing files
+    cd "$SETUP_DIR" >/dev/null
+    stow --adopt -t "$HOME" dotfiles >/dev/null 2>&1
+    print_status "stow dotfiles"
+    cd - >/dev/null
 
     # Copy .netrc
     copy_file ".netrc"
