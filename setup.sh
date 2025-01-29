@@ -224,7 +224,16 @@ setup_desktop_environment() {
     echo "--------------------------------"
     echo "# 4. Desktop Environment Setup"
     echo "--------------------------------"
-    # Add any additional desktop environment setup steps here if needed
+
+    # Configure monitors (non-WSL only)
+    if ! is_wsl; then
+        "$SETUP_DIR/scripts/set_monitors.sh"
+        print_status "setup monitors"
+        autorandr --save user_profile --force >/dev/null 2>&1
+        print_status "save monitor profile"
+    else
+        print_status "setup monitors" "skip (WSL detected)"
+    fi
 }
 
 # ========================================
@@ -406,18 +415,6 @@ configure_dotfiles() {
     else
         print_status "install meslo nerd font" skip
     fi
-
-    # Setup i3 configuration
-    if [ ! -d "$HOME/.config/i3" ]; then
-        mkdir -p "$HOME/.config/i3"
-    fi
-
-    if [ ! -L "$HOME/.config/i3/config" ]; then
-        ln -s "$SETUP_DIR/config/i3/config_custom" "$HOME/.config/i3/config"
-        print_status "setup i3 config"
-    else
-        print_status "setup i3 config" skip
-    fi
 }
 
 # ========================================
@@ -428,16 +425,6 @@ final_setup() {
     echo "--------------------------------"
     echo "# 8. Final Setup and Cleanup"
     echo "--------------------------------"
-
-    # Configure monitors (non-WSL only)
-    if ! is_wsl; then
-        "$SETUP_DIR/scripts/set_monitors.sh"
-        print_status "setup monitors"
-        autorandr --save user_profile --force >/dev/null 2>&1
-        print_status "save monitor profile"
-    else
-        print_status "setup monitors" "skip (WSL detected)"
-    fi
 
     # Switch to zsh
     if [ "$SHELL" != "$(which zsh)" ]; then
