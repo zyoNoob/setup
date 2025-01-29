@@ -392,7 +392,7 @@ configure_dotfiles() {
     echo "--------------------------------"
 
     # Stow dotfiles
-    stow dotfiles >/dev/null 2>&1
+    stow "$SETUP_DIR/dotfiles" >/dev/null 2>&1
     print_status "Stow dotfiles"
 
     # Copy .netrc
