@@ -184,6 +184,7 @@ install_essential_packages() {
     # System utilities
     local packages_system=(
         htop
+        btop
         apt-transport-https
         speedtest-cli
         net-tools
