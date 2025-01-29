@@ -7,6 +7,9 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+# Trap any error and remove /tmp/setup.sh if it exists
+trap 'rm -f /tmp/setup.sh' ERR
+
 # ========================================
 # Configuration Variables
 # ========================================
