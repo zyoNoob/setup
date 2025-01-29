@@ -155,8 +155,10 @@ initial_system_setup() {
             git checkout "$SETUP_BRANCH" >/dev/null 2>&1
             print_status "switch to branch $SETUP_BRANCH"
         else
-            print_status "clone setup repo" skip
+            print_status "switch to branch $SETUP_BRANCH" skip
         fi
+        git pull origin "$SETUP_BRANCH" >/dev/null 2>&1
+        print_status "update setup repo"
         cd - >/dev/null
     fi
 }
