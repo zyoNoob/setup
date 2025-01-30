@@ -104,7 +104,6 @@ SETUP_DIR="$HOME/workspace/setup"
 # Extract branch from the download URL if available
 SETUP_BRANCH=${SETUP_DOWNLOAD_URL##*/refs/heads/}
 SETUP_BRANCH=${SETUP_BRANCH%%/setup.sh}
-SETUP_BRANCH=${SETUP_BRANCH:-main}
 
 # Environment detection
 is_wsl() {
