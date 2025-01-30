@@ -7,20 +7,83 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Log file path - we'll use a single log file for all output
+# Log file path
 LOG_FILE="/tmp/setup_$(date +%Y%m%d_%H%M%S).log"
 
-# Save original stdout and stderr
-exec 3>&1
-exec 4>&2
+# Create log file
+touch "$LOG_FILE"
 
-# Set up logging to capture all output while still showing important messages on console
-# This ensures everything is logged while keeping the console interactive
-exec 1> >(tee -a "$LOG_FILE")
-exec 2> >(tee -a "$LOG_FILE" >&2)
+# Logging functions
+log_to_file() {
+    echo "$(timestamp) | $*" >> "$LOG_FILE"
+}
 
-# Trap errors to log them
-trap 'echo "Error occurred at line $LINENO. Exit code: $?" | tee -a "$LOG_FILE"' ERR
+log_to_console() {
+    echo "$*" >&1
+}
+
+log_to_both() {
+    log_to_file "$*"
+    log_to_console "$*"
+}
+
+# Silent execution - output only to log file
+run_silent() {
+    local cmd="$*"
+    local output
+    local exit_status
+
+    # Capture both stdout and stderr
+    output=$("$@" 2>&1)
+    exit_status=$?
+
+    # Always log the command and its output
+    log_to_file "Command: $cmd"
+    log_to_file "Output: $output"
+    
+    return $exit_status
+}
+
+# Verbose execution - output to both console and log
+run_verbose() {
+    local cmd="$*"
+    local output
+    local exit_status
+
+    # Capture both stdout and stderr
+    output=$("$@" 2>&1)
+    exit_status=$?
+
+    # Log command and output to both channels
+    log_to_both "Command: $cmd"
+    log_to_both "Output: $output"
+    
+    return $exit_status
+}
+
+# Function to print status messages
+print_status() {
+    local status=$?
+    local message=$1
+    local skip=$2
+    local width=40
+    local time_stamp=$(timestamp)
+    local output
+
+    if [ "$skip" = "skip" ]; then
+        output=$(printf "%s | %-${width}s \e[90mSKIPPED\e[0m" "$time_stamp" "$message")
+    else
+        if [ "$status" -eq 0 ]; then
+            output=$(printf "%s | %-${width}s \e[32mDONE\e[0m" "$time_stamp" "$message")
+        else
+            output=$(printf "%s | %-${width}s \e[31mFAILED\e[0m" "$time_stamp" "$message")
+            log_to_console "See full log at: $LOG_FILE"
+        fi
+    fi
+
+    # Status messages go to both console and log
+    log_to_both "$output"
+}
 
 # ========================================
 # Configuration Variables
@@ -43,30 +106,6 @@ SETUP_BRANCH=${SETUP_DOWNLOAD_URL##*/refs/heads/}
 SETUP_BRANCH=${SETUP_BRANCH%%/setup.sh}
 SETUP_BRANCH=${SETUP_BRANCH:-main}
 
-# Function to print status messages to both console and logs
-print_status() {
-    local status=$?
-    local message=$1
-    local skip=$2
-    local width=40
-    local time_stamp=$(timestamp)
-    local output
-
-    if [ "$skip" = "skip" ]; then
-        output=$(printf "%s | %-${width}s \e[90mSKIPPED\e[0m\n" "$time_stamp" "$message")
-    else
-        if [ "$status" -eq 0 ]; then
-            output=$(printf "%s | %-${width}s \e[32mDONE\e[0m\n" "$time_stamp" "$message")
-        else
-            output=$(printf "%s | %-${width}s \e[31mFAILED\e[0m\n" "$time_stamp" "$message")
-            echo "See detailed log at: $LOG_FILE" >&2
-        fi
-    fi
-
-    # Print to console (will also be captured in log due to tee setup)
-    echo "$output"
-}
-
 # Environment detection
 is_wsl() {
     case "$(uname -r)" in
@@ -78,7 +117,12 @@ is_wsl() {
 
 # Package management helpers
 is_installed() {
-    dpkg -s "$1" &> /dev/null
+    # Only log to file, return status for logic
+    if run_silent dpkg -s "$1"; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 install_package() {
@@ -88,8 +132,13 @@ install_package() {
     if is_installed "$package"; then
         print_status "$action_name" skip
     else
-        sudo apt install -y "$package" >/dev/null 2>&1
-        print_status "$action_name"
+        # Run apt install silently (only to log)
+        if run_silent sudo DEBIAN_FRONTEND=noninteractive apt install -y "$package"; then
+            print_status "$action_name"
+        else
+            print_status "$action_name"
+            return 1
+        fi
     fi
 }
 
@@ -98,8 +147,13 @@ remove_package() {
     local action_name="remove $package"
 
     if is_installed "$package"; then
-        sudo apt remove -y "$package" >/dev/null 2>&1
-        print_status "$action_name"
+        # Run apt remove silently (only to log)
+        if run_silent sudo DEBIAN_FRONTEND=noninteractive apt remove -y "$package"; then
+            print_status "$action_name"
+        else
+            print_status "$action_name"
+            return 1
+        fi
     else
         print_status "$action_name" skip
     fi
@@ -113,7 +167,7 @@ copy_file() {
     if [ -e "$tgt" ]; then
         print_status "copy config $1" skip
     else
-        cp "$src" "$tgt"
+        run_silent cp "$src" "$tgt"
         print_status "copy config $1"
     fi
 }
@@ -125,7 +179,7 @@ make_link() {
     if [ -L "$tgt" ]; then
         print_status "make symlink $1" skip
     else
-        ln -s "$src" "$tgt"
+        run_silent ln -s "$src" "$tgt"
         print_status "make symlink $1"
     fi
 }
@@ -135,12 +189,12 @@ make_link() {
 # ========================================
 
 initial_system_setup() {
-    echo "--------------------------------"
-    echo "# Initial System Setup"
-    echo "--------------------------------"
+    log_to_both "--------------------------------"
+    log_to_both "# Initial System Setup"
+    log_to_both "--------------------------------"
 
     # Update package list
-    sudo apt update -y >/dev/null 2>&1
+    run_silent sudo apt update -y
     print_status "update package list"
 
     # Remove unnecessary packages
@@ -153,22 +207,22 @@ initial_system_setup() {
     # Clone setup repository
     if [ ! -d "$SETUP_DIR" ]; then
         mkdir -p "$SETUP_DIR"
-        git clone -b "$SETUP_BRANCH" https://github.com/zyoNoob/setup "$SETUP_DIR"
+        run_silent git clone -b "$SETUP_BRANCH" https://github.com/zyoNoob/setup "$SETUP_DIR"
         cd "$SETUP_DIR"
-        git checkout "$SETUP_BRANCH"
+        run_silent git checkout "$SETUP_BRANCH"
         cd - >/dev/null
         print_status "clone setup repo"
     else
         cd "$SETUP_DIR"
-        CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        CURRENT_BRANCH=$(run_silent git rev-parse --abbrev-ref HEAD)
         if [ "$CURRENT_BRANCH" != "$SETUP_BRANCH" ]; then
-            git fetch origin "$SETUP_BRANCH"
-            git checkout "$SETUP_BRANCH"
+            run_silent git fetch origin "$SETUP_BRANCH"
+            run_silent git checkout "$SETUP_BRANCH"
             print_status "switch to branch $SETUP_BRANCH"
         else
             print_status "switch to branch $SETUP_BRANCH" skip
         fi
-        git pull origin "$SETUP_BRANCH"
+        run_silent git pull origin "$SETUP_BRANCH"
         print_status "update setup repo"
         cd - >/dev/null
     fi
@@ -179,9 +233,9 @@ initial_system_setup() {
 # ========================================
 
 install_essential_packages() {
-    echo "--------------------------------"
-    echo "# Essential Package Installation"
-    echo "--------------------------------"
+    log_to_both "--------------------------------"
+    log_to_both "# Essential Package Installation"
+    log_to_both "--------------------------------"
 
     # Core development tools
     local packages_core=(
@@ -238,18 +292,31 @@ install_essential_packages() {
 # ========================================
 
 setup_desktop_environment() {
-    echo "--------------------------------"
-    echo "# Desktop Environment Setup"
-    echo "--------------------------------"
+    log_to_both "--------------------------------"
+    log_to_both "# Desktop Environment Setup"
+    log_to_both "--------------------------------"
 
     # Configure monitors (non-WSL only)
     if ! is_wsl; then
-        "$SETUP_DIR/scripts/set_monitors.sh"
+        run_silent "$SETUP_DIR/scripts/set_monitors.sh"
         print_status "setup monitors"
-        autorandr --save user_profile --force
+        run_silent autorandr --save user_profile --force
         print_status "save monitor profile"
     else
         print_status "setup monitors" "skip (WSL detected)"
+    fi
+
+    # Install Meslo Nerd Font
+    if ! ls "$HOME/.local/share/fonts" | grep -q "meslo-nerd-font"; then
+        mkdir -p "$HOME/.local/share/fonts"
+        FONT_TMP_DIR=$(mktemp -d)
+        run_silent wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Meslo.zip" -P "$FONT_TMP_DIR"
+        run_silent unzip -q "$FONT_TMP_DIR/Meslo.zip" -d "$HOME/.local/share/fonts/meslo-nerd-font"
+        rm -rf "$FONT_TMP_DIR"
+        run_silent fc-cache -f
+        print_status "install meslo nerd font"
+    else
+        print_status "install meslo nerd font" skip
     fi
 }
 
@@ -258,18 +325,18 @@ setup_desktop_environment() {
 # ========================================
 
 setup_development_tools() {
-    echo "--------------------------------"
-    echo "# Development Tools Setup"
-    echo "--------------------------------"
+    log_to_both "--------------------------------"
+    log_to_both "# Development Tools Setup"
+    log_to_both "--------------------------------"
 
     # Install VS Code (non-WSL only)
     if ! is_wsl; then
         if ! is_installed "code"; then
-            wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-            sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
-            echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list
+            run_silent wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+            run_silent sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+            run_silent sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null <<< "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main"
             rm -f packages.microsoft.gpg
-            sudo apt update -qq
+            run_silent sudo apt update
             install_package "code"
         else
             print_status "install code" skip
@@ -281,8 +348,8 @@ setup_development_tools() {
     # Install ydiff
     if [ ! -f "$HOME/bin/ydiff" ]; then
         mkdir -p "$HOME/bin"
-        curl -L https://raw.github.com/ymattw/ydiff/master/ydiff.py > "$HOME/bin/ydiff"
-        chmod +x "$HOME/bin/ydiff"
+        run_silent curl -L https://raw.github.com/ymattw/ydiff/master/ydiff.py -o "$HOME/bin/ydiff"
+        run_silent chmod +x "$HOME/bin/ydiff"
         print_status "install ydiff"
     else
         print_status "install ydiff" skip
@@ -290,11 +357,11 @@ setup_development_tools() {
 
     # Install Miniconda
     if [ ! -d "$HOME/miniconda3" ]; then
-        wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-        bash ~/miniconda.sh -b -p "$HOME/miniconda3"
+        run_silent wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+        run_silent bash ~/miniconda.sh -b -p "$HOME/miniconda3"
         rm ~/miniconda.sh
-        "$HOME/miniconda3/bin/conda" init zsh
-        "$HOME/miniconda3/bin/conda" config --set auto_activate_base false
+        run_silent "$HOME/miniconda3/bin/conda" init zsh
+        run_silent "$HOME/miniconda3/bin/conda" config --set auto_activate_base false
         print_status "install miniconda"
     else
         print_status "install miniconda" skip
@@ -302,7 +369,7 @@ setup_development_tools() {
 
     # Install Rust
     if [ ! -x "$(command -v rustc)" ]; then
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        run_silent curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         print_status "install rust"
     else
         print_status "install rust" skip
@@ -311,10 +378,10 @@ setup_development_tools() {
     # Install Zig
     if [ ! -x "$(command -v zig)" ]; then
         ZIG_VERSION="0.13.0"
-        wget -q "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" -O /tmp/zig.tar.xz
-        sudo mkdir -p /usr/local/zig
-        sudo tar xf /tmp/zig.tar.xz -C /usr/local/zig --strip-components=1
-        sudo ln -s /usr/local/zig/zig /usr/local/bin/zig
+        run_silent wget -q "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" -O /tmp/zig.tar.xz
+        run_silent sudo mkdir -p /usr/local/zig
+        run_silent sudo tar xf /tmp/zig.tar.xz -C /usr/local/zig --strip-components=1
+        run_silent sudo ln -s /usr/local/zig/zig /usr/local/bin/zig
         rm -rf /tmp/zig.tar.xz
         print_status "install zig"
     else
@@ -327,9 +394,9 @@ setup_development_tools() {
 # ========================================
 
 setup_shell_environment() {
-    echo "--------------------------------"
-    echo "# Shell Environment Setup"
-    echo "--------------------------------"
+    log_to_both "--------------------------------"
+    log_to_both "# Shell Environment Setup"
+    log_to_both "--------------------------------"
 
     # Install Ghostty if not in WSL
     if is_wsl; then
@@ -343,9 +410,9 @@ setup_shell_environment() {
             install_package "libadwaita-1-dev"
 
             # Clone and build Ghostty
-            git clone https://github.com/mitchellh/ghostty.git "$HOME/bin/ghostty"
+            run_silent git clone https://github.com/mitchellh/ghostty.git "$HOME/bin/ghostty"
             cd "$HOME/bin/ghostty"
-            zig build -p "$HOME/.local" -Doptimize=ReleaseFast
+            run_silent zig build -p "$HOME/.local" -Doptimize=ReleaseFast
             print_status "install ghostty"
             cd "$HOME" >/dev/null
             rm -rf "$HOME/bin/ghostty"
@@ -354,7 +421,7 @@ setup_shell_environment() {
 
     # Install Oh My Zsh
     if [ ! -d "$HOME/.oh-my-zsh" ]; then
-        sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+        run_silent sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
         print_status "install omz"
         rm -f "$HOME/.zshrc"
     else
@@ -380,9 +447,9 @@ setup_shell_environment() {
 
         if [ ! -d "$plugin_dir" ]; then
             if [ "$plugin" = "zsh-autocomplete" ]; then
-                git clone -q --depth 1 -- "$url" "$plugin_dir"
+                run_silent git clone -q --depth 1 -- "$url" "$plugin_dir"
             else
-                git clone -q "$url" "$plugin_dir"
+                run_silent git clone -q "$url" "$plugin_dir"
             fi
             print_status "install $plugin"
         else
@@ -398,13 +465,13 @@ setup_shell_environment() {
 # ========================================
 
 configure_dotfiles() {
-    echo "--------------------------------"
-    echo "# Configuration and Dotfiles"
-    echo "--------------------------------"
+    log_to_both "--------------------------------"
+    log_to_both "# Configuration and Dotfiles"
+    log_to_both "--------------------------------"
 
     # Stow dotfiles with explicit target directory and adopt existing files
     cd "$SETUP_DIR"
-    stow --adopt -t "$HOME" dotfiles
+    run_silent stow --adopt -t "$HOME" dotfiles
     print_status "stow dotfiles"
     cd - >/dev/null
 
@@ -414,25 +481,12 @@ configure_dotfiles() {
     # Generate SSH key
     if [ ! -f "$HOME/.ssh/id_rsa" ]; then
         mkdir -p "$HOME/.ssh"
-        ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N ""
-        chmod 600 "$HOME/.ssh/id_rsa"
-        chmod 644 "$HOME/.ssh/id_rsa.pub"
+        run_silent ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N ""
+        run_silent chmod 600 "$HOME/.ssh/id_rsa"
+        run_silent chmod 644 "$HOME/.ssh/id_rsa.pub"
         print_status "generate ssh key"
     else
         print_status "generate ssh key" skip
-    fi
-
-    # Install Meslo Nerd Font
-    if ! ls "$HOME/.local/share/fonts" 2>/dev/null | grep -q "meslo-nerd-font"; then
-        mkdir -p "$HOME/.local/share/fonts"
-        FONT_TMP_DIR=$(mktemp -d)
-        wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Meslo.zip" -P "$FONT_TMP_DIR"
-        unzip -q "$FONT_TMP_DIR/Meslo.zip" -d "$HOME/.local/share/fonts/meslo-nerd-font"
-        rm -rf "$FONT_TMP_DIR"
-        fc-cache -f
-        print_status "install meslo nerd font"
-    else
-        print_status "install meslo nerd font" skip
     fi
 }
 
@@ -441,13 +495,13 @@ configure_dotfiles() {
 # ========================================
 
 final_setup() {
-    echo "--------------------------------"
-    echo "# Final Setup and Cleanup"
-    echo "--------------------------------"
+    log_to_both "--------------------------------"
+    log_to_both "# Final Setup and Cleanup"
+    log_to_both "--------------------------------"
 
     # Switch to zsh
     if [ "$SHELL" != "$(which zsh)" ]; then
-        chsh -s "$(which zsh)"
+        run_silent chsh -s "$(which zsh)"
         print_status "switch to zsh"
     else
         print_status "switch to zsh" skip
@@ -458,10 +512,10 @@ final_setup() {
         print_status "setup complete"
     else
         if [ "$XDG_SESSION_DESKTOP" = "i3" ] || [ "$DESKTOP_SESSION" = "i3" ]; then
-            i3-msg reload
+            run_silent i3-msg reload
             print_status "setup complete"
         else
-            gnome-session-quit --no-prompt
+            run_silent gnome-session-quit --no-prompt
             print_status "setup complete"
         fi
     fi
