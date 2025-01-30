@@ -7,20 +7,20 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Log file paths
+# Log file path - we'll use a single log file for all output
 LOG_FILE="/tmp/setup_$(date +%Y%m%d_%H%M%S).log"
-DETAILED_LOG="/tmp/setup_$(date +%Y%m%d_%H%M%S)_detailed.log"
 
 # Save original stdout and stderr
 exec 3>&1
 exec 4>&2
 
-# Redirect all command output to detailed log only
-exec 1> >(tee -a "$DETAILED_LOG" >/dev/null)
-exec 2> >(tee -a "$DETAILED_LOG" >/dev/null)
+# Set up logging to capture all output while still showing important messages on console
+# This ensures everything is logged while keeping the console interactive
+exec 1> >(tee -a "$LOG_FILE")
+exec 2> >(tee -a "$LOG_FILE" >&2)
 
-# Trap errors to log them and perform cleanup
-trap 'echo "Error occurred at line $LINENO. Exit code: $?" | tee -a "$LOG_FILE" "$DETAILED_LOG"' ERR
+# Trap errors to log them
+trap 'echo "Error occurred at line $LINENO. Exit code: $?" | tee -a "$LOG_FILE"' ERR
 
 # ========================================
 # Configuration Variables
@@ -59,11 +59,12 @@ print_status() {
             output=$(printf "%s | %-${width}s \e[32mDONE\e[0m\n" "$time_stamp" "$message")
         else
             output=$(printf "%s | %-${width}s \e[31mFAILED\e[0m\n" "$time_stamp" "$message")
-            echo "See detailed log at: $DETAILED_LOG" >&4
+            echo "See detailed log at: $LOG_FILE" >&2
         fi
     fi
 
-    echo "$output" | tee -a "$LOG_FILE" >&3
+    # Print to console (will also be captured in log due to tee setup)
+    echo "$output"
 }
 
 # Environment detection
