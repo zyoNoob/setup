@@ -506,7 +506,7 @@ final_setup() {
 
     # Switch to zsh
     if [ "$SHELL" != "$(which zsh)" ]; then
-        run_verbose chsh -s "$(which zsh)"
+        chsh -s "$(which zsh)"
         print_status "switch to zsh"
     else
         print_status "switch to zsh" skip
