@@ -431,9 +431,8 @@ setup_shell_environment() {
 
     # Install Oh My Zsh
     if [ ! -d "$HOME/.oh-my-zsh" ]; then
-        run_silent bash -c 'curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh -s -- "" --unattended'
+        run_silent bash -c 'curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh -s -- --unattended --keep-zshrc'
         print_status "install omz"
-        rm -f "$HOME/.zshrc"
     else
         print_status "install omz" skip
     fi
@@ -475,8 +474,9 @@ configure_dotfiles() {
     log_to_both "--------------------------------"
 
     # Stow dotfiles with explicit target directory and adopt existing files
+    # --no-folding ensures exact file matching without directory merging
     cd "$SETUP_DIR"
-    run_silent stow --adopt -t "$HOME" dotfiles
+    run_silent stow --no-folding --adopt -v -t "$HOME" dotfiles
     print_status "stow dotfiles"
     cd - >/dev/null
 
