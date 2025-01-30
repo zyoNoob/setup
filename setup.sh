@@ -207,20 +207,26 @@ initial_system_setup() {
     # Clone setup repository
     if [ ! -d "$SETUP_DIR" ]; then
         mkdir -p "$SETUP_DIR"
-        run_silent git clone -b "$SETUP_BRANCH" https://github.com/zyoNoob/setup "$SETUP_DIR"
-        cd "$SETUP_DIR"
-        run_silent git checkout "$SETUP_BRANCH"
-        cd - >/dev/null
+        run_silent bash -c 'git clone -b "$1" https://github.com/zyoNoob/setup "$2" && \
+            cd "$2" && \
+            git checkout "$1"' -- "$SETUP_BRANCH" "$SETUP_DIR"
         print_status "clone setup repo"
     else
         cd "$SETUP_DIR"
-        CURRENT_BRANCH=$(run_silent git rev-parse --abbrev-ref HEAD)
-        if [ "$CURRENT_BRANCH" != "$SETUP_BRANCH" ]; then
-            run_silent git fetch origin "$SETUP_BRANCH"
-            run_silent git checkout "$SETUP_BRANCH"
-            print_status "switch to branch $SETUP_BRANCH"
-        else
+        # Get current branch and handle git operations in a single context
+        run_silent bash -c '
+            CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+            if [ "$CURRENT_BRANCH" != "$1" ]; then
+                git fetch origin "$1" && \
+                git checkout "$1"
+                exit $?
+            fi
+            exit 0
+        ' -- "$SETUP_BRANCH"
+        if [ $? -eq 0 ]; then
             print_status "switch to branch $SETUP_BRANCH" skip
+        else
+            print_status "switch to branch $SETUP_BRANCH"
         fi
         run_silent git pull origin "$SETUP_BRANCH"
         print_status "update setup repo"
@@ -307,7 +313,7 @@ setup_desktop_environment() {
     fi
 
     # Install Meslo Nerd Font
-    if ! ls "$HOME/.local/share/fonts" | grep -q "meslo-nerd-font"; then
+    if [ ! -d "$HOME/.local/share/fonts/meslo-nerd-font" ]; then
         mkdir -p "$HOME/.local/share/fonts"
         FONT_TMP_DIR=$(mktemp -d)
         run_silent wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Meslo.zip" -P "$FONT_TMP_DIR"
@@ -332,11 +338,15 @@ setup_development_tools() {
     # Install VS Code (non-WSL only)
     if ! is_wsl; then
         if ! is_installed "code"; then
-            run_silent wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-            run_silent sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
-            run_silent sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null <<< "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main"
-            rm -f packages.microsoft.gpg
-            run_silent sudo apt update
+            # Download and set up Microsoft's GPG key and repository in one sequence
+            run_silent bash -c '
+                wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg && \
+                sudo install -D -o root -g root -m 644 /tmp/microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg && \
+                echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | \
+                sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null && \
+                rm -f /tmp/microsoft.gpg && \
+                sudo apt update
+            '
             install_package "code"
         else
             print_status "install code" skip
@@ -369,7 +379,7 @@ setup_development_tools() {
 
     # Install Rust
     if [ ! -x "$(command -v rustc)" ]; then
-        run_silent curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        run_silent bash -c 'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y'
         print_status "install rust"
     else
         print_status "install rust" skip
@@ -421,7 +431,7 @@ setup_shell_environment() {
 
     # Install Oh My Zsh
     if [ ! -d "$HOME/.oh-my-zsh" ]; then
-        run_silent sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+        run_silent bash -c 'curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh -s -- "" --unattended'
         print_status "install omz"
         rm -f "$HOME/.zshrc"
     else
@@ -437,27 +447,22 @@ setup_shell_environment() {
         "conda-zsh-completion https://github.com/conda-incubator/conda-zsh-completion"
     )
 
-    OLDIFS="$IFS"
-    IFS=$'\n'
-
     for entry in "${plugins[@]}"; do
-        plugin=$(echo "$entry" | awk '{print $1}')
-        url=$(echo "$entry" | awk '{print $2}')
+        plugin=$(echo "$entry" | cut -d' ' -f1)
+        url=$(echo "$entry" | cut -d' ' -f2)
         plugin_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/$plugin"
 
         if [ ! -d "$plugin_dir" ]; then
             if [ "$plugin" = "zsh-autocomplete" ]; then
-                run_silent git clone -q --depth 1 -- "$url" "$plugin_dir"
+                run_silent bash -c 'git clone -q --depth 1 -- "$1" "$2"' -- "$url" "$plugin_dir"
             else
-                run_silent git clone -q "$url" "$plugin_dir"
+                run_silent bash -c 'git clone -q "$1" "$2"' -- "$url" "$plugin_dir"
             fi
             print_status "install $plugin"
         else
             print_status "install $plugin" skip
         fi
     done
-
-    IFS="$OLDIFS"
 }
 
 # ========================================
