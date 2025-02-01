@@ -41,7 +41,7 @@ else
     echo "Detected single display, configuring single monitor setup..."
     # SINGLE MONITOR SETUP
     PRIMARY_MONITOR=$(xrandr --query | grep " connected" | cut -d" " -f1)
-    xrandr --output $PRIMARY_MONITOR --mode 1920x1080 --pos 0x0 --rate 60 --scale 1x1
+    xrandr --output $PRIMARY_MONITOR --mode 1920x1080 --pos 0x0 --rate 60
     
     # Update monitor configuration with only primary monitor
     update_monitor_config "$PRIMARY_MONITOR"
