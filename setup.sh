@@ -256,7 +256,6 @@ install_essential_packages() {
     local packages_system=(
         htop
         btop
-        apt-transport-https
         speedtest-cli
         net-tools
         screen
