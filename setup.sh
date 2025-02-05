@@ -302,7 +302,7 @@ setup_desktop_environment() {
 
     # Configure monitors (non-WSL only)
     if ! is_wsl; then
-        run_verbose "$SETUP_DIR/scripts/set_monitors.sh"
+        run_verbose sudo "$SETUP_DIR/scripts/set_monitors.sh"
         print_status "setup monitors"
         run_verbose sudo cp "$HOME/.config/monitors.xml" "/var/lib/gdm3/.config/"
         print_status "copy monitors.xml to gdm3"
