@@ -10,7 +10,6 @@ fi
 
 # ---
 export SETUP_REPO=$HOME/workspace/setup
-PATH="$SETUP_REPO/utils:$PATH"
 
 # git-lfs credentials
 # export AWS_S3_BUCKET_URL="https://bucket.amazonaws.com"
