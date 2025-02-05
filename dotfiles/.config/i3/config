@@ -35,7 +35,6 @@ tiling_drag modifier titlebar
 set $pm DP-4
 set $sm DP-2
 exec --no-startup-id xrdb -merge ~/.Xresources
-exec --no-startup-id sleep 1 && autorandr --change
 
 # Startup Applications
 exec --no-startup-id /usr/bin/nitrogen --restore &

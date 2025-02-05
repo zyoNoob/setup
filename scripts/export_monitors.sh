@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # Get active monitors from xrandr (compatible with both bash/zsh)
-monitors=($(xrandr --listmonitors | awk '/^ [0-9]+:/ { sub(/^[+*]*/, "", $2); print $2 }'))
+monitors=($(xrandr --listactivemonitors | awk '/^ [0-9]+:/ { sub(/^[+*]*/, "", $NF); print $NF }'))
 
 # Handle shell-specific array indexing without changing shell options
 if [ -n "$ZSH_VERSION" ]; then

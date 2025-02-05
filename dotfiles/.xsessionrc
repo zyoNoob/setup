@@ -1,2 +1,5 @@
 # ~/.xsessionrc
+# First configure monitors
+"$HOME/workspace/setup/scripts/set_monitors.sh"
+
 [ -f "$HOME/workspace/setup/scripts/export_monitors.sh" ] && . "$HOME/workspace/setup/scripts/export_monitors.sh"

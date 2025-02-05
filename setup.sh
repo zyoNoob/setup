@@ -277,8 +277,6 @@ install_essential_packages() {
     # Desktop environment
     local packages_desktop=(
         i3
-        arandr
-        autorandr
         pavucontrol
         nitrogen
         dunst
@@ -306,8 +304,10 @@ setup_desktop_environment() {
     if ! is_wsl; then
         run_silent "$SETUP_DIR/scripts/set_monitors.sh"
         print_status "setup monitors"
-        run_silent autorandr --save user_profile --force
-        print_status "save monitor profile"
+        run_silent sudo cp "$HOME/.config/monitors.xml" "/var/lib/gdm3/.config/"
+        print_status "copy monitors.xml to gdm3"
+        run_silent sudo chown gdm:gdm /var/lib/gdm3/.config/monitors.xml
+        print_status "change owner to gdm"
     else
         print_status "setup monitors" "skip (WSL detected)"
     fi
