@@ -32,8 +32,8 @@ floating_modifier $mod
 tiling_drag modifier titlebar
 
 # Monitor Configuration
-set $pm DP-4
-set $sm DP-2
+set $PRIMARY_MONITOR DP-4
+set $SECONDARY_MONITOR DP-2
 exec --no-startup-id xrdb -merge ~/.Xresources
 
 # Startup Applications
@@ -131,27 +131,27 @@ set $ws19 "19"
 set $ws20 "20"
 
 # Monitor Workspace Assignment
-workspace $ws1 output $pm
-workspace $ws2 output $pm
-workspace $ws3 output $pm
-workspace $ws4 output $pm
-workspace $ws5 output $pm
-workspace $ws6 output $pm
-workspace $ws7 output $pm
-workspace $ws8 output $pm
-workspace $ws9 output $pm
-workspace $ws10 output $pm
+workspace $ws1 output $PRIMARY_MONITOR
+workspace $ws2 output $PRIMARY_MONITOR
+workspace $ws3 output $PRIMARY_MONITOR
+workspace $ws4 output $PRIMARY_MONITOR
+workspace $ws5 output $PRIMARY_MONITOR
+workspace $ws6 output $PRIMARY_MONITOR
+workspace $ws7 output $PRIMARY_MONITOR
+workspace $ws8 output $PRIMARY_MONITOR
+workspace $ws9 output $PRIMARY_MONITOR
+workspace $ws10 output $PRIMARY_MONITOR
 
-workspace $ws11 output $sm
-workspace $ws12 output $sm
-workspace $ws13 output $sm
-workspace $ws14 output $sm
-workspace $ws15 output $sm
-workspace $ws16 output $sm
-workspace $ws17 output $sm
-workspace $ws18 output $sm
-workspace $ws19 output $sm
-workspace $ws20 output $sm
+workspace $ws11 output $SECONDARY_MONITOR
+workspace $ws12 output $SECONDARY_MONITOR
+workspace $ws13 output $SECONDARY_MONITOR
+workspace $ws14 output $SECONDARY_MONITOR
+workspace $ws15 output $SECONDARY_MONITOR
+workspace $ws16 output $SECONDARY_MONITOR
+workspace $ws17 output $SECONDARY_MONITOR
+workspace $ws18 output $SECONDARY_MONITOR
+workspace $ws19 output $SECONDARY_MONITOR
+workspace $ws20 output $SECONDARY_MONITOR
 
 # Workspace Switching
 bindsym $mod+1 workspace $ws1
@@ -204,7 +204,7 @@ bar {
     font pango:MesloLGS Nerd Font 12
     position top
     status_command i3status
-    tray_output $pm
+    tray_output $PRIMARY_MONITOR
     colors {
         background #2e3440
         statusline #d8dee9
