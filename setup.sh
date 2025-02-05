@@ -308,21 +308,88 @@ setup_desktop_environment() {
         print_status "copy monitors.xml to gdm3"
         run_silent sudo chown gdm:gdm /var/lib/gdm3/.config/monitors.xml
         print_status "change owner to gdm"
-    else
-        print_status "setup monitors" "skip (WSL detected)"
-    fi
 
-    # Install Meslo Nerd Font
-    if [ ! -d "$HOME/.local/share/fonts/meslo-nerd-font" ]; then
-        mkdir -p "$HOME/.local/share/fonts"
-        FONT_TMP_DIR=$(mktemp -d)
-        run_silent wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Meslo.zip" -P "$FONT_TMP_DIR"
-        run_silent unzip -q "$FONT_TMP_DIR/Meslo.zip" -d "$HOME/.local/share/fonts/meslo-nerd-font"
-        rm -rf "$FONT_TMP_DIR"
-        run_silent fc-cache -f
-        print_status "install meslo nerd font"
+        # Install Meslo Nerd Font
+        if [ ! -d "$HOME/.local/share/fonts/meslo-nerd-font" ]; then
+            mkdir -p "$HOME/.local/share/fonts"
+            FONT_TMP_DIR=$(mktemp -d)
+            run_silent wget -q "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Meslo.zip" -P "$FONT_TMP_DIR"
+            run_silent unzip -q "$FONT_TMP_DIR/Meslo.zip" -d "$HOME/.local/share/fonts/meslo-nerd-font"
+            rm -rf "$FONT_TMP_DIR"
+            run_silent fc-cache -f
+            print_status "install meslo nerd font"
+        else
+            print_status "install meslo nerd font" skip
+        fi
+
+        # Install Catppuccin GTK theme
+        CATPPUCCIN_THEME_DIR="$HOME/.local/share/themes/catppuccin-mocha-blue-standard+default"
+        if [ ! -d "$CATPPUCCIN_THEME_DIR" ]; then
+            mkdir -p ~/.local/share/themes
+            ROOT_URL="https://github.com/catppuccin/gtk/releases/download"
+            RELEASE="v1.0.3"
+            FLAVOR="mocha"
+            ACCENT="blue"
+            run_silent wget -q "${ROOT_URL}/${RELEASE}/catppuccin-${FLAVOR}-${ACCENT}-standard+default.zip" -O "/tmp/catppuccin-theme.zip"
+            run_silent unzip -q "/tmp/catppuccin-theme.zip" -d ~/.local/share/themes
+            rm -f "/tmp/catppuccin-theme.zip"
+            mkdir -p "${HOME}/.config/gtk-4.0"
+            run_silent ln -sf "${CATPPUCCIN_THEME_DIR}/gtk-4.0/assets" "${HOME}/.config/gtk-4.0/assets"
+            run_silent ln -sf "${CATPPUCCIN_THEME_DIR}/gtk-4.0/gtk.css" "${HOME}/.config/gtk-4.0/gtk.css"
+            run_silent ln -sf "${CATPPUCCIN_THEME_DIR}/gtk-4.0/gtk-dark.css" "${HOME}/.config/gtk-4.0/gtk-dark.css"
+            print_status "install catppuccin gtk theme"
+        else
+            print_status "install catppuccin gtk theme" skip
+        fi
+
+        # Install Papirus icon theme and Catppuccin cursors
+        if ! is_installed "papirus-icon-theme"; then
+            run_silent sudo add-apt-repository -y ppa:papirus/papirus
+            run_silent sudo apt update
+            install_package "papirus-icon-theme"
+        else
+            print_status "install papirus icon theme" skip
+        fi
+
+        CURSOR_DARK_DIR="$HOME/.icons/catppuccin-mocha-dark-cursors"
+        if [ ! -d "$CURSOR_DARK_DIR" ]; then
+            mkdir -p ~/.icons
+            run_silent wget -q "https://github.com/catppuccin/cursors/releases/download/v1.0.2/catppuccin-mocha-dark-cursors.zip" -O "/tmp/cursors.zip"
+            run_silent unzip -q "/tmp/cursors.zip" -d ~/.icons
+            rm -f "/tmp/cursors.zip"
+            print_status "install catppuccin dark cursors"
+        else
+            print_status "install catppuccin dark cursors" skip
+        fi
+
+        CURSOR_LIGHT_DIR="$HOME/.icons/catppuccin-mocha-light-cursors"
+        if [ ! -d "$CURSOR_LIGHT_DIR" ]; then
+            mkdir -p ~/.icons
+            run_silent wget -q "https://github.com/catppuccin/cursors/releases/download/v1.0.2/catppuccin-mocha-light-cursors.zip" -O "/tmp/cursors.zip"
+            run_silent unzip -q "/tmp/cursors.zip" -d ~/.icons
+            rm -f "/tmp/cursors.zip"
+            print_status "install catppuccin light cursors"
+        else
+            print_status "install catppuccin light cursors" skip
+        fi
+
+        # Apply GNOME desktop settings
+        run_silent gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
+        run_silent gsettings set org.gnome.desktop.interface cursor-size 24
+        run_silent gsettings set org.gnome.desktop.interface cursor-blink true
+        run_silent gsettings set org.gnome.desktop.interface cursor-blink-timeout 1200
+        run_silent gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+        run_silent gsettings set org.gnome.desktop.peripherals.mouse speed -0.40
+        run_silent gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'
+        run_silent gsettings set org.gnome.desktop.interface font-name 'MesloLGS Nerd Font 12'
+        run_silent gsettings set org.gnome.desktop.interface document-font-name 'MesloLGS Nerd Font 12'
+        run_silent gsettings set org.gnome.desktop.interface monospace-font-name 'MesloLGS Nerd Font Mono 12'
+        run_silent gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-blue-standard+default'
+        run_silent gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
+        run_silent gsettings set org.gnome.desktop.interface cursor-theme 'catppuccin-mocha-dark-cursors'
+        print_status "apply desktop settings"
     else
-        print_status "install meslo nerd font" skip
+        print_status "desktop environment setup" "skip (WSL detected)"
     fi
 }
 

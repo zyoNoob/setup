@@ -1,3 +1,4 @@
+mkdir -p ~/.local/share/themes
 cd ~/.local/share/themes
 
 # Set the root URL

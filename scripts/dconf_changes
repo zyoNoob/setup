@@ -1,0 +1,23 @@
+# Generic Settings
+gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
+gsettings set org.gnome.desktop.interface cursor-size 24
+gsettings set org.gnome.desktop.interface cursor-blink true
+gsettings set org.gnome.desktop.interface cursor-blink-timeout 1200
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+
+# Mouse and Keyboard Settings
+gsettings set org.gnome.desktop.peripherals.mouse speed -0.40
+gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'
+
+# After installing Meslo Nerd Font
+gsettings set org.gnome.desktop.interface font-name 'MesloLGS Nerd Font 12'
+gsettings set org.gnome.desktop.interface document-font-name 'MesloLGS Nerd Font 12'
+gsettings set org.gnome.desktop.interface monospace-font-name 'MesloLGS Nerd Font Mono 12'
+
+# after installing catppuccin theme
+gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-blue-standard+default'
+
+# after installing cursor and iconpacks
+gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
+gsettings set org.gnome.desktop.interface cursor-theme 'catppuccin-mocha-dark-cursors'
+
