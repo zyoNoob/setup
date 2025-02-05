@@ -1,5 +1,9 @@
+# ~/.config/i3/config
 # i3 config file (v4)
 # See https://i3wm.org/docs/userguide.html for a complete reference
+
+# LOG ENVIRONMENT VARIABLES
+exec_always --no-startup-id "env > /tmp/i3env.log"
 
 set $mod Mod1
 set $win Mod4
@@ -37,6 +41,8 @@ exec --no-startup-id sleep 1 && autorandr --change
 exec --no-startup-id /usr/bin/nitrogen --restore &
 exec --no-startup-id dunst &
 exec --no-startup-id picom -b
+
+exec --no-startup-id $HOME/Downloads/vhuit64
 
 # Application Shortcuts
 bindsym $mod+Return exec ghostty

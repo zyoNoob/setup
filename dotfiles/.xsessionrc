@@ -1,0 +1,2 @@
+# ~/.xsessionrc
+[ -f "$HOME/workspace/setup/scripts/export_monitors.sh" ] && . "$HOME/workspace/setup/scripts/export_monitors.sh"
