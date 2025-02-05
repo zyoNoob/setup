@@ -470,7 +470,7 @@ setup_shell_environment() {
 
 configure_dotfiles_and_utils() {
     log_to_both "--------------------------------"
-    log_to_both "# Configuration and Dotfiles"
+    log_to_both "# Configurating Dotfiles & Utils"
     log_to_both "--------------------------------"
 
     # Stow dotfiles with explicit target directory and adopt existing files
