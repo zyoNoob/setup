@@ -536,7 +536,7 @@ main() {
 
     initial_system_setup
     install_essential_packages
-    configure_dotfiles
+    configure_dotfiles_and_utils
     setup_desktop_environment
     setup_development_tools
     setup_shell_environment
