@@ -41,8 +41,6 @@ exec --no-startup-id /usr/bin/nitrogen --restore &
 exec --no-startup-id dunst &
 exec --no-startup-id picom -b
 
-exec --no-startup-id $HOME/Downloads/vhuit64
-
 # Application Shortcuts
 bindsym $mod+Return exec ghostty
 bindsym $mod+d exec rofi -show drun -display-drun "Applications" -show-icons
