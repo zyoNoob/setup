@@ -14,10 +14,12 @@ if [ "$DISPLAY_COUNT" -gt 1 ]; then
     # DUAL MONITOR SETUP
     PRIMARY_MONITOR=${PRIMARY_MONITOR:-"DP-4"}
     SECONDARY_MONITOR=${SECONDARY_MONITOR:-"DP-2"}
+    TERTIARY_MONITOR=${TERTIARY_MONITOR:-"HDMI-0"}
     
     xrandr --fb 6720x2160 \
         --output $SECONDARY_MONITOR --mode 1920x1080 --pos 0x270 --rate 144 --scale 1.5x1.5 \
-        --output $PRIMARY_MONITOR --mode 3840x2160 --pos 2880x0 --primary --rate 144
+        --output $PRIMARY_MONITOR --mode 3840x2160 --pos 2880x0 --primary --rate 144 \
+        --output $TERTIARY_MONITOR --off
 else
     echo "Detected single display, configuring single monitor setup..."
     # SINGLE MONITOR SETUP
