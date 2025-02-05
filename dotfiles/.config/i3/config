@@ -1,7 +1,7 @@
 # i3 config file (v4)
 # See https://i3wm.org/docs/userguide.html for a complete reference
 
-set $mod Mod4
+set $mod Mod1
 
 # Font for window titles and bar
 font pango:MesloLGS Nerd Font Bold 12
