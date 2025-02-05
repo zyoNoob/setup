@@ -302,11 +302,11 @@ setup_desktop_environment() {
 
     # Configure monitors (non-WSL only)
     if ! is_wsl; then
-        run_silent "$SETUP_DIR/scripts/set_monitors.sh"
+        run_verbose "$SETUP_DIR/scripts/set_monitors.sh"
         print_status "setup monitors"
-        run_silent sudo cp "$HOME/.config/monitors.xml" "/var/lib/gdm3/.config/"
+        run_verbose sudo cp "$HOME/.config/monitors.xml" "/var/lib/gdm3/.config/"
         print_status "copy monitors.xml to gdm3"
-        run_silent sudo chown gdm:gdm /var/lib/gdm3/.config/monitors.xml
+        run_verbose sudo chown gdm:gdm /var/lib/gdm3/.config/monitors.xml
         print_status "change owner to gdm"
     else
         print_status "setup monitors" "skip (WSL detected)"
