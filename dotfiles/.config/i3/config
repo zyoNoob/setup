@@ -204,6 +204,7 @@ bar {
     font pango:MesloLGS Nerd Font 12
     position top
     status_command i3status
+    tray_output $pm
     colors {
         background #2e3440
         statusline #d8dee9
