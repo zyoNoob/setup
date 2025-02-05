@@ -468,7 +468,7 @@ setup_shell_environment() {
 # Configuration and Dotfiles
 # ========================================
 
-configure_dotfiles() {
+configure_dotfiles_and_utils() {
     log_to_both "--------------------------------"
     log_to_both "# Configuration and Dotfiles"
     log_to_both "--------------------------------"
@@ -478,8 +478,9 @@ configure_dotfiles() {
     cd "$SETUP_DIR"
     run_silent stow --no-folding --adopt -v -t "$HOME" dotfiles
     print_status "stow dotfiles"
-    cd - >/dev/null
-
+    run_silent stow --no-folding --adopt -v -t "$HOME" utils
+    print_status "stow utils"
+    
     # Copy .netrc
     copy_file ".netrc"
 
