@@ -47,7 +47,7 @@ tiling_drag modifier titlebar
 
 ## Application Shortcuts
 bindsym $mod+Return exec ghostty
-bindsym $mod+space exec rofi -show drun -display-drun "Applications" -show-icons
+bindsym $mod+space exec --no-startup-id rofi -show combi
 bindsym $mod+q kill
 
 ## Window Focus
