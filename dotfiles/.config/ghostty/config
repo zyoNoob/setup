@@ -3,6 +3,8 @@ theme = catppuccin-mocha
 background = #000000
 gtk-titlebar = false
 #window-decoration = none
+window-padding-x=4
+window-padding-y=4
 
 ## Cursor Configuration
 cursor-style = block
