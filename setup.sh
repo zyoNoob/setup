@@ -206,32 +206,29 @@ initial_system_setup() {
         if snap list firefox &>/dev/null; then
             run_silent sudo snap remove firefox
             print_status "remove firefox snap"
-        else
-            print_status "remove firefox snap" skip
-        fi
 
-        # Add Mozilla repository
-        MOZILLA_KEYRING="/etc/apt/keyrings/packages.mozilla.org.asc"
-        if [ ! -f "$MOZILLA_KEYRING" ]; then
-            run_silent sudo install -d -m 0755 /etc/apt/keyrings
-            run_silent sudo wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O "$MOZILLA_KEYRING"
-            print_status "add mozilla signing key"
-        else
-            print_status "add mozilla signing key" skip
-        fi
+            # Add Mozilla repository
+            MOZILLA_KEYRING="/etc/apt/keyrings/packages.mozilla.org.asc"
+            if [ ! -f "$MOZILLA_KEYRING" ]; then
+                run_silent sudo install -d -m 0755 /etc/apt/keyrings
+                run_silent sudo wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O "$MOZILLA_KEYRING"
+                print_status "add mozilla signing key"
+            else
+                print_status "add mozilla signing key" skip
+            fi
 
-        MOZILLA_LIST="/etc/apt/sources.list.d/mozilla.list"
-        if [ ! -f "$MOZILLA_LIST" ]; then
-            run_silent sudo bash -c 'echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" > /etc/apt/sources.list.d/mozilla.list'
-            print_status "add mozilla apt repo"
-        else
-            print_status "add mozilla apt repo" skip
-        fi
+            MOZILLA_LIST="/etc/apt/sources.list.d/mozilla.list"
+            if [ ! -f "$MOZILLA_LIST" ]; then
+                run_silent sudo bash -c 'echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" > /etc/apt/sources.list.d/mozilla.list'
+                print_status "add mozilla apt repo"
+            else
+                print_status "add mozilla apt repo" skip
+            fi
 
-        # Add package preferences
-        MOZILLA_PREFS="/etc/apt/preferences.d/mozilla"
-        if [ ! -f "$MOZILLA_PREFS" ]; then
-            run_silent sudo tee "$MOZILLA_PREFS" > /dev/null <<EOL
+            # Add package preferences
+            MOZILLA_PREFS="/etc/apt/preferences.d/mozilla"
+            if [ ! -f "$MOZILLA_PREFS" ]; then
+                run_silent sudo tee "$MOZILLA_PREFS" > /dev/null <<EOL
 Package: *
 Pin: origin packages.mozilla.org
 Pin-Priority: 1000
@@ -240,22 +237,25 @@ Package: firefox*
 Pin: release o=Ubuntu
 Pin-Priority: -1
 EOL
-            print_status "add mozilla apt preferences"
-        else
-            print_status "add mozilla apt preferences" skip
-        fi
+                print_status "add mozilla apt preferences"
+            else
+                print_status "add mozilla apt preferences" skip
+            fi
 
-        # Update and reinstall firefox
-        run_silent sudo apt update -y
-        print_status "update package list with mozilla repo"
-        
-        # Force remove existing firefox and install from Mozilla repo
-        remove_package "firefox"
-        if run_silent sudo DEBIAN_FRONTEND=noninteractive apt install -y firefox; then
-            print_status "install firefox from mozilla repo"
+            # Update and reinstall firefox
+            run_silent sudo apt update -y
+            print_status "update package list with mozilla repo"
+            
+            # Force remove existing firefox and install from Mozilla repo
+            remove_package "firefox"
+            if run_silent sudo DEBIAN_FRONTEND=noninteractive apt install -y firefox; then
+                print_status "install firefox from mozilla repo"
+            else
+                print_status "install firefox from mozilla repo"
+                return 1
+            fi
         else
-            print_status "install firefox from mozilla repo"
-            return 1
+            print_status "remove firefox snap" skip
         fi
     else
         print_status "firefox reinstallation" "skip (WSL detected)"
@@ -613,6 +613,16 @@ configure_dotfiles_and_utils() {
     log_to_both "--------------------------------"
 
     cd "$SETUP_DIR"    
+    # Stow with regex override for Firefox profiles
+    run_silent stow --override='.*\.default-release/.*' \
+                    --adopt \
+                    --no-folding \
+                    -v \
+                    -t "$HOME" \
+                    -d dotfiles \
+                    -S .mozilla/firefox/default-release
+    print_status "stow firefox config"
+    
     # Stow dotfiles with explicit target directory and adopt existing files
     run_silent stow --no-folding --adopt --override=* -v -t "$HOME" dotfiles
     print_status "stow dotfiles"
