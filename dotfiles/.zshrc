@@ -63,3 +63,6 @@ export LD_LIBRARY_PATH="/usr/lib/wsl/lib:/usr/local/cuda/lib64:/usr/local/Tensor
 
 # keychain for ssh-agent
 eval $(keychain --eval id_rsa)
+
+# binding to a tmux session
+if [ -z "$TMUX" ]; then tmux attach -t default || tmux new -s default; fi

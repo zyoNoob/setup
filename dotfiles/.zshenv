@@ -39,3 +39,4 @@ export SETUP_REPO=$HOME/workspace/setup
 alias zshconfig="source ~/.zshrc"
 alias deactivate="conda deactivate"
 alias audio="pavucontrol"
+alias vim="nvim"
