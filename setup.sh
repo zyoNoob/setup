@@ -323,6 +323,7 @@ install_essential_packages() {
         keychain
         maim
         xclip
+        xdotool
     )
 
     # Terminal environment
