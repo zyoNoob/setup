@@ -283,28 +283,7 @@ EOL
                 exit $?
             fi
             exit 0
-        ' -- "$SETUP_BRANCH"
-        if [ $? -eq 0 ]; then
-            print_status "switch to branch $SETUP_BRANCH" skip
-        else
-            print_status "switch to branch $SETUP_BRANCH"
-        fi
-        run_silent git pull origin "$SETUP_BRANCH"
-        print_status "update setup repo"
-        cd - >/dev/null
-    fi
-}
-
-# ========================================
-# Essential Package Installation
-# ========================================
-
-install_essential_packages() {
-    log_to_both "--------------------------------"
-    log_to_both "# Essential Package Installation"
-    log_to_both "--------------------------------"
-
-    # Core development tools
+        ' -- "$SETUP_BRANCH"sudo DEBIAN_FRONTEND=noninteractive apt install -y
     local packages_core=(
         curl
         g++
@@ -406,7 +385,7 @@ setup_desktop_environment() {
         # Install Papirus icon theme and Catppuccin cursors
         if ! is_installed "papirus-icon-theme"; then
             run_silent sudo add-apt-repository -y ppa:papirus/papirus
-            run_silent sudo apt update
+            run_silent sudo apt update -y
             install_package "papirus-icon-theme"
         else
             print_status "install papirus icon theme" skip
