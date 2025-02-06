@@ -1,3 +1,0 @@
-# Allow deploying to default-release directory
-^.*\.default-release$
-!^default-release/

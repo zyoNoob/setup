@@ -613,21 +613,42 @@ configure_dotfiles_and_utils() {
     log_to_both "--------------------------------"
 
     cd "$SETUP_DIR"    
-    # Stow with regex override for Firefox profiles
-    run_silent stow --override='.*\.default-release/.*' \
-                    --adopt \
-                    --no-folding \
-                    -v \
-                    -t "$HOME" \
-                    -d dotfiles \
-                    -S .mozilla/firefox/default-release
-    print_status "stow firefox config"
-    
+   
     # Stow dotfiles with explicit target directory and adopt existing files
     run_silent stow --no-folding --adopt --override=* -v -t "$HOME" dotfiles
     print_status "stow dotfiles"
     run_silent stow --no-folding --adopt --override=* -v -t "$HOME" utils
     print_status "stow utils"
+
+    # Ensure Firefox profile exists
+    if ! is_wsl; then
+        FIREFOX_PROFILE_DIR=$(find "$HOME/.mozilla/firefox" -maxdepth 1 -type d -name '*.default-release' | head -n 1)
+        if [ -z "$FIREFOX_PROFILE_DIR" ]; then
+            print_status "creating firefox profile"
+            # Launch and kill firefox to generate profile
+            timeout 5s firefox --headless >/dev/null 2>&1 &
+            sleep 2
+            pkill -f firefox || true
+            FIREFOX_PROFILE_DIR=$(find "$HOME/.mozilla/firefox" -maxdepth 1 -type d -name '*.default-release' | head -n 1)
+        fi
+    fi
+
+    # Link Firefox profile chrome directory
+    if [ -n "$FIREFOX_PROFILE_DIR" ]; then
+        CHROME_TARGET="../default-release/chrome"
+        if [ ! -L "$FIREFOX_PROFILE_DIR/chrome" ]; then
+            # Remove existing directory if present
+            if [ -d "$FIREFOX_PROFILE_DIR/chrome" ]; then
+                run_silent rm -rf "$FIREFOX_PROFILE_DIR/chrome"
+            fi
+            run_silent ln -sf "$CHROME_TARGET" "$FIREFOX_PROFILE_DIR/chrome"
+            print_status "link firefox chrome config"
+        else
+            print_status "link firefox chrome config" skip
+        fi
+    else
+        print_status "firefox profile configuration" "skip (profile not found)"
+    fi
 
     # Clean up any adopted changes from stow
     if ! git diff --quiet; then
