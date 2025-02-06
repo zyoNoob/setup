@@ -2,80 +2,89 @@
 # i3 config file (v4)
 # See https://i3wm.org/docs/userguide.html for a complete reference
 
-# LOG ENVIRONMENT VARIABLES
+## LOG ENVIRONMENT VARIABLES
 exec_always --no-startup-id "env > /tmp/i3env.log"
 
+## Modifiers
 set $mod Mod1
 set $win Mod4
 
-# Font for window titles and bar
-font pango:MesloLGS Nerd Font Bold 12
+## Startup Applications
+exec --no-startup-id picom
+exec --no-startup-id /usr/bin/nitrogen --restore &
+exec --no-startup-id dunst &
 
-# Start XDG autostart .desktop files using dex
+## Monitor Configuration
+set $PRIMARY_MONITOR DP-4
+set $SECONDARY_MONITOR DP-2
+exec --no-startup-id xrdb -merge ~/.Xresources
+
+## Start XDG autostart .desktop files using dex
 exec --no-startup-id dex --autostart --environment i3
-
-# Lock screen before suspend
+## Lock screen before suspend
 exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
-
-# NetworkManager applet
+## NetworkManager applet
 exec --no-startup-id nm-applet
 
-# PulseAudio controls
+## Font for window titles and bar
+font pango:MesloLGS Nerd Font Bold 12
+
+## Screenshots
+bindsym Print exec maim "/home/$USER/Pictures/$(date).jpg"
+bindsym $mod+Print exec maim --window $(xdotool getactivewindow) "/home/$USER/Pictures/$(date).jpg"
+bindsym Shift+Print exec maim --select "/home/$USER/Pictures/$(date).jpg"
+
+## Clipboard Screenshots
+bindsym Ctrl+Print exec maim | xclip -selection clipboard -t image/png
+bindsym Ctrl+$mod+Print exec maim --window $(xdotool getactivewindow) | xclip -selection clipboard -t image/png
+bindsym Ctrl+Shift+Print exec maim --select | xclip -selection clipboard -t image/png
+
+## PulseAudio controls
 set $refresh_i3status killall -SIGUSR1 i3status
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
 bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
 bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
 
-# Use Mouse+$mod to drag floating windows
+## Use floating windows
 floating_modifier $win
 tiling_drag modifier titlebar
 
-# Monitor Configuration
-set $PRIMARY_MONITOR DP-4
-set $SECONDARY_MONITOR DP-2
-exec --no-startup-id xrdb -merge ~/.Xresources
-
-# Startup Applications
-exec --no-startup-id /usr/bin/nitrogen --restore &
-exec --no-startup-id dunst &
-exec --no-startup-id picom -b
-
-# Application Shortcuts
+## Application Shortcuts
 bindsym $mod+Return exec ghostty
 bindsym $mod+space exec rofi -show drun -display-drun "Applications" -show-icons
 bindsym $mod+q kill
 
-# Window Focus
+## Window Focus
 bindsym $mod+h focus left
 bindsym $mod+j focus down
 bindsym $mod+k focus up
 bindsym $mod+l focus right
 
-# Window Movement
+## Window Movement
 bindsym $mod+Shift+h move left
 bindsym $mod+Shift+j move down
 bindsym $mod+Shift+k move up
 bindsym $mod+Shift+l move right
 
-# Split Orientation
+## Split Orientation
 bindsym $mod+backslash split h
 bindsym $mod+Shift+backslash split v
 bindsym $mod+Shift+space floating toggle
 
-# Layout Management
+## Layout Management
 bindsym $mod+s layout stacking
 bindsym $mod+w layout tabbed
 bindsym $mod+e layout toggle split
 bindsym $mod+f fullscreen toggle
 bindsym $mod+a focus parent
 
-# i3 Management
+## i3 Management
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
 bindsym $mod+Shift+e exit
 
-# Resize Mode
+## Resize Mode
 mode "resize" {
     bindsym h resize shrink width 10 px or 10 ppt
     bindsym j resize grow height 10 px or 10 ppt
@@ -92,19 +101,19 @@ mode "resize" {
 }
 bindsym $mod+r mode "resize"
 
-# Appearance
+## Appearance
 gaps inner 5
 gaps outer 0
 smart_gaps on
 default_border pixel 1
 
-# Colors
+## Colors
 client.focused          #88c0d0 #88c0d0 #2e3440 #88c0d0
 client.focused_inactive #4c566a #4c566a #d8dee9 #4c566a
 client.unfocused        #3b4252 #3b4252 #d8dee9 #3b4252
 client.urgent           #bf616a #bf616a #2e3440 #bf616a
 
-# Workspace Configuration
+## Workspace Configuration
 set $ws1  1
 set $ws2  2
 set $ws3  3
@@ -127,7 +136,7 @@ set $ws18 18
 set $ws19 19
 set $ws20 20
 
-# Monitor Workspace Assignment
+## Monitor Workspace Assignment
 workspace $ws1 output $PRIMARY_MONITOR
 workspace $ws2 output $PRIMARY_MONITOR
 workspace $ws3 output $PRIMARY_MONITOR
@@ -150,7 +159,7 @@ workspace $ws18 output $SECONDARY_MONITOR
 workspace $ws19 output $SECONDARY_MONITOR
 workspace $ws20 output $SECONDARY_MONITOR
 
-# Workspace Switching
+## Workspace Switching
 bindsym $mod+1 workspace $ws1
 bindsym $mod+2 workspace $ws2
 bindsym $mod+3 workspace $ws3
@@ -173,7 +182,7 @@ bindsym $win+8 workspace $ws18
 bindsym $win+9 workspace $ws19
 bindsym $win+0 workspace $ws20
 
-# Move Container to Workspace
+## Move Container to Workspace
 bindsym $mod+Shift+1 move container to workspace $ws1
 bindsym $mod+Shift+2 move container to workspace $ws2
 bindsym $mod+Shift+3 move container to workspace $ws3
@@ -196,7 +205,7 @@ bindsym $win+Shift+8 move container to workspace $ws18
 bindsym $win+Shift+9 move container to workspace $ws19
 bindsym $win+Shift+0 move container to workspace $ws20
 
-# Bar Configuration
+## Bar Configuration
 bar {
     font pango:MesloLGS Nerd Font 12
     position top
