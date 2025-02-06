@@ -340,7 +340,7 @@ install_essential_packages() {
     local packages_desktop=(
         i3
         pavucontrol
-        nitrogen
+        feh
         dunst
         rofi
         picom
@@ -445,6 +445,14 @@ setup_desktop_environment() {
             print_status "enable firefox userchrome support"
         else
             print_status "enable firefox userchrome support" skip
+        fi
+
+        # Copy backgrounds
+        if [ ! -d "$HOME/Pictures/backgrounds" ]; then
+            run_silent cp -r "$SETUP_DIR/backgrounds" "$HOME/Pictures/"
+            print_status "copy backgrounds"
+        else
+            print_status "copy backgrounds" skip
         fi
 
         # Apply GNOME desktop settings
