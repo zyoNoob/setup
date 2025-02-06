@@ -192,7 +192,7 @@ bindsym $win+Shift+0 move container to workspace $ws20
 gaps inner 5
 gaps outer 5
 smart_gaps on
-default_border pixel 2
+default_border pixel 1
 
 ## Colors - catppuccin mocha
 set $rosewater #f5e0dc
