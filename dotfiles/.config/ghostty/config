@@ -8,8 +8,9 @@ gtk-titlebar = false
 cursor-style = block
 cursor-style-blink = false
 cursor-opacity = 1
-#cursor-text = #000000
-cursor-invert-fg-bg=true
+cursor-color = #FFFFFF
+cursor-text = #000000
+#cursor-invert-fg-bg=true
 
 ## Shell Integration
 shell-integration-features = no-cursor
