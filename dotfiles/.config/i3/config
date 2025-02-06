@@ -190,7 +190,7 @@ bindsym $win+Shift+0 move container to workspace $ws20
 
 ## Appearance
 gaps inner 5
-gaps outer 0
+gaps outer 5
 smart_gaps on
 default_border pixel 2
 
