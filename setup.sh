@@ -543,9 +543,9 @@ configure_dotfiles_and_utils() {
     # Stow dotfiles with explicit target directory and adopt existing files
     # --no-folding ensures exact file matching without directory merging
     cd "$SETUP_DIR"
-    run_silent stow --no-folding --adopt -v -t "$HOME" dotfiles
+    run_silent stow --no-folding --adopt --override=* -v -t "$HOME" dotfiles
     print_status "stow dotfiles"
-    run_silent stow --no-folding --adopt -v -t "$HOME" utils
+    run_silent stow --no-folding --adopt --override=* -v -t "$HOME" utils
     print_status "stow utils"
     
     # Copy .netrc
