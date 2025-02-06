@@ -321,6 +321,8 @@ install_essential_packages() {
         screen
         unzip
         keychain
+        maim
+        xclip
     )
 
     # Terminal environment
