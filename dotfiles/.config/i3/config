@@ -194,10 +194,9 @@ bindsym $win+Shift+0 move container to workspace $ws20
 gaps inner 5
 gaps outer 0
 smart_gaps on
-for_window [class="^.*"] border pixel 1
+default_border pixel 1
 
-## Colors
-## target                title     bg    text   indicator  border
+# target                 title     bg    text   indicator  border
 client.focused           $lavender $base $text  $rosewater $lavender
 client.focused_inactive  $overlay0 $base $text  $rosewater $overlay0
 client.unfocused         $overlay0 $base $text  $rosewater $overlay0
