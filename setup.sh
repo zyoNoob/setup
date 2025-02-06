@@ -540,27 +540,22 @@ configure_dotfiles_and_utils() {
     log_to_both "# Configurating Dotfiles & Utils"
     log_to_both "--------------------------------"
 
-    
-    if [ -d "$SETUP_DIR" ]; then
-        cd "$SETUP_DIR"
-        
-        # Stow dotfiles with explicit target directory and adopt existing files
-        # --no-folding ensures exact file matching without directory merging
-        run_silent stow --no-folding --adopt --override=* -v -t "$HOME" dotfiles
-        print_status "stow dotfiles"
-        run_silent stow --no-folding --adopt --override=* -v -t "$HOME" utils
-        print_status "stow utils"
+    cd "$SETUP_DIR"    
+    # Stow dotfiles with explicit target directory and adopt existing files
+    # --no-folding ensures exact file matching without directory merging
+    run_silent stow --no-folding --adopt --override=* -v -t "$HOME" dotfiles
+    print_status "stow dotfiles"
+    run_silent stow --no-folding --adopt --override=* -v -t "$HOME" utils
+    print_status "stow utils"
 
-        # Clean up any adopted changes from stow
-        if ! git diff --quiet; then
-            run_silent git stash
-            print_status "stash adopted changes"
-        else
-            print_status "stash adopted changes" skip
-        fi
-        cd - >/dev/null
-        
+    # Clean up any adopted changes from stow
+    if ! git diff --quiet; then
+        run_silent git stash
+        print_status "stash adopted changes"
+    else
+        print_status "stash adopted changes" skip
     fi
+    cd - >/dev/null
 
     # Copy .netrc
     copy_file ".netrc"
