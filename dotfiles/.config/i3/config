@@ -77,7 +77,15 @@ bindsym $mod+a focus parent
 ## i3 Management
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
-bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
+mode "exit: [l]ock, [e]xit, [r]eboot, [s]hutdown" {
+  bindsym l exec i3lock -c 000000
+  bindsym e exec i3-msg exit
+  bindsym r exec systemctl reboot
+  bindsym s exec systemctl shutdown
+  bindsym Escape mode "default"
+  bindsym Return mode "default"
+}
+bindsym $mod+Shift+e mode "exit: [l]ock, [e]xit, [r]eboot, [s]hutdown"
 
 ## Resize Mode
 mode "resize" {
