@@ -1,0 +1,5 @@
+theme=catppuccin-mocha
+cursor-style=block
+background=#000000
+font-family=MesloLGS Nerd Font 10
+window-decoration=none

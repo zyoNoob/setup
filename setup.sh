@@ -282,6 +282,7 @@ install_essential_packages() {
         rofi
         picom
         polybar
+        neofetch
     )
 
     # Install all packages
