@@ -193,7 +193,7 @@ bindsym $win+Shift+0 move container to workspace $ws20
 #############################
 
 # Forced global border
-#for_window [class="^.*"] border pixel 3
+for_window [class="^.*"] border pixel 3
 
 # Set inner/outer gaps
 gaps inner 12
