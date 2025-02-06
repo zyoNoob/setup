@@ -87,6 +87,11 @@ mode "exit: [l]ock, [e]xit, [r]eboot, [s]hutdown" {
 }
 bindsym $mod+Shift+e mode "exit: [l]ock, [e]xit, [r]eboot, [s]hutdown"
 
+mode "pause: mod+Shift+[p]ause"{
+  bindsym $mod+Shift+p mode "default"
+}
+bindsym $mod+Shift+p mode "pause: mod+Shift+[p]ause"
+
 ## Resize Mode
 mode "resize" {
     bindsym h resize shrink width 10 px or 10 ppt
