@@ -200,6 +200,61 @@ initial_system_setup() {
     # Remove unnecessary packages
     remove_package "unattended-upgrades"
 
+    # Reinstall Firefox from Mozilla repo
+    if ! is_wsl; then
+        # Remove snap version
+        if snap list firefox &>/dev/null; then
+            run_silent sudo snap remove firefox
+            print_status "remove firefox snap"
+        else
+            print_status "remove firefox snap" skip
+        fi
+
+        # Add Mozilla repository
+        MOZILLA_KEYRING="/etc/apt/keyrings/packages.mozilla.org.asc"
+        if [ ! -f "$MOZILLA_KEYRING" ]; then
+            run_silent sudo install -d -m 0755 /etc/apt/keyrings
+            run_silent sudo wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O "$MOZILLA_KEYRING"
+            print_status "add mozilla signing key"
+        else
+            print_status "add mozilla signing key" skip
+        fi
+
+        MOZILLA_LIST="/etc/apt/sources.list.d/mozilla.list"
+        if [ ! -f "$MOZILLA_LIST" ]; then
+            run_silent sudo bash -c 'echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" > /etc/apt/sources.list.d/mozilla.list'
+            print_status "add mozilla apt repo"
+        else
+            print_status "add mozilla apt repo" skip
+        fi
+
+        # Add package preferences
+        MOZILLA_PREFS="/etc/apt/preferences.d/mozilla"
+        if [ ! -f "$MOZILLA_PREFS" ]; then
+            run_silent sudo tee "$MOZILLA_PREFS" > /dev/null <<EOL
+Package: *
+Pin: origin packages.mozilla.org
+Pin-Priority: 1000
+
+Package: firefox*
+Pin: release o=Ubuntu
+Pin-Priority: -1
+EOL
+            print_status "add mozilla apt preferences"
+        else
+            print_status "add mozilla apt preferences" skip
+        fi
+
+        # Update and reinstall firefox
+        run_silent sudo apt update -y
+        print_status "update package list with mozilla repo"
+        
+        remove_package "firefox"
+        install_package "firefox"
+    else
+        print_status "firefox reinstallation" "skip (WSL detected)"
+    fi
+
     # Install git first
     install_package "git"
     install_package "git-lfs"
