@@ -283,7 +283,27 @@ EOL
                 exit $?
             fi
             exit 0
-        ' -- "$SETUP_BRANCH"sudo DEBIAN_FRONTEND=noninteractive apt install -y
+        ' -- "$SETUP_BRANCH"
+        if [ $? -eq 0 ]; then
+            print_status "switch to branch $SETUP_BRANCH" skip
+        else
+            print_status "switch to branch $SETUP_BRANCH"
+        fi
+        run_silent git pull origin "$SETUP_BRANCH"
+        print_status "update setup repo"
+        cd - >/dev/null
+    fi
+}
+
+# ========================================
+# Essential Package Installation
+# ========================================
+
+install_essential_packages() {
+    log_to_both "--------------------------------"
+    log_to_both "# Essential Package Installation"
+    log_to_both "--------------------------------"
+    # Core development tools
     local packages_core=(
         curl
         g++
