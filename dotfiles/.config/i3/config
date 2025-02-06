@@ -196,8 +196,8 @@ bindsym $win+Shift+0 move container to workspace $ws20
 for_window [class="^.*"] border pixel 3
 
 # Set inner/outer gaps
-gaps inner 6
-gaps outer 1
+gaps inner 5
+gaps outer 0
 
 # Additionally, you can issue commands with the following syntax. This is useful to bind keys to changing the gap size.
 # gaps inner|outer current|all set|plus|minus <px>
