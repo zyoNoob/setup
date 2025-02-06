@@ -5,7 +5,7 @@
 ## LOG ENVIRONMENT VARIABLES
 exec_always --no-startup-id "env > /tmp/i3env.log"
 
-include catpuccin-mocha
+include catppuccin-mocha
 
 ## Modifiers
 set $mod Mod1
