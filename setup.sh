@@ -434,6 +434,17 @@ setup_desktop_environment() {
             print_status "install catppuccin light cursors" skip
         fi
 
+        # Enable userChrome.css support for firefox theming
+        AUTOCONFIG_DIR="/usr/lib/firefox/defaults/pref"
+        if [ ! -f "$AUTOCONFIG_DIR/autoconfig.js" ]; then
+            run_silent sudo mkdir -p "$AUTOCONFIG_DIR"
+            echo 'pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' | \
+                run_silent sudo tee "$AUTOCONFIG_DIR/autoconfig.js"
+            print_status "enable firefox userchrome support"
+        else
+            print_status "enable firefox userchrome support" skip
+        fi
+
         # Apply GNOME desktop settings
         run_silent gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
         run_silent gsettings set org.gnome.desktop.interface cursor-size 24
@@ -603,7 +614,6 @@ configure_dotfiles_and_utils() {
 
     cd "$SETUP_DIR"    
     # Stow dotfiles with explicit target directory and adopt existing files
-    # --no-folding ensures exact file matching without directory merging
     run_silent stow --no-folding --adopt --override=* -v -t "$HOME" dotfiles
     print_status "stow dotfiles"
     run_silent stow --no-folding --adopt --override=* -v -t "$HOME" utils
