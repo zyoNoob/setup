@@ -249,8 +249,14 @@ EOL
         run_silent sudo apt update -y
         print_status "update package list with mozilla repo"
         
+        # Force remove existing firefox and install from Mozilla repo
         remove_package "firefox"
-        install_package "firefox"
+        if run_silent sudo DEBIAN_FRONTEND=noninteractive apt install -y firefox; then
+            print_status "install firefox from mozilla repo"
+        else
+            print_status "install firefox from mozilla repo"
+            return 1
+        fi
     else
         print_status "firefox reinstallation" "skip (WSL detected)"
     fi
