@@ -1,5 +1,15 @@
-theme=catppuccin-mocha
-cursor-style=block
-background=#000000
-font-family=MesloLGS Nerd Font 10
-window-decoration=none
+# Theme and Appearance
+theme = catppuccin-mocha
+background = #000000
+window-decoration = none
+
+# Cursor Configuration
+cursor-style = block
+cursor-style-blink = false
+cursor-opacity = 1
+
+# Shell Integration
+shell-integration-features = no-cursor
+
+# Font Settings
+font-family = MesloLGS Nerd Font 10
