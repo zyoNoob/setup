@@ -30,14 +30,9 @@ exec --no-startup-id nm-applet
 font pango:MesloLGS Nerd Font Bold 12
 
 ## Screenshots
-bindsym Print exec maim "/home/$USER/Pictures/$(date).jpg"
-bindsym $mod+Print exec maim --window $(xdotool getactivewindow) "/home/$USER/Pictures/$(date).jpg"
-bindsym Shift+Print exec maim --select "/home/$USER/Pictures/$(date).jpg"
-
-## Clipboard Screenshots
-bindsym Ctrl+Print exec maim | xclip -selection clipboard -t image/png
-bindsym Ctrl+$mod+Print exec maim --window $(xdotool getactivewindow) | xclip -selection clipboard -t image/png
-bindsym Ctrl+Shift+Print exec maim --select | xclip -selection clipboard -t image/png
+bindsym Print exec --no-startup-id sh -c 'maim | tee "/home/$USER/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
+bindsym Ctrl+Print exec --no-startup-id sh -c 'maim --select | tee "/home/$USER/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
+bindsym $mod+Print exec --no-startup-id sh -c 'maim --window $(xdotool getactivewindow) | tee "/home/$USER/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
 
 ## PulseAudio controls
 set $refresh_i3status killall -SIGUSR1 i3status
