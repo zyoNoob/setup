@@ -17,4 +17,4 @@ shell-integration-features = no-cursor
 
 ## Font Settings
 font-family = MesloLGS Nerd Font
-font-size = 10
+font-size = 12
