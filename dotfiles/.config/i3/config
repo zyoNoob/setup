@@ -5,6 +5,8 @@
 ## LOG ENVIRONMENT VARIABLES
 exec_always --no-startup-id "env > /tmp/i3env.log"
 
+include catpuccin-mocha
+
 ## Modifiers
 set $mod Mod1
 set $win Mod4
@@ -77,7 +79,7 @@ bindsym $mod+a focus parent
 ## i3 Management
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
-bindsym $mod+Shift+e exit
+bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
 
 ## Resize Mode
 mode "resize" {
@@ -95,18 +97,6 @@ mode "resize" {
     bindsym Escape mode "default"
 }
 bindsym $mod+r mode "resize"
-
-## Appearance
-gaps inner 5
-gaps outer 0
-smart_gaps on
-default_border pixel 1
-
-## Colors
-client.focused          #88c0d0 #88c0d0 #2e3440 #88c0d0
-client.focused_inactive #4c566a #4c566a #d8dee9 #4c566a
-client.unfocused        #3b4252 #3b4252 #d8dee9 #3b4252
-client.urgent           #bf616a #bf616a #2e3440 #bf616a
 
 ## Workspace Configuration
 set $ws1  1
@@ -200,6 +190,21 @@ bindsym $win+Shift+8 move container to workspace $ws18
 bindsym $win+Shift+9 move container to workspace $ws19
 bindsym $win+Shift+0 move container to workspace $ws20
 
+## Appearance
+gaps inner 5
+gaps outer 0
+smart_gaps on
+for_window [class="^.*"] border pixel 1
+
+## Colors
+## target                title     bg    text   indicator  border
+client.focused           $lavender $base $text  $rosewater $lavender
+client.focused_inactive  $overlay0 $base $text  $rosewater $overlay0
+client.unfocused         $overlay0 $base $text  $rosewater $overlay0
+client.urgent            $peach    $base $peach $overlay0  $peach
+client.placeholder       $overlay0 $base $text  $overlay0  $overlay0
+client.background        $base
+
 ## Bar Configuration
 bar {
     font pango:MesloLGS Nerd Font 12
@@ -207,13 +212,15 @@ bar {
     status_command i3status
     tray_output $PRIMARY_MONITOR
     colors {
-        background #2e3440
-        statusline #d8dee9
-        separator  #4c566a
+        background         $base
+        statusline         $text
+        focused_statusline $text
+        focused_separator  $base
 
-        focused_workspace  #88c0d0 #88c0d0 #2e3440
-        active_workspace   #4c566a #4c566a #d8dee9
-        inactive_workspace #3b4252 #3b4252 #d8dee9
-        urgent_workspace   #bf616a #bf616a #2e3440
+        # target           border bg        text
+        focused_workspace  $base  $mauve    $crust
+        active_workspace   $base  $surface2 $text
+        inactive_workspace $base  $base     $text
+        urgent_workspace   $base  $red      $crust
     }
 }
