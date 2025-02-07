@@ -526,6 +526,14 @@ setup_development_tools() {
         print_status "install miniconda" skip
     fi
 
+    # Install uv for Python package management
+    if [ ! -x "$(command -v uv)" ]; then
+        run_silent bash -c 'curl -fsSL https://get.uv.dev | sh'
+        print_status "install uv"
+    else
+        print_status "install uv" skip
+    fi
+
     # Install Rust
     if [ ! -x "$(command -v rustc)" ]; then
         run_silent bash -c 'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y'
