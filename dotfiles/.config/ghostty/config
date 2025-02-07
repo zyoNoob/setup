@@ -19,7 +19,7 @@ shell-integration-features = no-cursor
 
 ## General Settings
 mouse-hide-while-typing = true
-copy-on-select = clipboard
+#copy-on-select = clipboard
 
 ## Font Settings
 font-family = MesloLGS Nerd Font
