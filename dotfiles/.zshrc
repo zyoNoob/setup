@@ -64,44 +64,68 @@ export LD_LIBRARY_PATH="/usr/lib/wsl/lib:/usr/local/cuda/lib64:/usr/local/Tensor
 # keychain for ssh-agent
 eval $(keychain --eval id_rsa)
 
-# binding to a tmux session
 # Only auto-start tmux if:
 # 1. The shell is interactive.
 # 2. You are not already inside a tmux session.
 # 3. No command was passed to the shell.
-# if [[ $- == *i* ]] && [[ -z "$TMUX" ]] && [[ $# -eq 0 ]]; then
-#   exec tmux
-# fi
-# if [ -z "$TMUX" ]; then tmux attach -t default || tmux new -s default; fi
-#
-
-# If any arguments are passed (e.g. via ghostty -e zsh -c "...")
-if [ $# -gt 0 ]; then
-    # Check for our special flag "--tmux" at the beginning.
-    if [ "$1" = "--tmux" ]; then
-        shift  # Remove the flag so that "$@" contains only the actual command.
-        mode="tmux"
-    else
-        mode="normal"
-    fi
-
-    if [ "$mode" = "tmux" ]; then
-        # Run the command inside a tmux session called "run"
-        if ! tmux has-session -t run 2>/dev/null; then
-            tmux new-session -d -s run
-        fi
-        # Create a new window in the "run" session with the command.
-        tmux new-window -t run -n "rofi" "$@"
-        # Optionally, you could attach immediately:
-        # tmux attach -t run
-        exit 0
-    else
-        # Run the command normally
-        exec "$@"
-    fi
-fi
-
-# --- For interactive shells with no command passed (normal terminal start) ---
-if [[ $- == *i* ]] && [ -z "$TMUX" ]; then
+if [[ $- == *i* ]] && [ -z "$TMUX" ] && [ $# -eq 0 ]; then
     tmux attach -t default || tmux new -s default
 fi
+
+## Basic Tmux Binding
+# if [ -z "$TMUX" ]; then tmux attach -t default || tmux new -s default; fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
