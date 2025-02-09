@@ -1,0 +1,322 @@
+# ~/.config/i3/config
+# i3 config file (v4)
+# See https://i3wm.org/docs/userguide.html for a complete reference
+
+## LOG ENVIRONMENT VARIABLES
+exec_always --no-startup-id "env > /tmp/i3env.log"
+
+## Modifiers
+set $mod Mod1
+set $win Mod4
+
+## Startup Applications
+exec --no-startup-id picom
+exec --no-startup-id feh --bg-scale ~/Pictures/backgrounds/nice-blue-background.png
+exec --no-startup-id dunst &
+
+## VirtualHere
+exec --no-startup-id sudo ~/bin/vhuit64
+
+## Monitor Configuration
+set $PRIMARY_MONITOR DP-4
+set $SECONDARY_MONITOR DP-2
+exec --no-startup-id xrdb -merge ~/.Xresources
+
+## Start XDG autostart .desktop files using dex
+exec --no-startup-id dex --autostart --environment i3
+## Lock screen before suspend
+exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
+## NetworkManager applet
+exec --no-startup-id nm-applet
+
+## Font for window titles and bar
+font pango:MesloLGS Nerd Font Bold 12
+
+## Screenshots
+bindsym Print exec --no-startup-id sh -c 'maim | tee "/home/$USER/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
+bindsym Ctrl+Print exec --no-startup-id sh -c 'maim --select | tee "/home/$USER/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
+bindsym $mod+Print exec --no-startup-id sh -c 'maim --window $(xdotool getactivewindow) | tee "/home/$USER/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
+
+## PulseAudio controls
+set $refresh_i3status killall -SIGUSR1 i3status
+bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
+bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
+bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
+bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
+
+## Use floating windows
+floating_modifier $win
+tiling_drag modifier titlebar
+
+## Application Shortcuts
+bindsym $mod+Return exec ghostty
+bindsym $mod+space exec --no-startup-id rofi -show combi
+bindsym $mod+q kill
+
+## Window Focus
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+## Window Movement
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+
+## Split Orientation
+bindsym $mod+backslash split h
+bindsym $mod+Shift+backslash split v
+bindsym $mod+Shift+space floating toggle
+
+## Layout Management
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+bindsym $mod+f fullscreen toggle
+bindsym $mod+a focus parent
+
+## i3 Management
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+r restart
+mode "exit: [l]ock, [e]xit, [r]eboot, [s]hutdown" {
+  bindsym l exec i3lock -c 000000
+  bindsym e exec i3-msg exit
+  bindsym r exec systemctl reboot
+  bindsym s exec systemctl poweroff
+  bindsym Escape mode "default"
+  bindsym Return mode "default"
+}
+bindsym $mod+Shift+e mode "exit: [l]ock, [e]xit, [r]eboot, [s]hutdown"
+
+mode "pause: mod+Shift+[p]ause"{
+  bindsym $mod+Shift+p mode "default"
+}
+bindsym $mod+Shift+p mode "pause: mod+Shift+[p]ause"
+
+## Resize Mode
+mode "resize" {
+    bindsym h resize shrink width 10 px or 10 ppt
+    bindsym j resize grow height 10 px or 10 ppt
+    bindsym k resize shrink height 10 px or 10 ppt
+    bindsym l resize grow width 10 px or 10 ppt
+    
+    bindsym Shift+h resize shrink width 100 px or 10 ppt
+    bindsym Shift+j resize grow height 100 px or 10 ppt
+    bindsym Shift+k resize shrink height 100 px or 10 ppt
+    bindsym Shift+l resize grow width 100 px or 10 ppt
+    
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+r mode "resize"
+
+## Workspace Configuration
+set $ws1  1
+set $ws2  2
+set $ws3  3
+set $ws4  4
+set $ws5  5
+set $ws6  6
+set $ws7  7
+set $ws8  8
+set $ws9  9
+set $ws10 10
+
+set $ws11 11
+set $ws12 12
+set $ws13 13
+set $ws14 14
+set $ws15 15
+set $ws16 16
+set $ws17 17
+set $ws18 18
+set $ws19 19
+set $ws20 20
+
+## Monitor Workspace Assignment
+workspace $ws1 output $PRIMARY_MONITOR
+workspace $ws2 output $PRIMARY_MONITOR
+workspace $ws3 output $PRIMARY_MONITOR
+workspace $ws4 output $PRIMARY_MONITOR
+workspace $ws5 output $PRIMARY_MONITOR
+workspace $ws6 output $PRIMARY_MONITOR
+workspace $ws7 output $PRIMARY_MONITOR
+workspace $ws8 output $PRIMARY_MONITOR
+workspace $ws9 output $PRIMARY_MONITOR
+workspace $ws10 output $PRIMARY_MONITOR
+
+workspace $ws11 output $SECONDARY_MONITOR
+workspace $ws12 output $SECONDARY_MONITOR
+workspace $ws13 output $SECONDARY_MONITOR
+workspace $ws14 output $SECONDARY_MONITOR
+workspace $ws15 output $SECONDARY_MONITOR
+workspace $ws16 output $SECONDARY_MONITOR
+workspace $ws17 output $SECONDARY_MONITOR
+workspace $ws18 output $SECONDARY_MONITOR
+workspace $ws19 output $SECONDARY_MONITOR
+workspace $ws20 output $SECONDARY_MONITOR
+
+## Workspace Switching
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+6 workspace $ws6
+bindsym $mod+7 workspace $ws7
+bindsym $mod+8 workspace $ws8
+bindsym $mod+9 workspace $ws9
+bindsym $mod+0 workspace $ws10
+
+bindsym $win+1 workspace $ws11
+bindsym $win+2 workspace $ws12
+bindsym $win+3 workspace $ws13
+bindsym $win+4 workspace $ws14
+bindsym $win+5 workspace $ws15
+bindsym $win+6 workspace $ws16
+bindsym $win+7 workspace $ws17
+bindsym $win+8 workspace $ws18
+bindsym $win+9 workspace $ws19
+bindsym $win+0 workspace $ws20
+
+## Move Container to Workspace
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+bindsym $mod+Shift+6 move container to workspace $ws6
+bindsym $mod+Shift+7 move container to workspace $ws7
+bindsym $mod+Shift+8 move container to workspace $ws8
+bindsym $mod+Shift+9 move container to workspace $ws9
+bindsym $mod+Shift+0 move container to workspace $ws10
+
+bindsym $win+Shift+1 move container to workspace $ws11
+bindsym $win+Shift+2 move container to workspace $ws12
+bindsym $win+Shift+3 move container to workspace $ws13
+bindsym $win+Shift+4 move container to workspace $ws14
+bindsym $win+Shift+5 move container to workspace $ws15
+bindsym $win+Shift+6 move container to workspace $ws16
+bindsym $win+Shift+7 move container to workspace $ws17
+bindsym $win+Shift+8 move container to workspace $ws18
+bindsym $win+Shift+9 move container to workspace $ws19
+bindsym $win+Shift+0 move container to workspace $ws20
+
+#############################
+### settings for i3-gaps: ###
+#############################
+
+# Forced global border
+for_window [class="^.*"] border pixel 3
+
+# Set inner/outer gaps
+gaps inner 5
+gaps outer 0
+
+# Additionally, you can issue commands with the following syntax. This is useful to bind keys to changing the gap size.
+# gaps inner|outer current|all set|plus|minus <px>
+# gaps inner all set 10
+# gaps outer all plus 5
+
+# Smart gaps (gaps used if only more than one container on the workspace)
+smart_gaps on
+
+# Smart borders (draw borders around container only if it is not the only container on this workspace) 
+# on|no_gaps (on=always activate and no_gaps=only activate if the gap size to the edge of the screen is 0)
+smart_borders on
+
+# Press $mod+Shift+g to enter the gap mode. Choose o or i for modifying outer/inner gaps. Press one of + / - (in-/decrement for current workspace) or 0 (remove gaps for current workspace). If you also press Shift with these keys, the change will be global for all workspaces.
+set $mode_gaps Gaps: (o) outer, (i) inner
+set $mode_gaps_outer Outer Gaps: +|-|0 (local), Shift + +|-|0 (global)
+set $mode_gaps_inner Inner Gaps: +|-|0 (local), Shift + +|-|0 (global)
+bindsym $mod+Shift+g mode "$mode_gaps"
+
+mode "$mode_gaps" {
+        bindsym o      mode "$mode_gaps_outer"
+        bindsym i      mode "$mode_gaps_inner"
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+}
+mode "$mode_gaps_inner" {
+        bindsym plus  gaps inner current plus 5
+        bindsym minus gaps inner current minus 5
+        bindsym 0     gaps inner current set 0
+
+        bindsym Shift+plus  gaps inner all plus 5
+        bindsym Shift+minus gaps inner all minus 5
+        bindsym Shift+0     gaps inner all set 0
+
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+}
+mode "$mode_gaps_outer" {
+        bindsym plus  gaps outer current plus 5
+        bindsym minus gaps outer current minus 5
+        bindsym 0     gaps outer current set 0
+
+        bindsym Shift+plus  gaps outer all plus 5
+        bindsym Shift+minus gaps outer all minus 5
+        bindsym Shift+0     gaps outer all set 0
+
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+}
+
+
+## Colors - catppuccin mocha
+set $rosewater #f5e0dc
+set $flamingo #f2cdcd
+set $pink #f5c2e7
+set $mauve #cba6f7
+set $red #f38ba8
+set $maroon #eba0ac
+set $peach #fab387
+set $yellow #f9e2af
+set $green #a6e3a1
+set $teal #94e2d5
+set $sky #89dceb
+set $sapphire #74c7ec
+set $blue #89b4fa
+set $lavender #b4befe
+set $text #cdd6f4
+set $subtext1 #bac2de
+set $subtext0 #a6adc8
+set $overlay2 #9399b2
+set $overlay1 #7f849c
+set $overlay0 #6c7086
+set $surface2 #585b70
+set $surface1 #45475a
+set $surface0 #313244
+set $base #1e1e2e
+set $mantle #181825
+set $crust #11111b
+
+# target                 title     bg    text   indicator  border
+client.focused           $lavender $base $text  $rosewater $lavender
+client.focused_inactive  $overlay0 $base $text  $rosewater $overlay0
+client.unfocused         $overlay0 $base $text  $rosewater $overlay0
+client.urgent            $peach    $base $peach $overlay0  $peach
+client.placeholder       $overlay0 $base $text  $overlay0  $overlay0
+client.background        $base
+
+## Bar Configuration
+bar {
+    font pango:MesloLGS Nerd Font 12
+    position top
+    status_command i3status
+    tray_output $PRIMARY_MONITOR
+    colors {
+        background         $base
+        statusline         $text
+        focused_statusline $text
+        focused_separator  $base
+
+        # target           border bg        text
+        focused_workspace  $base  $mauve    $crust
+        active_workspace   $base  $surface2 $text
+        inactive_workspace $base  $base     $text
+        urgent_workspace   $base  $red      $crust
+    }
+}
