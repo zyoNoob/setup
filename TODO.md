@@ -2,8 +2,10 @@
 
 - [ Yazi ]
 - [add cmake to installables]
-- [libssl-dev]
-- [python3-dev]
+- [ libssl-dev ]
+- [ libcurl4-openssl-dev ]
+- [ python3-dev ]
+- [ rename ]
 - [ 7zip and other Yazi formats ] 
 - [ Tdf or other doc viewer ]
 - [ Videoviewer ]
