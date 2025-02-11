@@ -17,8 +17,12 @@ export SETUP_REPO=$HOME/workspace/setup
 # export AWS_ACCESS_KEY_ID=""
 # export AWS_SECRET_ACCESS_KEY=""
 
-# gemini
+# API-Keys
+# export api_key=""
 # export GEMINI_API_KEY=""
+
+# Huggingface Fast Downloads
+export HF_HUB_ENABLE_HF_TRANSFER=1
 
 # cargo
 . "$HOME/.cargo/env"

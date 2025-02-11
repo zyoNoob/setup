@@ -1,22 +1,30 @@
 # TODO
 
 - [ Yazi ]
-- [add cmake to installables]
+- [ cmake ]
 - [ libssl-dev ]
 - [ libcurl4-openssl-dev ]
 - [ python3-dev ]
 - [ rename ]
+- [ polkit-gnome ]
+- [ configure autostart for polkit-gnome in i3wm ]
 - [ 7zip and other Yazi formats ] 
 - [ Tdf or other doc viewer ]
 - [ Videoviewer ]
 - [ Spotify ]
 - [ Image viewer]
-- [ figure out how to run virtualhere]
+- [ figure out how to run virtualhere ]
 - [ mouse speed settings ]
 - [ make cursor executable directly ]
 - [ polybar ]
 - [ rofi ]
 - [ dunst ]
+- [ tmux ]
+- [ nvim ]
+- [ btop ]
+- [ scratchpad ]
+- [ historical clipboard / ui for clipboard ]
+
 
 # DONE
 
