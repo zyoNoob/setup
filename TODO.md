@@ -24,7 +24,7 @@
 - [ btop ]
 - [ scratchpad ]
 - [ historical clipboard / ui for clipboard ]
-
+- [ add imgur upload to screenshot pipepline (potentially using this https://github.com/jomo/imgur-screenshot) ]
 
 # DONE
 
