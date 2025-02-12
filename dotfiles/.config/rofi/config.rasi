@@ -1,5 +1,6 @@
 configuration{
     modi: "drun,run,window,ssh,combi,";
+    combi-modes: "drun,run,window,ssh";
     dpi: 157;
     icon-theme: "Papirus-Dark";
     show-icons: true;
