@@ -8,7 +8,7 @@
     fg-col2: #f38ba8;
     grey: #6c7086;
     width: 1000;
-    font: "MesloLGS Nerd Font Mono 12";
+    font: "MesloLGS Nerd Font Mono 10";
 }
 
 element-text, element-icon , mode-switcher {
@@ -17,7 +17,7 @@ element-text, element-icon , mode-switcher {
 }
 
 window {
-    height: 360px;
+    height: 600px;
     border: 3px;
     border-color: @border-col;
     background-color: @bg-col;
