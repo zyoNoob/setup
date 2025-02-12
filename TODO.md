@@ -28,9 +28,8 @@
 # INPROGRESS
 
 - [ polybar ]
-- [ rofi ]
 
 
 # DONE
 
-- [ ] 
+- [ rofi ]
