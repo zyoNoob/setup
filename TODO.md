@@ -16,8 +16,6 @@
 - [ figure out how to run virtualhere ]
 - [ mouse speed settings ]
 - [ make cursor executable directly ]
-- [ polybar ]
-- [ rofi ]
 - [ dunst ]
 - [ tmux ]
 - [ nvim ]
@@ -25,6 +23,13 @@
 - [ scratchpad ]
 - [ historical clipboard / ui for clipboard ]
 - [ add imgur upload to screenshot pipepline (potentially using this https://github.com/jomo/imgur-screenshot) ]
+
+
+# INPROGRESS
+
+- [ polybar ]
+- [ rofi ]
+
 
 # DONE
 
