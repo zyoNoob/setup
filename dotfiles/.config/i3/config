@@ -311,7 +311,7 @@ bar {
         background         $base
         statusline         $text
         focused_statusline $text
-        focused_separator  $text
+        focused_separator  $base
 
         # target           border bg        text
         focused_workspace  $base  $mauve    $crust
