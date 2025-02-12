@@ -6,6 +6,7 @@
 - [ libcurl4-openssl-dev ]
 - [ python3-dev ]
 - [ rename ]
+- [ transmission ]
 - [ polkit-gnome ]
 - [ configure autostart for polkit-gnome in i3wm ]
 - [ 7zip and other Yazi formats ] 
