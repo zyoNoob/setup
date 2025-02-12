@@ -1,6 +1,6 @@
 configuration{
     modi: "drun,run,window,ssh,combi,";
-    dpi: ${xrdb:Xft.dpi};
+    dpi: 157.35;
     icon-theme: "Papirus-Dark";
     show-icons: true;
     terminal: "ghostty";
