@@ -19,6 +19,7 @@ shell-integration-features = no-cursor
 
 ## General Settings
 mouse-hide-while-typing = true
+confirm-close-surface = false
 #copy-on-select = clipboard
 
 ## Font Settings
