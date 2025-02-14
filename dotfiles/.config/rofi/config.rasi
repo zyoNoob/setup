@@ -17,6 +17,8 @@ configuration{
     display-ssh: "   SSH    ";
     display-combi: " 󰕘  ALL    ";
     sidebar-mode: true;
+    ssh-client: "ssh";
+    ssh-command: """{terminal} -e "export TERM=xterm-256color && {ssh-client} {host}"""";
 }
 
 
