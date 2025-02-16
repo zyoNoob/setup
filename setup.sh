@@ -266,8 +266,8 @@ EOL
     install_package "git-lfs"
 
     # Clone setup repository
-    if [ ! -d "$SETUP_DIR" ]; then
-        mkdir -p "$SETUP_DIR"
+    if [ ! -d "$SETUP_DIR/.git" ]; then
+        rm -rf "$SETUP_DIR"
         run_silent bash -c 'git clone -b "$1" https://github.com/zyoNoob/setup "$2" && \
             cd "$2" && \
             git checkout "$1"' -- "$SETUP_BRANCH" "$SETUP_DIR"
