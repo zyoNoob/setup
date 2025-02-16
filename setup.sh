@@ -612,7 +612,7 @@ setup_shell_environment() {
 
             # Clone and build Ghostty (cleanup old cloned repo)
             if [ -d "$HOME/bin/ghostty" ]; then
-                run_silent rm -rf "$HOME/bin/ghostty"
+                rm -rf "$HOME/bin/ghostty"
             fi
             run_silent git clone https://github.com/ghostty-org/ghostty.git -- "$HOME/bin/ghostty"
             cd "$HOME/bin/ghostty"
@@ -620,7 +620,7 @@ setup_shell_environment() {
             run_silent zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true
             print_status "install ghostty"
             cd "$HOME" >/dev/null
-            run_silent rm -rf "$HOME/bin/ghostty"
+            rm -rf "$HOME/bin/ghostty"
         fi
     fi
 
