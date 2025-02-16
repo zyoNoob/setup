@@ -293,6 +293,9 @@ EOL
         print_status "update setup repo"
         cd - >/dev/null
     fi
+
+    # Copy bashrc to warmup
+    copy_file ".bashrc"
 }
 
 # ========================================
@@ -410,7 +413,7 @@ setup_desktop_environment() {
             print_status "install catppuccin gtk theme"
         else
             print_status "install catppuccin gtk theme" skip
-        fi
+        ficopy
 
         # Install Papirus icon theme and Catppuccin cursors
         if ! is_installed "papirus-icon-theme"; then
@@ -543,7 +546,7 @@ setup_development_tools() {
 
     # Install uv for Python package management
     if [ ! -x "$(command -v uv)" ]; then
-        run_silent bash -c 'curl -fsSL https://get.uv.dev | sh'
+        run_silent bash -c 'curl -LsSf https://astral.sh/uv/install.sh | sh'
         print_status "install uv"
     else
         print_status "install uv" skip
