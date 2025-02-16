@@ -462,6 +462,14 @@ setup_desktop_environment() {
             print_status "copy backgrounds" skip
         fi
 
+        # Install 'yazi' file manager
+        if [ ! -x "$(command -v yazi)" ]; then
+            run_silent cargo install --locked yazi-fm yazi-cli
+            print_status "install yazi"
+        else
+            print_status "install yazi" skip
+        fi
+
         # Apply GNOME desktop settings
         run_silent gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
         run_silent gsettings set org.gnome.desktop.interface cursor-size 24
