@@ -295,7 +295,7 @@ EOL
     fi
 
     # Copy bashrc to warmup
-    cp "$SETUP_DIR/config/.bashrc" "$HOME/.bashrc"
+    run_silent sudo cp "$SETUP_DIR/config/.bashrc" "$HOME/.bashrc"
     print_status "copy bashrc"
 }
 
