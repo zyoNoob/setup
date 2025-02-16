@@ -414,7 +414,7 @@ setup_desktop_environment() {
             print_status "install catppuccin gtk theme"
         else
             print_status "install catppuccin gtk theme" skip
-        ficopy
+        fi
 
         # Install Papirus icon theme and Catppuccin cursors
         if ! is_installed "papirus-icon-theme"; then
