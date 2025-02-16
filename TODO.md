@@ -9,7 +9,6 @@
 
 ## TODO
 - [ ] lazygit
-- [ ] Yazi
 - [ ] Configure autostart for polkit-gnome in i3wm
 - [ ] 7zip and other Yazi formats
 - [ ] Tdf or other doc viewer
@@ -31,6 +30,7 @@
 
 ## In Progress
 
+- [o] Yazi
 - [o] polybar
 - [o] ngrok
 - [o] polkit-gnome
