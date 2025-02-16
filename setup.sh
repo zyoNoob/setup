@@ -464,7 +464,7 @@ setup_desktop_environment() {
 
         # Install 'yazi' file manager
         if [ ! -x "$(command -v yazi)" ]; then
-            run_silent cargo install --locked yazi-fm yazi-cli
+            run_silent $HOME/.cargo/bin/cargo install --locked yazi-fm yazi-cli
             print_status "install yazi"
         else
             print_status "install yazi" skip
