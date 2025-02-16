@@ -8,7 +8,7 @@
 ---
 
 ## TODO
-
+- [ ] lazygit
 - [ ] Yazi
 - [ ] Configure autostart for polkit-gnome in i3wm
 - [ ] 7zip and other Yazi formats

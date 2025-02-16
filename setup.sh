@@ -614,9 +614,7 @@ setup_shell_environment() {
             if [ -d "$HOME/bin/ghostty" ]; then
                 rm -rf "$HOME/bin/ghostty"
             fi
-            run_silent git clone https://github.com/ghostty-org/ghostty.git -- "$HOME/bin/ghostty"
-            cd "$HOME/bin/ghostty"
-            run_silent git checkout tags/v1.1.2
+            run_silent bash -c 'git clone https://github.com/ghostty-org/ghostty.git "$HOME/bin/ghostty" && cd "$HOME/bin/ghostty" && git checkout tags/v1.1.2'
             run_silent zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true
             print_status "install ghostty"
             cd "$HOME" >/dev/null
