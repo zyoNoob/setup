@@ -610,13 +610,17 @@ setup_shell_environment() {
             install_package "libgtk-4-dev"
             install_package "libadwaita-1-dev"
 
-            # Clone and build Ghostty
-            run_silent git clone https://github.com/ghostty-org/ghostty.git --branch v1.1.2 -- "$HOME/bin/ghostty"
+            # Clone and build Ghostty (cleanup old cloned repo)
+            if [ -d "$HOME/bin/ghostty" ]; then
+                run_silent rm -rf "$HOME/bin/ghostty"
+            fi
+            run_silent git clone https://github.com/ghostty-org/ghostty.git -- "$HOME/bin/ghostty"
             cd "$HOME/bin/ghostty"
+            run_silent git checkout tags/v1.1.2
             run_silent zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true
             print_status "install ghostty"
             cd "$HOME" >/dev/null
-            rm -rf "$HOME/bin/ghostty"
+            run_silent rm -rf "$HOME/bin/ghostty"
         fi
     fi
 
