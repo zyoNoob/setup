@@ -295,7 +295,8 @@ EOL
     fi
 
     # Copy bashrc to warmup
-    copy_file ".bashrc"
+    cp "$SETUP_DIR/dotfiles/.bashrc" "$HOME/.bashrc"
+    print_status "copy bashrc"
 }
 
 # ========================================
