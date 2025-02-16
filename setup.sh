@@ -5,7 +5,7 @@
 # --------------------------------
 
 # Exit immediately if a command exits with a non-zero status
-set -e
+# set -e
 
 # Log file path
 LOG_FILE="/tmp/setup_$(date +%Y%m%d_%H%M%S).log"
