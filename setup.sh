@@ -5,7 +5,7 @@
 # --------------------------------
 
 # Exit immediately if a command exits with a non-zero status
-set -e
+# set -e
 
 # Log file path
 LOG_FILE="/tmp/setup_$(date +%Y%m%d_%H%M%S).log"
@@ -266,8 +266,8 @@ EOL
     install_package "git-lfs"
 
     # Clone setup repository
-    if [ ! -d "$SETUP_DIR" ]; then
-        mkdir -p "$SETUP_DIR"
+    if [ ! -d "$SETUP_DIR/.git" ]; then
+        rm -rf "$SETUP_DIR"
         run_silent bash -c 'git clone -b "$1" https://github.com/zyoNoob/setup "$2" && \
             cd "$2" && \
             git checkout "$1"' -- "$SETUP_BRANCH" "$SETUP_DIR"
@@ -293,6 +293,10 @@ EOL
         print_status "update setup repo"
         cd - >/dev/null
     fi
+
+    # Copy bashrc to warmup
+    run_silent sudo cp "$SETUP_DIR/config/.bashrc" "$HOME/.bashrc"
+    print_status "copy bashrc"
 }
 
 # ========================================
@@ -310,6 +314,10 @@ install_essential_packages() {
         build-essential
         pkg-config
         stow
+        cmake
+        libssl-dev
+        libcurl4-openssl-dev
+        python3-dev
     )
 
     # System utilities
@@ -324,9 +332,12 @@ install_essential_packages() {
         maim
         xclip
         xdotool
+        rename
+        transmission
+        policykit-1-gnome
     )
 
-    # Terminal environment
+    # Terminal environmentDotfiles
     local packages_terminal=(
         zsh
         tmux
@@ -455,6 +466,14 @@ setup_desktop_environment() {
             print_status "copy backgrounds" skip
         fi
 
+        # Install 'yazi' file manager
+        if [ ! -x "$(command -v yazi)" ]; then
+            run_silent $HOME/.cargo/bin/cargo install --locked yazi-fm yazi-cli
+            print_status "install yazi"
+        else
+            print_status "install yazi" skip
+        fi
+
         # Apply GNOME desktop settings
         run_silent gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
         run_silent gsettings set org.gnome.desktop.interface cursor-size 24
@@ -528,7 +547,7 @@ setup_development_tools() {
 
     # Install uv for Python package management
     if [ ! -x "$(command -v uv)" ]; then
-        run_silent bash -c 'curl -fsSL https://get.uv.dev | sh'
+        run_silent bash -c 'curl -LsSf https://astral.sh/uv/install.sh | sh'
         print_status "install uv"
     else
         print_status "install uv" skip
@@ -554,6 +573,21 @@ setup_development_tools() {
     else
         print_status "install zig" skip
     fi
+
+    # Install ngrok
+    if is_installed "ngrok"; then
+        print_status "install ngrok" skip
+    else
+        # Add ngrok GPG key and repository
+        run_silent bash -c 'curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+            | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+            && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+            | sudo tee /etc/apt/sources.list.d/ngrok.list'
+        # Update apt package list after adding the ngrok repository
+        run_silent sudo apt update -y
+        # Finally, install ngrok using your install_package function
+        install_package "ngrok"
+    fi
 }
 
 # ========================================
@@ -576,10 +610,14 @@ setup_shell_environment() {
             install_package "libgtk-4-dev"
             install_package "libadwaita-1-dev"
 
-            # Clone and build Ghostty
-            run_silent git clone https://github.com/mitchellh/ghostty.git "$HOME/bin/ghostty"
-            cd "$HOME/bin/ghostty"
-            run_silent zig build -p "$HOME/.local" -Doptimize=ReleaseFast
+            # Clone and build Ghostty (cleanup old cloned repo)
+            if [ -d "$HOME/bin/ghostty" ]; then
+                rm -rf "$HOME/bin/ghostty"
+            fi
+            run_silent bash -c 'git clone https://github.com/ghostty-org/ghostty.git "$HOME/bin/ghostty"' 
+            cd "$HOME/bin/ghostty" 
+            run_silent git checkout tags/v1.1.2
+            run_silent zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true
             print_status "install ghostty"
             cd "$HOME" >/dev/null
             rm -rf "$HOME/bin/ghostty"
@@ -733,8 +771,8 @@ main() {
     initial_system_setup
     install_essential_packages
     configure_dotfiles_and_utils
-    setup_desktop_environment
     setup_development_tools
+    setup_desktop_environment
     setup_shell_environment
     final_setup
 }

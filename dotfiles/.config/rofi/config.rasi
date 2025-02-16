@@ -1,0 +1,25 @@
+configuration{
+    modi: "drun,run,window,ssh,combi,";
+    combi-modes: "drun,run,window,ssh";
+    sort: true;
+    matching: "fuzzy";
+    dpi: 157;
+    icon-theme: "Papirus-Dark";
+    show-icons: true;
+    terminal: "ghostty";
+    drun-display-format: "{icon} {name}";
+    location: 0;
+    disable-history: false;
+    hide-scrollbar: true;
+    display-drun: " 󰀘  APPS   ";
+    display-run: "   RUN    ";
+    display-window: " 󰕰  WINDOW ";
+    display-ssh: "   SSH    ";
+    display-combi: " 󰕘  ALL    ";
+    sidebar-mode: true;
+    ssh-client: "ssh";
+    ssh-command: """{terminal} -e "export TERM=xterm-256color && {ssh-client} {host}"""";
+}
+
+
+@theme "catppuccin-mocha"

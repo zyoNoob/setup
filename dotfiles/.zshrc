@@ -72,8 +72,10 @@ if [[ $- == *i* ]] && [ -z "$TMUX" ] && [ $# -eq 0 ]; then
     tmux attach -t default || tmux new -s default
 fi
 
-## Basic Tmux Binding
-# if [ -z "$TMUX" ]; then tmux attach -t default || tmux new -s default; fi
+# Set terminal program for ssh
+if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
+    export TERM=xterm-256color
+fi
 
 
 
