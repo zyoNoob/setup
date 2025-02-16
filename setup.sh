@@ -310,6 +310,10 @@ install_essential_packages() {
         build-essential
         pkg-config
         stow
+        cmake
+        libssl-dev
+        libcurl4-openssl-dev
+        python3-dev
     )
 
     # System utilities
@@ -324,6 +328,9 @@ install_essential_packages() {
         maim
         xclip
         xdotool
+        rename
+        transmission
+        polkit-gnome
     )
 
     # Terminal environment

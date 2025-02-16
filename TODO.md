@@ -10,14 +10,6 @@
 ## TODO
 
 - [ ] Yazi
-- [ ] cmake
-- [ ] ngrok
-- [ ] libssl-dev
-- [ ] libcurl4-openssl-dev
-- [ ] python3-dev
-- [ ] rename
-- [ ] transmission
-- [ ] polkit-gnome
 - [ ] Configure autostart for polkit-gnome in i3wm
 - [ ] 7zip and other Yazi formats
 - [ ] Tdf or other doc viewer
@@ -40,6 +32,13 @@
 ## In Progress
 
 - [o] polybar
+- [o] cmake
+- [o] ngrok
+- [o] libssl-dev
+- [o] libcurl4-openssl-dev
+- [o] python3-dev
+- [o] rename
+- [o] transmission
 
 ---
 
