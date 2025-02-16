@@ -32,16 +32,17 @@
 ## In Progress
 
 - [o] polybar
-- [o] cmake
 - [o] ngrok
-- [o] libssl-dev
-- [o] libcurl4-openssl-dev
-- [o] python3-dev
-- [o] rename
-- [o] transmission
+- [o] polkit-gnome
 
 ---
 
 ## Done
 
 - [x] rofi
+- [x] cmake
+- [x] libssl-dev
+- [x] libcurl4-openssl-dev
+- [x] python3-dev
+- [x] rename
+- [x] transmission

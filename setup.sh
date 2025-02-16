@@ -330,7 +330,7 @@ install_essential_packages() {
         xdotool
         rename
         transmission
-        polkit-gnome
+        policykit-1-gnome
     )
 
     # Terminal environment
@@ -560,6 +560,33 @@ setup_development_tools() {
         print_status "install zig"
     else
         print_status "install zig" skip
+    fi
+
+    # Install ngrok
+    if is_installed "ngrok"; then
+        print_status "install ngrok" skip
+    else
+        # Add ngrok GPG key and repository
+        if run_silent bash -c 'curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+              | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+              && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+              | sudo tee /etc/apt/sources.list.d/ngrok.list'; then
+            print_status "add ngrok repository"
+        else
+            print_status "add ngrok repository"
+            return 1
+        fi
+
+        # Update apt package list after adding the ngrok repository
+        if run_silent sudo apt update -y; then
+            print_status "update package list for ngrok repo"
+        else
+            print_status "update package list for ngrok repo"
+            return 1
+        fi
+
+        # Finally, install ngrok using your install_package function
+        install_package "ngrok"
     fi
 }
 
