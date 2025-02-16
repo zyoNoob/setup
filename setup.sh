@@ -611,7 +611,7 @@ setup_shell_environment() {
             install_package "libadwaita-1-dev"
 
             # Clone and build Ghostty
-            run_silent git clone https://github.com/mitchellh/ghostty.git "$HOME/bin/ghostty"
+            run_silent git clone https://github.com/ghostty-org/ghostty.git "$HOME/bin/ghostty"
             cd "$HOME/bin/ghostty"
             run_silent zig build -p "$HOME/.local" -Doptimize=ReleaseFast
             print_status "install ghostty"
