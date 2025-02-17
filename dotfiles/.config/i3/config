@@ -306,6 +306,8 @@ bar {
     font pango:MesloLGS Nerd Font 12
     position top
     status_command i3status
+    bindsym button4 nop
+    bindsym button5 nop
     tray_output $PRIMARY_MONITOR
     colors {
         background         $base
