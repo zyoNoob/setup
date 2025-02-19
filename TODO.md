@@ -8,6 +8,7 @@
 ---
 
 ## TODO
+- [ ] bat rust (a better cat)
 - [ ] nyaa rust
 - [ ] television rust
 - [ ] fd-find rust

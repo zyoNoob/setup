@@ -24,6 +24,9 @@ export SETUP_REPO=$HOME/workspace/setup
 # Huggingface Fast Downloads
 export HF_HUB_ENABLE_HF_TRANSFER=1
 
+# Bat theme
+export BAT_THEME="Catppuccin Mocha"
+
 # cargo
 . "$HOME/.cargo/env"
 
@@ -43,3 +46,4 @@ export HF_HUB_ENABLE_HF_TRANSFER=1
 alias zshconfig="source ~/.zshrc"
 alias audio="pavucontrol"
 alias vim="nvim"
+alias cat="bat"
