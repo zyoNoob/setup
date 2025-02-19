@@ -11,7 +11,15 @@
 - [ ] nyaa rust
 - [ ] television rust
 - [ ] fd-find rust
-- [ ] ffmpeg - build from source
+- [ ] ffmpeg - download prebuilt and link
+    - [ ] source https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl-shared.tar.xz
+    - [ ] sudo ln -s /path/to/ffmpeg-build/bin/* /usr/local/bin/
+    - [ ] sudo ln -s /path/to/ffmpeg-build/lib/* /usr/local/lib/
+    - [ ] sudo ldconfig
+    - [ ] sudo ln -s /path/to/ffmpeg-build/include /usr/local/include/ffmpeg
+    - [ ] sudo ln -s /path/to/ffmpeg-build/lib/pkgconfig/ffmpeg.pc /usr/local/lib/pkgconfig/ffmpeg.pc
+    - [ ] sudo ln -s /path/to/ffmpeg-build/man /usr/local/share/man
+    - [ ] sudo find /usr/local -xtype l -delete (removal of symlinks for uninstallation)
 - [ ] nvtop - build from source
     - [ ] libncurses-dev
     - [ ] libdrm-dev 
