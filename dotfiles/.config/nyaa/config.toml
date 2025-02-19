@@ -1,0 +1,29 @@
+theme = "Catppuccin Macchiato"
+default_source = "Nyaa"
+download_client = "Transmission"
+timeout = 30
+scroll_padding = 3
+cursor_padding = 4
+save_config_on_change = true
+hot_reload_config = true
+
+[client.command]
+cmd = 'curl "{torrent}" > ~/{file}'
+shell_cmd = "sh -c"
+
+[client.transmission]
+base_url = "http://localhost:9091/transmission/rpc"
+
+[client.download]
+save_dir = "/home/zyon/Downloads"
+overwrite = true
+create_root_folder = true
+
+[source.nyaa]
+base_url = "https://nyaa.si/"
+default_sort = "Date"
+default_sort_dir = "Desc"
+default_filter = "NoFilter"
+default_category = "AllCategories"
+default_search = ""
+rss = false

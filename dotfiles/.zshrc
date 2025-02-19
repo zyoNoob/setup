@@ -64,6 +64,9 @@ export LD_LIBRARY_PATH="/usr/lib/wsl/lib:/usr/local/cuda/lib64:/usr/local/Tensor
 # keychain for ssh-agent
 eval $(keychain --eval id_rsa)
 
+# Integrate television
+eval "$(tv init zsh)"
+
 # Only auto-start tmux if:
 # 1. The shell is interactive.
 # 2. You are not already inside a tmux session.
