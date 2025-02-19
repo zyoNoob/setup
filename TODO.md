@@ -8,6 +8,11 @@
 ---
 
 ## TODO
+- [ ] FULL RETRUCTURE OF INSTALLATION SCRIPT
+    - [ ] Explore what is the best approach to install all the programs
+    - [ ] Rust using ratatui might be a good aproach.
+
+- [ ] go installation
 - [ ] bat rust (a better cat)
 - [ ] nyaa rust
 - [ ] television rust
