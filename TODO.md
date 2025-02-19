@@ -8,10 +8,14 @@
 ---
 
 ## TODO
-- [ ] nyaa
-- [ ] television
-- [ ] ffmpeg
-- [ ] nvtop
+- [ ] nyaa rust
+- [ ] television rust
+- [ ] fd-find rust
+- [ ] ffmpeg - build from source
+- [ ] nvtop - build from source
+    - [ ] libncurses-dev
+    - [ ] libdrm-dev 
+    - [ ] libsystemd-dev
 - [ ] neofetch
 - [ ] lazygit
 - [ ] Configure autostart for polkit-gnome in i3wm
@@ -35,7 +39,7 @@
 
 ## In Progress
 
-- [o] Yazi
+- [o] Yazi rust
 - [o] polybar
 - [o] ngrok
 - [o] polkit-gnome
