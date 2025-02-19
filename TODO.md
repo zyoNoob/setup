@@ -12,6 +12,9 @@
     - [ ] Explore what is the best approach to install all the programs
     - [ ] Rust using ratatui might be a good aproach.
 
+- [ ] cycle through TUIs in this repo -> https://github.com/rothgar/awesome-tuis?tab=readme-ov-file 
+
+- [ ] clipse - interactive clipboard
 - [ ] go installation
 - [ ] bat rust (a better cat)
 - [ ] nyaa rust
