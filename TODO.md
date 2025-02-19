@@ -48,6 +48,7 @@
 ## In Progress
 
 - [o] Yazi rust
+- [o] transmission - yet to add to autostart with i3wm as a deamon
 - [o] polybar
 - [o] ngrok
 - [o] polkit-gnome
@@ -62,4 +63,3 @@
 - [x] libcurl4-openssl-dev
 - [x] python3-dev
 - [x] rename
-- [x] transmission
