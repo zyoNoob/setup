@@ -337,7 +337,6 @@ install_essential_packages() {
     local packages_terminal=(
         zsh
         tmux
-        fzf
         silversearcher-ag
         tree
         neovim
@@ -359,6 +358,17 @@ install_essential_packages() {
     for pkg in "${packages_core[@]}" "${packages_system[@]}" "${packages_terminal[@]}" "${packages_desktop[@]}"; do
         install_package "$pkg"
     done
+
+    # Install fzf
+    if [ ! -f "$HOME/bin/fzf" ]; then
+        run_silent git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/bin/.fzf"
+        run_silent "$HOME/bin/.fzf/install --no-key-bindings --no-completion --no-update-rc --no-bash --no-zsh --no-fish"
+        cp "$HOME/bin/.fzf/bin/fzf" "$HOME/bin/"
+        rm -rf "$HOME/bin/.fzf"
+        print_status "install fzf"
+    else
+        print_status "install fzf" skip
+    fi
 }
 
 # ========================================
