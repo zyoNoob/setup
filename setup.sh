@@ -457,8 +457,11 @@ setup_desktop_environment() {
         AUTOCONFIG_DIR="/usr/lib/firefox/defaults/pref"
         if [ ! -f "$AUTOCONFIG_DIR/autoconfig.js" ]; then
             run_silent sudo mkdir -p "$AUTOCONFIG_DIR"
-            echo 'pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);\npref("clipboard.autocopy", false);\npref("middlemouse.paste", false);' | \
-                run_silent sudo tee "$AUTOCONFIG_DIR/autoconfig.js"
+            {
+                echo 'pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'
+                echo 'pref("clipboard.autocopy", false);'
+                echo 'pref("middlemouse.paste", false);'
+            } | run_silent sudo tee "$AUTOCONFIG_DIR/autoconfig.js"
             print_status "enable firefox userchrome support"
         else
             print_status "enable firefox userchrome support" skip
