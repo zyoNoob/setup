@@ -4,7 +4,7 @@
 - [TODO](#todo)
 - [In Progress](#in-progress)
 - [Done](#done)
-
+- [REJECTED / DISCARDED](#rejected--discarded)
 ---
 
 ## TODO
@@ -14,7 +14,6 @@
 
 - [ ] cycle through TUIs in this repo -> https://github.com/rothgar/awesome-tuis?tab=readme-ov-file 
 
-- [ ] clipse - interactive clipboard
 - [ ] go installation
 - [ ] bat rust (a better cat)
 - [ ] nyaa rust
@@ -72,3 +71,8 @@
 - [x] libcurl4-openssl-dev
 - [x] python3-dev
 - [x] rename
+
+---
+
+## REJECTED / DISCARDED
+- [x] clipse - interactive clipboard -> NOT GOING TO USE THIS (WORKS LIKE SHIT ATM)
