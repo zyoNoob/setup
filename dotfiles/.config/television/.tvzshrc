@@ -52,4 +52,3 @@ zle -N tv-shell-history _tv_shell_history
 
 
 bindkey '^T' tv-smart-autocomplete
-bindkey '^[[1;6R' tv-shell-history
