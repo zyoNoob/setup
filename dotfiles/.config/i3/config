@@ -34,7 +34,7 @@ font pango:MesloLGS Nerd Font Bold 12
 
 ## Clipboard TUI
 exec --no-startup-id clipse -listen                                                           
-bindsym $win+v exec --no-startup-id ghostty -e "$SHELL" -c "i3-msg 'floating enable' && clipse"  
+bindsym $win+v exec --no-startup-id ghostty -e "$SHELL" -c "i3-msg 'floating enable' && clipse -fc"  
 
 ## Screenshots
 bindsym Print exec --no-startup-id sh -c 'maim | tee "/home/$USER/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
