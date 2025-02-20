@@ -362,7 +362,7 @@ install_essential_packages() {
     # Install fzf
     if [ ! -f "$HOME/bin/fzf" ]; then
         run_silent bash -c 'git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/bin/.fzf"'
-        run_silent "$HOME/bin/.fzf/install --no-key-bindings --no-completion --no-update-rc --no-bash --no-zsh --no-fish"
+        run_silent bash -c '$HOME/bin/.fzf/install --no-key-bindings --no-completion --no-update-rc --no-bash --no-zsh --no-fish'
         cp "$HOME/bin/.fzf/bin/fzf" "$HOME/bin/"
         rm -rf "$HOME/bin/.fzf"
         print_status "install fzf"
