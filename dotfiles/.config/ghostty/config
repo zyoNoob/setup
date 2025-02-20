@@ -8,8 +8,8 @@ gtk-adwaita = false
 # window-decoration = none
 window-padding-x = 6
 window-padding-y = 4
-background-opacity = 0.8
-background-blur = true
+# background-opacity = 1.0
+# background-blur = true
 
 ## Cursor Configuration
 cursor-style = block
