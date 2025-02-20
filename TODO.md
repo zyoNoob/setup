@@ -14,6 +14,7 @@
 
 - [ ] cycle through TUIs in this repo -> https://github.com/rothgar/awesome-tuis?tab=readme-ov-file 
 
+- [ ] greenclip - clipboard integration for rofi
 - [ ] go installation
 - [ ] bat rust (a better cat)
 - [ ] nyaa rust
