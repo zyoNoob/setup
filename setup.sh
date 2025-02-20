@@ -293,10 +293,6 @@ EOL
         print_status "update setup repo"
         cd - >/dev/null
     fi
-
-    # Copy bashrc to warmup
-    run_silent sudo cp "$SETUP_DIR/config/.bashrc" "$HOME/.bashrc"
-    print_status "copy bashrc"
 }
 
 # ========================================
