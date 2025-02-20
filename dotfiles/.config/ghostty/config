@@ -6,9 +6,10 @@ gtk-titlebar = false
 gtk-adwaita = false
 # ------------------------------------------------------------------------
 # window-decoration = none
-window-padding-x=6
-window-padding-y=4
-
+window-padding-x = 6
+window-padding-y = 4
+background-opacity = 0.8
+background-blur = true
 
 ## Cursor Configuration
 cursor-style = block
