@@ -63,7 +63,7 @@ unset __conda_setup
 eval $(keychain --eval id_rsa)
 
 # Integrate television
-eval "$(tv init zsh)"
+[ -f "$HOME/.config/television/.tvzshrc" ] && . "$HOME/.config/television/.tvzshrc"
 
 # Only auto-start tmux if:
 # 1. The shell is interactive.
