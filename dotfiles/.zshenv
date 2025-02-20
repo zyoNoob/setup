@@ -27,6 +27,11 @@ export HF_HUB_ENABLE_HF_TRANSFER=1
 # Bat theme
 export BAT_THEME="Catppuccin Mocha"
 
+# go 
+if [ -d "/usr/local/go/bin" ] ; then
+    export PATH="$PATH:/usr/local/go/bin"
+fi
+
 # cargo
 . "$HOME/.cargo/env"
 
