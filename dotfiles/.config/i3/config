@@ -32,6 +32,10 @@ exec --no-startup-id nm-applet
 ## Font for window titles and bar
 font pango:MesloLGS Nerd Font Bold 12
 
+## Clipboard TUI
+exec --no-startup-id clipse -listen                                                           
+bindsym $win+v exec --no-startup-id urxvt -e "$SHELL" -c "i3-msg 'floating enable' && clipse"  
+
 ## Screenshots
 bindsym Print exec --no-startup-id sh -c 'maim | tee "/home/$USER/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
 bindsym Ctrl+Print exec --no-startup-id sh -c 'maim --select | tee "/home/$USER/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
