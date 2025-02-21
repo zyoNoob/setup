@@ -14,7 +14,7 @@
 
 - [ ] cycle through TUIs in this repo -> https://github.com/rothgar/awesome-tuis?tab=readme-ov-file 
 
-- [ ] use xset to set suspend i3lock to 1800 seconds (xset s 1800) 
+
 - [ ] greenclip - clipboard integration for rofi
 - [ ] go installation
 - [ ] bat rust (a better cat)
@@ -50,7 +50,6 @@
 - [ ] nvim
 - [ ] btop
 - [ ] scratchpad
-- [ ] Historical clipboard / UI for clipboard
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 
 ---
@@ -73,6 +72,7 @@
 - [x] libcurl4-openssl-dev
 - [x] python3-dev
 - [x] rename
+- [x] use xset to set suspend i3lock to 1800 seconds (xset s 1800) 
 
 ---
 
