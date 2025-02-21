@@ -12,15 +12,8 @@
     - [ ] Explore what is the best approach to install all the programs
     - [ ] Rust using ratatui might be a good aproach.
 
-- [ ] cycle through TUIs in this repo -> https://github.com/rothgar/awesome-tuis?tab=readme-ov-file 
-
-
+- [ ] cycle through TUIs in this repo -> https://github.com/rothgar/awesome-tuis?tab=readme-ov-file
 - [ ] greenclip - clipboard integration for rofi
-- [ ] go installation
-- [ ] bat rust (a better cat)
-- [ ] nyaa rust
-- [ ] television rust
-- [ ] fd-find rust
 - [ ] ffmpeg - download prebuilt and link
     - [ ] source https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl-shared.tar.xz
     - [ ] sudo ln -s /path/to/ffmpeg-build/bin/* /usr/local/bin/
@@ -30,19 +23,13 @@
     - [ ] sudo ln -s /path/to/ffmpeg-build/lib/pkgconfig/ffmpeg.pc /usr/local/lib/pkgconfig/ffmpeg.pc
     - [ ] sudo ln -s /path/to/ffmpeg-build/man /usr/local/share/man
     - [ ] sudo find /usr/local -xtype l -delete (removal of symlinks for uninstallation)
-- [ ] nvtop - build from source
-    - [ ] libncurses-dev
-    - [ ] libdrm-dev 
-    - [ ] libsystemd-dev
 - [ ] neofetch
 - [ ] lazygit
-- [ ] Configure autostart for polkit-gnome in i3wm
 - [ ] 7zip and other Yazi formats
 - [ ] Tdf or other doc viewer
 - [ ] Videoviewer
 - [ ] Spotify
 - [ ] Image viewer
-- [ ] Figure out how to run virtualhere
 - [ ] Mouse speed settings
 - [ ] Make cursor executable directly
 - [ ] dunst
@@ -57,10 +44,7 @@
 ## In Progress
 
 - [o] Yazi rust
-- [o] transmission - yet to add to autostart with i3wm as a deamon
 - [o] polybar
-- [o] ngrok
-- [o] polkit-gnome
 
 ---
 
@@ -73,7 +57,19 @@
 - [x] python3-dev
 - [x] rename
 - [x] use xset to set suspend i3lock to 1800 seconds (xset s 1800) 
-
+- [x] ngrok
+- [x] go installation
+- [x] fd-find rust
+- [x] nyaa rust
+- [x] television rust
+- [x] bat rust
+- [x] transmission - yet to add to autostart with i3wm as a deamon
+- [o] nvtop - build from source
+    - [o] libncurses-dev
+    - [o] libdrm-dev 
+    - [o] libsystemd-dev
+- [o] polkit-gnome - autostart in i3wm
+- [o] Figure out how to run virtualhere
 ---
 
 ## REJECTED / DISCARDED

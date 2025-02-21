@@ -13,9 +13,8 @@ set $win Mod4
 exec --no-startup-id picom
 exec --no-startup-id feh --bg-scale ~/Pictures/backgrounds/nice-blue-background.png
 exec --no-startup-id dunst &
-
-## VirtualHere
-exec --no-startup-id sudo ~/bin/vhuit64
+exec --no-startup-id /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+exec --no-startup-id transmission-gtk -m 
 
 ## Monitor Configuration
 set $PRIMARY_MONITOR DP-4
