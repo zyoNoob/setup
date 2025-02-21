@@ -13,7 +13,6 @@
     - [ ] Rust using ratatui might be a good aproach.
 
 - [ ] cycle through TUIs in this repo -> https://github.com/rothgar/awesome-tuis?tab=readme-ov-file
-- [ ] greenclip - clipboard integration for rofi
 - [ ] ffmpeg - download prebuilt and link
     - [ ] source https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl-shared.tar.xz
     - [ ] sudo ln -s /path/to/ffmpeg-build/bin/* /usr/local/bin/
@@ -64,12 +63,14 @@
 - [x] television rust
 - [x] bat rust
 - [x] transmission - yet to add to autostart with i3wm as a deamon
-- [o] nvtop - build from source
-    - [o] libncurses-dev
-    - [o] libdrm-dev 
-    - [o] libsystemd-dev
-- [o] polkit-gnome - autostart in i3wm
-- [o] Figure out how to run virtualhere
+- [x] nvtop - build from source
+    - [x] libncurses-dev
+    - [x] libdrm-dev 
+    - [x] libsystemd-dev
+- [x] polkit-gnome - autostart in i3wm
+- [x] Figure out how to run virtualhere
+- [x] greenclip - clipboard integration for rofi
+
 ---
 
 ## REJECTED / DISCARDED
