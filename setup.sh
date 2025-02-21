@@ -544,24 +544,6 @@ setup_desktop_environment() {
             print_status "install greenclip" skip
         fi
 
-        # Install 'FileFinder'
-        if [ ! -f "$HOME/bin/ff" ]; then
-            run_silent cp "$SETUP_DIR/utils/bin/ff" "$HOME/bin/"
-            run_silent chmod +x "$HOME/bin/ff"
-            print_status "install filefinder"
-        else
-            print_status "install filefinder" skip
-        fi
-
-        # Install 'VirtualHere' Client
-        if [ ! -f "$HOME/bin/vhclientx86_64" ]; then
-            run_silent cp "$SETUP_DIR/utils/bin/vhclientx86_64" "$HOME/bin/"
-            run_silent chmod +x "$HOME/bin/vhclientx86_64"
-            print_status "install virtualhere"
-        else
-            print_status "install virtualhere" skip
-        fi
-
         # Setup VirtualHere Service
         if ! systemctl list-unit-files | grep -q "virtualhere.service"; then
             SERVICE_FILE="/etc/systemd/system/virtualhere.service"
@@ -812,6 +794,8 @@ configure_dotfiles_and_utils() {
     # Stow dotfiles with explicit target directory and adopt existing files
     run_silent stow --no-folding --adopt --override=* -v -t "$HOME" dotfiles
     print_status "stow dotfiles"
+
+    # Stow utils/bin packages
     run_silent stow --no-folding --adopt --override=* -v -t "$HOME" utils
     print_status "stow utils"
 
