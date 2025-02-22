@@ -6,4 +6,4 @@
 [ -f "$HOME/.config/scripts/export_monitors.sh" ] && . "$HOME/.config/scripts/export_monitors.sh"
 
 # Set mouse
-"$HOME/.config/scripts/export_monitors.sh"
+"$HOME/.config/scripts/set_mouse.sh"
