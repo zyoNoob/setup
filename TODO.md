@@ -29,7 +29,6 @@
 - [ ] Videoviewer
 - [ ] Spotify
 - [ ] Image viewer
-- [ ] Mouse speed settings
 - [ ] Make cursor executable directly
 - [ ] dunst
 - [ ] tmux
@@ -70,6 +69,7 @@
 - [x] polkit-gnome - autostart in i3wm
 - [x] Figure out how to run virtualhere
 - [x] greenclip - clipboard integration for rofi
+- [x] Mouse speed settings
 
 ---
 
