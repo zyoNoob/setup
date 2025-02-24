@@ -8,7 +8,7 @@
     width = 350
     height = (0, 300)
     origin = top-center
-    offset = (35, 35)
+    offset = (0, 35)
     # Show number of hidden notifications
     indicate_hidden = yes
     # Shrink window if smaller than width
