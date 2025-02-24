@@ -2,9 +2,8 @@
 
 ## Table of Contents
 - [TODO](#todo)
-- [In Progress](#in-progress)
-- [Done](#done)
 - [REJECTED / DISCARDED](#rejected--discarded)
+
 ---
 
 ## TODO
@@ -30,24 +29,14 @@
 - [ ] Spotify
 - [ ] Image viewer
 - [ ] Make cursor executable directly
-- [ ] dunst
 - [ ] tmux
 - [ ] nvim
 - [ ] btop
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
-
----
-
-## In Progress
-
 - [o] Yazi rust
 - [o] polybar
-
----
-
-## Done
-
+- [o] dunst
 - [x] rofi
 - [x] cmake
 - [x] libssl-dev
