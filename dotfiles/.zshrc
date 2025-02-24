@@ -16,6 +16,9 @@ pastefinish() {
 zstyle :bracketed-paste-magic paste-init pasteinit
 zstyle :bracketed-paste-magic paste-finish pastefinish
 
+# Source env variables from .zshenv
+[ -f "$HOME/.zshenv" ] && . "$HOME/.zshenv"
+
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="robbyrussell"
 
@@ -23,7 +26,15 @@ ZSH_THEME="robbyrussell"
 # plugins=(git zsh-autosuggestions zsh-autocomplete F-Sy-H conda-zsh-completion fzf)
 
 # Plugins -> fzf-tab for completion
-plugins=(git zsh-autosuggestions F-Sy-H conda-zsh-completion fzf fzf-tab)
+plugins=(
+    vi-mode
+    git 
+    zsh-autosuggestions 
+    F-Sy-H 
+    conda-zsh-completion 
+    fzf 
+    fzf-tab
+)
 
 # Add unhandled widgets to be ignored by F-Sy-H
 zle -N insert-unambiguous-or-complete
@@ -56,13 +67,11 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
-# Custome Export Paths
-export VIDEO_CODEC_SDK_PATH=/home/zyon/nvidia/video/codec/sdk
-export PATH="/usr/local/cuda/bin:/usr/local/TensorRT-10.5.0.18/bin:$PATH"
-export LD_LIBRARY_PATH="/usr/lib/wsl/lib:/usr/local/cuda/lib64:/usr/local/TensorRT-10.5.0.18/lib:$LD_LIBRARY_PATH"
-
 # keychain for ssh-agent
 eval $(keychain --eval id_rsa)
+
+# Integrate television
+[ -f "$HOME/.config/television/.tvzshrc" ] && . "$HOME/.config/television/.tvzshrc"
 
 # Only auto-start tmux if:
 # 1. The shell is interactive.
@@ -76,9 +85,6 @@ fi
 if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
     export TERM=xterm-256color
 fi
-
-
-
 
 
 

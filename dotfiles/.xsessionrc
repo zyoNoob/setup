@@ -2,4 +2,8 @@
 # First configure monitors
 "$HOME/.config/scripts/set_monitors.sh"
 
+# Export monitors
 [ -f "$HOME/.config/scripts/export_monitors.sh" ] && . "$HOME/.config/scripts/export_monitors.sh"
+
+# Set mouse
+"$HOME/.config/scripts/set_mouse.sh"

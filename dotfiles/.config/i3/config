@@ -13,9 +13,8 @@ set $win Mod4
 exec --no-startup-id picom
 exec --no-startup-id feh --bg-scale ~/Pictures/backgrounds/nice-blue-background.png
 exec --no-startup-id dunst &
-
-## VirtualHere
-exec --no-startup-id sudo ~/bin/vhuit64
+exec --no-startup-id /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+exec --no-startup-id transmission-gtk -m 
 
 ## Monitor Configuration
 set $PRIMARY_MONITOR DP-4
@@ -25,17 +24,22 @@ exec --no-startup-id xrdb -merge ~/.Xresources
 ## Start XDG autostart .desktop files using dex
 exec --no-startup-id dex --autostart --environment i3
 ## Lock screen before suspend
-exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
+exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock -c 000000 --nofork
+exec --no-startup-id xset s 1800
 ## NetworkManager applet
 exec --no-startup-id nm-applet
 
 ## Font for window titles and bar
 font pango:MesloLGS Nerd Font Bold 12
 
+## Clipboard TUI
+exec --no-startup-id greenclip daemon                                                          
+bindsym $win+v exec --no-startup-id rofi -modi "clipboard:greenclip print" -show clipboard -run-command '{cmd}'
+
 ## Screenshots
-bindsym Print exec --no-startup-id sh -c 'maim | tee "/home/$USER/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
-bindsym Ctrl+Print exec --no-startup-id sh -c 'maim --select | tee "/home/$USER/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
-bindsym $mod+Print exec --no-startup-id sh -c 'maim --window $(xdotool getactivewindow) | tee "/home/$USER/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
+bindsym Print exec --no-startup-id sh -c 'maim | tee "$HOME/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
+bindsym Ctrl+Print exec --no-startup-id sh -c 'maim --select | tee "$HOME/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
+bindsym $win+Print exec --no-startup-id sh -c 'maim --window $(xdotool getactivewindow) | tee "$HOME/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
 
 ## PulseAudio controls
 set $refresh_i3status killall -SIGUSR1 i3status
@@ -306,6 +310,8 @@ bar {
     font pango:MesloLGS Nerd Font 12
     position top
     status_command i3status
+    bindsym button4 nop
+    bindsym button5 nop
     tray_output $PRIMARY_MONITOR
     colors {
         background         $base

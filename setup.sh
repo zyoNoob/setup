@@ -161,14 +161,15 @@ remove_package() {
 
 # File management helpers
 copy_file() {
-    local src="$SETUP_DIR/config/$1"
-    local tgt="$HOME/$1"
+    local src="$1"
+    local tgt="$2"
+    local name="$3"
 
     if [ -e "$tgt" ]; then
-        print_status "copy config $1" skip
+        print_status "copy $name" skip
     else
         run_silent cp "$src" "$tgt"
-        print_status "copy config $1"
+        print_status "copy $name"
     fi
 }
 
@@ -293,10 +294,6 @@ EOL
         print_status "update setup repo"
         cd - >/dev/null
     fi
-
-    # Copy bashrc to warmup
-    run_silent sudo cp "$SETUP_DIR/config/.bashrc" "$HOME/.bashrc"
-    print_status "copy bashrc"
 }
 
 # ========================================
@@ -341,7 +338,6 @@ install_essential_packages() {
     local packages_terminal=(
         zsh
         tmux
-        fzf
         silversearcher-ag
         tree
         neovim
@@ -363,6 +359,17 @@ install_essential_packages() {
     for pkg in "${packages_core[@]}" "${packages_system[@]}" "${packages_terminal[@]}" "${packages_desktop[@]}"; do
         install_package "$pkg"
     done
+
+    # Install fzf
+    if [ ! -f "$HOME/bin/fzf" ]; then
+        run_silent bash -c 'git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/bin/.fzf"'
+        run_silent bash -c '$HOME/bin/.fzf/install --no-key-bindings --no-completion --no-update-rc --no-bash --no-zsh --no-fish'
+        cp "$HOME/bin/.fzf/bin/fzf" "$HOME/bin/"
+        rm -rf "$HOME/bin/.fzf"
+        print_status "install fzf"
+    else
+        print_status "install fzf" skip
+    fi
 }
 
 # ========================================
@@ -451,8 +458,11 @@ setup_desktop_environment() {
         AUTOCONFIG_DIR="/usr/lib/firefox/defaults/pref"
         if [ ! -f "$AUTOCONFIG_DIR/autoconfig.js" ]; then
             run_silent sudo mkdir -p "$AUTOCONFIG_DIR"
-            echo 'pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' | \
-                run_silent sudo tee "$AUTOCONFIG_DIR/autoconfig.js"
+            {
+                echo 'pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'
+                echo 'pref("clipboard.autocopy", false);'
+                echo 'pref("middlemouse.paste", false);'
+            } | run_silent sudo tee "$AUTOCONFIG_DIR/autoconfig.js"
             print_status "enable firefox userchrome support"
         else
             print_status "enable firefox userchrome support" skip
@@ -474,6 +484,97 @@ setup_desktop_environment() {
             print_status "install yazi" skip
         fi
 
+        # Install 'nyaa' torrent tui client
+        if [ ! -x "$(command -v nyaa)" ]; then
+            run_silent $HOME/.cargo/bin/cargo install --locked nyaa
+            print_status "install nyaa"
+        else
+            print_status "install nyaa" skip
+        fi
+
+        # Install 'television' tui
+        if [ ! -x "$(command -v tv)" ]; then
+            run_silent $HOME/.cargo/bin/cargo install --locked television
+            print_status "install television"
+        else
+            print_status "install television" skip
+        fi
+
+        # Install 'fd'
+        if [ ! -x "$(command -v fd)" ]; then
+            run_silent $HOME/.cargo/bin/cargo install --locked fd-find
+            print_status "install fd"
+        else
+            print_status "install fd" skip
+        fi
+
+        # Install 'bat'
+        if [ ! -x "$(command -v bat)" ]; then
+            run_silent $HOME/.cargo/bin/cargo install --locked bat
+            run_silent $HOME/.cargo/bin/bat cache --build
+            print_status "install bat"
+        else
+            print_status "install bat" skip
+        fi
+
+        # Install 'nvtop'
+        if [ ! -x "$(command -v nvtop)" ]; then
+            install_package "libncurses-dev"
+            install_package "libdrm-dev"
+            install_package "libsystemd-dev"
+            run_silent bash -c 'git clone https://github.com/Syllo/nvtop.git "$HOME/bin/nvtop"'
+            run_silent mkdir -p "$HOME/bin/nvtop/build"
+            cd "$HOME/bin/nvtop/build"
+            run_silent cmake .. -DNVIDIA_SUPPORT=ON -DAMDGPU_SUPPORT=ON -DINTEL_SUPPORT=ON
+            run_silent make -j
+            run_silent sudo make install
+            cd - >/dev/null
+            print_status "install nvtop"
+        else
+            print_status "install nvtop" skip
+        fi
+
+        # Install 'greenclip'
+        if [ ! -x "$(command -v greenclip)" ]; then
+            GREENCLIP_VERSION="v4.2"
+            run_silent wget -q "https://github.com/erebe/greenclip/releases/download/$GREENCLIP_VERSION/greenclip" -O "$HOME/bin/greenclip"
+            run_silent chmod +x "$HOME/bin/greenclip"
+            print_status "install greenclip"
+        else
+            print_status "install greenclip" skip
+        fi
+
+        # Setup VirtualHere Service
+        if ! systemctl list-unit-files | grep -q "virtualhere.service"; then
+            SERVICE_FILE="/etc/systemd/system/virtualhere.service"
+            LOCAL_CONFIG="$HOME/.config/virtualhere/vhuit.ini"
+            BIN_PATH="$HOME/bin/vhclientx86_64"
+            cat <<EOL | sudo tee "$SERVICE_FILE" >/dev/null
+[Unit]
+Description=VirtualHere Client Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c 'exec sudo $BIN_PATH -c "$LOCAL_CONFIG"'
+WorkingDirectory=$HOME
+User=root
+StandardOutput=journal
+StandardError=journal
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOL
+            run_silent sudo chmod 644 "$SERVICE_FILE"
+            run_silent sudo systemctl daemon-reload
+            run_silent sudo systemctl enable virtualhere.service
+            run_silent sudo systemctl start virtualhere.service
+            print_status "virtualhere service setup"
+        else
+            print_status "virtualhere service setup" skip
+        fi
+
         # Apply GNOME desktop settings
         run_silent gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
         run_silent gsettings set org.gnome.desktop.interface cursor-size 24
@@ -488,7 +589,13 @@ setup_desktop_environment() {
         run_silent gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-blue-standard+default'
         run_silent gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
         run_silent gsettings set org.gnome.desktop.interface cursor-theme 'catppuccin-mocha-dark-cursors'
-        print_status "apply desktop settings"
+        print_status "apply gnome-desktop settings"
+
+        # Apply ibus settings
+        run_silent dconf write /desktop/ibus/panel/show-icon-on-systray false
+        run_silent dconf write /desktop/ibus/general/hotkey/triggers "@as []"
+        print_status "apply ibus settings"
+
     else
         print_status "desktop environment setup" "skip (WSL detected)"
     fi
@@ -574,6 +681,20 @@ setup_development_tools() {
         print_status "install zig" skip
     fi
 
+    # Install go
+    if [ ! -x "$(command -v go)" ]; then
+        GO_VERSION="1.24.0"
+        run_silent wget -q "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O /tmp/go.tar.gz
+        if [ -d "/usr/local/go" ]; then
+            run_silent sudo rm -rf /usr/local/go
+        fi
+        run_silent sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+        rm -rf /tmp/go.tar.gz
+        print_status "install go"
+    else
+        print_status "install go" skip
+    fi
+
     # Install ngrok
     if is_installed "ngrok"; then
         print_status "install ngrok" skip
@@ -614,10 +735,10 @@ setup_shell_environment() {
             if [ -d "$HOME/bin/ghostty" ]; then
                 rm -rf "$HOME/bin/ghostty"
             fi
-            run_silent bash -c 'git clone https://github.com/ghostty-org/ghostty.git "$HOME/bin/ghostty"' 
-            cd "$HOME/bin/ghostty" 
-            run_silent git checkout tags/v1.1.2
-            run_silent zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true
+            run_silent bash -c 'git clone https://github.com/ghostty-org/ghostty.git "$HOME/bin/ghostty" && \
+                cd "$HOME/bin/ghostty" && \
+                git checkout tags/v1.1.2 && \
+                zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true'
             print_status "install ghostty"
             cd "$HOME" >/dev/null
             rm -rf "$HOME/bin/ghostty"
@@ -673,6 +794,8 @@ configure_dotfiles_and_utils() {
     # Stow dotfiles with explicit target directory and adopt existing files
     run_silent stow --no-folding --adopt --override=* -v -t "$HOME" dotfiles
     print_status "stow dotfiles"
+
+    # Stow utils/bin packages
     run_silent stow --no-folding --adopt --override=* -v -t "$HOME" utils
     print_status "stow utils"
 
@@ -716,7 +839,7 @@ configure_dotfiles_and_utils() {
     cd - >/dev/null
 
     # Copy .netrc
-    copy_file ".netrc"
+    copy_file "$SETUP_DIR/config/.netrc" "$HOME/.netrc" "Github .netrc"
 
     # Generate SSH key
     if [ ! -f "$HOME/.ssh/id_rsa" ]; then
