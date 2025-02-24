@@ -27,18 +27,24 @@
     horizontal_padding = 20
     # Width of frame around window
     frame_width = 1
-    # Color of frame around window
-    frame_color = "#4287f5"
     # Sort messages by urgency
     sort = yes
     # Idle seconds
     idle_threshold = 0
 
+    # Progress bar
+    progress_bar_frame_width = 0
+    progress_bar_corner_radius = 3
+
+    # Colors
+    foreground = "#cdd1dc"
+    frame_color = "#2d303c"
+    highlight = "#2274d5, #82aad9"
 
     ### Text ###
     
     # Set font of notifications
-    font = MesloLGS Nerd Font Mono Bold 12
+    font = MesloLGS Nerd Font Bold 10
     # Spacing between lines 
     line-height = 0
     # Markup parsing
@@ -117,16 +123,28 @@
     # Close all notifications
     close_all = ctrl+shift+space
 
+[urgency_low]
+    background = "#383c4af0"
+    timeout = 5
+
 [urgency_normal]
 
     # Normal urgency notifications
-    background = "#202632"
-    foreground = "#ffffff"
+    background = "#383c4af0"
     timeout = 5
 
 [urgency_critical]
 
     # High urgency notifications
-    background = "#ffffff"
-    foreground = "#db0101"
+    background = "#9b4d4bf0"
+    frame_color = "#ab6d6b"
+    highlight = "#e31e1b, #e37371"
     timeout = 0
+
+# Rules
+[fullscreen_delay_everything]
+    fullscreen = delay
+
+[fullscreen_show_critical]
+    msg_urgency = critical
+    fullscreen = show
