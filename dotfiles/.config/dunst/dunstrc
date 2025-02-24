@@ -4,8 +4,11 @@
 
     # Display notifications on monitor with mouse focus
     follow = mouse
-    # Set {width}x{height} and {x_pos}+{y_pos}
-    geometry = "300x30-5+60"
+    # Set geometry of notifications
+    width = 350
+    height = (0, 300)
+    origin = top-center
+    offset = (35, 35)
     # Show number of hidden notifications
     indicate_hidden = yes
     # Shrink window if smaller than width
@@ -16,10 +19,12 @@
     notification_height = 0
     # Height of seperators
     separator_height = 2
+    # Gap size
+    gap_size = 12
     # Text and seperator padding
-    padding = 8
+    padding = 12
     # Horizontal padding
-    horizontal_padding = 8
+    horizontal_padding = 20
     # Width of frame around window
     frame_width = 1
     # Color of frame around window
@@ -28,6 +33,7 @@
     sort = yes
     # Idle seconds
     idle_threshold = 0
+
 
     ### Text ###
     
@@ -67,8 +73,6 @@
     show_indicators = no
    
     ### Icons ###
-    
-    # Disable icons
     icon_position = left
 
     ### History ###
