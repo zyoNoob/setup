@@ -21,7 +21,7 @@
     - [ ] sudo ln -s /path/to/ffmpeg-build/lib/pkgconfig/ffmpeg.pc /usr/local/lib/pkgconfig/ffmpeg.pc
     - [ ] sudo ln -s /path/to/ffmpeg-build/man /usr/local/share/man
     - [ ] sudo find /usr/local -xtype l -delete (removal of symlinks for uninstallation)
-- [ ]
+- [ ] pulsemixer
 - [ ] https://github.com/milaq/XMousePasteBlock use this to disable paste on middle click
 - [ ] neofetch
 - [ ] lazygit
