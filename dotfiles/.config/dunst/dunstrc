@@ -114,7 +114,7 @@
     ### Mouse ###
 
     # Left click
-    mouse_left_click = do_action
+    mouse_left_click = do_action, close_current
     # Middle click
     mouse_middle_click = close_all
     # Right click
