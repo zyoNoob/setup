@@ -10,15 +10,15 @@ take_screenshot() {
     case "$1" in
         full)
             maim | tee "$FILENAME" | xclip -selection clipboard -t image/png
-            notify-send -i "$FILENAME" "Screenshot" "Full screen captured"
+            notify-send -a "SS-UTILITY" -i "$FILENAME" "Screenshot" "Full screen captured"
             ;;
         select)
             maim --select | tee "$FILENAME" | xclip -selection clipboard -t image/png
-            notify-send -i "$FILENAME" "Screenshot" "Selection captured"
+            notify-send -a "SS-UTILITY" -i "$FILENAME" "Screenshot" "Selection captured"
             ;;
         window)
             maim --window "$(xdotool getactivewindow)" | tee "$FILENAME" | xclip -selection clipboard -t image/png
-            notify-send -i "$FILENAME" "Screenshot" "Active window captured"
+            notify-send -a "SS-UTILITY" -i "$FILENAME" "Screenshot" "Active window captured"
             ;;
         *)
             echo "Unknown screenshot type"

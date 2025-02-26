@@ -1,9 +1,8 @@
 [global]
-   
     ### Display ###
 
-    # Display notifications on monitor with mouse focus
-    follow = mouse
+    # Display notifications on monitor
+    monitor = 0
     # Set geometry of notifications
     width = 350
     height = (0, 300)
@@ -58,9 +57,9 @@
     # %p - progress value (if set)
     # %n - progress value no extra characters
     # %% - literal %
-    format = "<b>%a</b>\n<i>%s</i>\n%b"
+    format = "<small>%a</small>\n<big><b>%s</b></big>\n%b"
     # Align message text horizontally
-    alignment = center
+    alignment = left
     # Align message text vertically
     vertical_alignment = center
     # Show age of message if message is older than x seconds
@@ -75,11 +74,16 @@
     stack_duplicates = true
     # Hide number of duplicate notifications
     hide_duplicate_count = true
-    # Show indicatiors  for urls and actions
-    show_indicators = no
+    # Show indicatiors for urls and actions
+    show_indicators = yes
    
     ### Icons ###
     icon_position = left
+    min_icon_size = 54
+    max_icon_size = 80
+    icon_path = /usr/share/icons/Papirus-Dark/status/symbolic:/usr/share/icons/Papirus-Dark/96x96/apps:/usr/share/icons/Papirus-Dark/96x96/devices:/usr/share/icons/Papirus-Dark/96x96/mimetypes:/usr/share/icons/Papirus-Dark/96x96/places
+    icon_corner_radius = 4
+
 
     ### History ###
     
@@ -89,7 +93,7 @@
     ### Misc ###
     
     # Dmenu path
-    dmenu = /usr/bin/dmenu -p dunst:
+    dmenu = /usr/bin/rofi -dmenu -p "Notification"
     # Browser
     browser = /usr/bin/firefox -new-tab
     # Always run scripts
@@ -110,14 +114,13 @@
     ### Mouse ###
 
     # Left click
-    mouse_left_click = close_current
+    mouse_left_click = do_action
     # Middle click
-    mouse_middle_click = do_action
+    mouse_middle_click = close_all
     # Right click
-    mouse_right_click = do_action
+    mouse_right_click = close_current
 
 [shortcuts]
-
     # Close one notification
     close = ctrl+space
     # Close all notifications
@@ -128,13 +131,11 @@
     timeout = 5
 
 [urgency_normal]
-
     # Normal urgency notifications
     background = "#383c4af0"
     timeout = 5
 
 [urgency_critical]
-
     # High urgency notifications
     background = "#9b4d4bf0"
     frame_color = "#ab6d6b"
