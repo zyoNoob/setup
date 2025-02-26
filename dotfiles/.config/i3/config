@@ -38,9 +38,9 @@ exec --no-startup-id greenclip daemon
 bindsym $win+v exec --no-startup-id rofi -modi "clipboard:greenclip print" -show clipboard -run-command '{cmd}'
 
 ## Screenshots
-bindsym Print exec --no-startup-id sh -c 'maim | tee "$HOME/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
-bindsym Ctrl+Print exec --no-startup-id sh -c 'maim --select | tee "$HOME/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
-bindsym $win+Print exec --no-startup-id sh -c 'maim --window $(xdotool getactivewindow) | tee "$HOME/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png" | xclip -selection clipboard -t image/png'
+bindsym Print exec --no-startup-id ~/.config/scripts/screenshot.sh full
+bindsym Ctrl+Print exec --no-startup-id ~/.config/scripts/screenshot.sh select  
+bindsym $win+Print exec --no-startup-id ~/.config/scripts/screenshot.sh window
 
 ## PulseAudio controls
 set $refresh_i3status killall -SIGUSR1 i3status
