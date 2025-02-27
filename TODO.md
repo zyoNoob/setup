@@ -38,7 +38,7 @@
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 - [o] Yazi rust
 - [o] polybar
-- [o] dunst
+- [x] dunst
 - [x] rofi
 - [x] cmake
 - [x] libssl-dev
