@@ -2,9 +2,8 @@
 
 ## Table of Contents
 - [TODO](#todo)
-- [In Progress](#in-progress)
-- [Done](#done)
 - [REJECTED / DISCARDED](#rejected--discarded)
+
 ---
 
 ## TODO
@@ -22,6 +21,8 @@
     - [ ] sudo ln -s /path/to/ffmpeg-build/lib/pkgconfig/ffmpeg.pc /usr/local/lib/pkgconfig/ffmpeg.pc
     - [ ] sudo ln -s /path/to/ffmpeg-build/man /usr/local/share/man
     - [ ] sudo find /usr/local -xtype l -delete (removal of symlinks for uninstallation)
+- [ ] pulsemixer
+- [ ] https://github.com/milaq/XMousePasteBlock use this to disable paste on middle click
 - [ ] neofetch
 - [ ] lazygit
 - [ ] 7zip and other Yazi formats
@@ -30,24 +31,14 @@
 - [ ] Spotify
 - [ ] Image viewer
 - [ ] Make cursor executable directly
-- [ ] dunst
 - [ ] tmux
 - [ ] nvim
 - [ ] btop
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
-
----
-
-## In Progress
-
 - [o] Yazi rust
 - [o] polybar
-
----
-
-## Done
-
+- [x] dunst
 - [x] rofi
 - [x] cmake
 - [x] libssl-dev

@@ -1,0 +1,151 @@
+[global]
+    ### Display ###
+
+    # Display notifications on monitor
+    monitor = 0
+    # Set geometry of notifications
+    width = 350
+    height = (0, 300)
+    origin = top-center
+    offset = (0, 35)
+    # Show number of hidden notifications
+    indicate_hidden = yes
+    # Shrink window if smaller than width
+    shrink = no
+    # Set transparency of notifications
+    transparency = 0
+    # Height of whole notification    
+    notification_height = 0
+    # Height of seperators
+    separator_height = 2
+    # Gap size
+    gap_size = 12
+    # Text and seperator padding
+    padding = 12
+    # Horizontal padding
+    horizontal_padding = 20
+    # Width of frame around window
+    frame_width = 1
+    # Sort messages by urgency
+    sort = yes
+    # Idle seconds
+    idle_threshold = 0
+
+    # Progress bar
+    progress_bar_frame_width = 0
+    progress_bar_corner_radius = 3
+
+    # Colors
+    foreground = "#cdd1dc"
+    frame_color = "#2d303c"
+    highlight = "#2274d5, #82aad9"
+
+    ### Text ###
+    
+    # Set font of notifications
+    font = MesloLGS Nerd Font Bold 10
+    # Spacing between lines 
+    line-height = 0
+    # Markup parsing
+    markup = full
+    # Message format:
+    # %a - appname
+    # %s - summary
+    # %b - body
+    # %i - iconname (with path)
+    # %I - iconname (without path)
+    # %p - progress value (if set)
+    # %n - progress value no extra characters
+    # %% - literal %
+    format = "<small>%a</small>\n<big><b>%s</b></big>\n%b"
+    # Align message text horizontally
+    alignment = left
+    # Align message text vertically
+    vertical_alignment = center
+    # Show age of message if message is older than x seconds
+    show_age_threshold = -1
+    # Split notifications into multiple lines
+    word_wrap = no
+    # If message too long, add ellipsize to...
+    ellipsize = middle
+    # Ignore newlines in notifications
+    ignore_newline = no
+    # Stack duplicate notifications
+    stack_duplicates = true
+    # Hide number of duplicate notifications
+    hide_duplicate_count = true
+    # Show indicatiors for urls and actions
+    show_indicators = yes
+   
+    ### Icons ###
+    icon_position = left
+    min_icon_size = 54
+    max_icon_size = 80
+    icon_path = /usr/share/icons/Papirus-Dark/status/symbolic:/usr/share/icons/Papirus-Dark/96x96/apps:/usr/share/icons/Papirus-Dark/96x96/devices:/usr/share/icons/Papirus-Dark/96x96/mimetypes:/usr/share/icons/Papirus-Dark/96x96/places
+    icon_corner_radius = 4
+
+
+    ### History ###
+    
+    # Length of history
+    history_length = 20
+    
+    ### Misc ###
+    
+    # Dmenu path
+    dmenu = /usr/bin/rofi -dmenu -p "Notification"
+    # Browser
+    browser = /usr/bin/firefox -new-tab
+    # Always run scripts
+    always_run_script = true
+    # Title of notification
+    title = Dunst
+    # Notification class
+    class = Dunst
+    # Print notification on startup
+    startup_notification = false
+    # Dunst verbosity
+    verbosity = mesg
+    # Corner radius of dunst
+    corner_radius = 15
+    # Ignore dbus closeNotification message
+    ignore_dbusclose = false
+
+    ### Mouse ###
+
+    # Left click
+    mouse_left_click = do_action, close_current
+    # Middle click
+    mouse_middle_click = close_all
+    # Right click
+    mouse_right_click = close_current
+
+[shortcuts]
+    # Close one notification
+    close = ctrl+space
+    # Close all notifications
+    close_all = ctrl+shift+space
+
+[urgency_low]
+    background = "#383c4af0"
+    timeout = 5
+
+[urgency_normal]
+    # Normal urgency notifications
+    background = "#383c4af0"
+    timeout = 5
+
+[urgency_critical]
+    # High urgency notifications
+    background = "#9b4d4bf0"
+    frame_color = "#ab6d6b"
+    highlight = "#e31e1b, #e37371"
+    timeout = 0
+
+# Rules
+[fullscreen_delay_everything]
+    fullscreen = delay
+
+[fullscreen_show_critical]
+    msg_urgency = critical
+    fullscreen = show
