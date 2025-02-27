@@ -20,4 +20,4 @@ fi
 [ -f "$HOME/.env" ] && . "$HOME/.env"
 
 # Source credentials
-[ -f "$HOME/.creds" ] && . "$HOME/.creds"]
+[ -f "$HOME/.creds" ] && . "$HOME/.creds"
