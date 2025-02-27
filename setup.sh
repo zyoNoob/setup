@@ -841,6 +841,9 @@ configure_dotfiles_and_utils() {
     # Copy .netrc
     copy_file "$SETUP_DIR/config/.netrc" "$HOME/.netrc" "Github .netrc"
 
+    # Copy .creds
+    copy_file "$SETUP_DIR/config/.creds" "$HOME/.creds" "Credentials .creds"
+
     # Generate SSH key
     if [ ! -f "$HOME/.ssh/id_rsa" ]; then
         mkdir -p "$HOME/.ssh"
