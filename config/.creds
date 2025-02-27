@@ -1,0 +1,11 @@
+# Git-lfs credentials (uncomment and fill in if needed)
+export AWS_S3_BUCKET_URL="https://bucket.amazonaws.com"
+export AWS_S3_ENDPOINT="https://s3.{region}.amazonaws.com"
+export AWS_ACCESS_KEY_ID=""
+export AWS_SECRET_ACCESS_KEY=""
+
+# API-Keys (uncomment and set as needed)
+export api_key=""
+export GEMINI_API_KEY=""
+export GOOGLE_API_KEY=""
+export OPENAI_API_KEY=""

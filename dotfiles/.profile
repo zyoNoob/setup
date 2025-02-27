@@ -18,3 +18,6 @@ fi
 
 # Source env variables
 [ -f "$HOME/.env" ] && . "$HOME/.env"
+
+# Source credentials
+[ -f "$HOME/.creds" ] && . "$HOME/.creds"]
