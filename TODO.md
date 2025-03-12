@@ -21,10 +21,13 @@
     - [ ] sudo ln -s /path/to/ffmpeg-build/lib/pkgconfig/ffmpeg.pc /usr/local/lib/pkgconfig/ffmpeg.pc
     - [ ] sudo ln -s /path/to/ffmpeg-build/man /usr/local/share/man
     - [ ] sudo find /usr/local -xtype l -delete (removal of symlinks for uninstallation)
+- [ ] 1password cli
+- [ ] manga tui
+- [ ] automatic file organiser musa-labs/maid on github
 - [ ] ripgrep
 - [ ] codecompanion nvim plugin
 - [ ] build a go based app that collates latest releases in AI
-- [ ] Tailscale 
+- [ ] Tailscale
 - [ ] Kdiskmark
 - [ ] aria2, and a corresponding webui
 - [ ] gh cli, glab cli
