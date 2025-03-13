@@ -21,6 +21,7 @@
     - [ ] sudo ln -s /path/to/ffmpeg-build/lib/pkgconfig/ffmpeg.pc /usr/local/lib/pkgconfig/ffmpeg.pc
     - [ ] sudo ln -s /path/to/ffmpeg-build/man /usr/local/share/man
     - [ ] sudo find /usr/local -xtype l -delete (removal of symlinks for uninstallation)
+- [ ] iperf3
 - [ ] 1password cli
 - [ ] manga tui
 - [ ] automatic file organiser musa-labs/maid on github
