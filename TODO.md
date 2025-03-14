@@ -44,7 +44,7 @@
 - [ ] Image viewer
 - [ ] Make cursor executable directly
 - [ ] tmux
-- [ ] nvim - build from source and also config with lazyvim and what not
+- [ ] nvim - build from source and also config with lazyvim and what not (default installation was also installing xclip, need to make sure xclip doesnt get fucked now)
 - [ ] btop
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
