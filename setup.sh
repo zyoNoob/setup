@@ -101,10 +101,14 @@ timestamp() {
 # Directory of the setup repo
 SETUP_DIR="$HOME/workspace/setup"
 
+
 # Extract branch from the download URL if available
 SETUP_BRANCH=${SETUP_DOWNLOAD_URL##*/refs/heads/}
 SETUP_BRANCH=${SETUP_BRANCH%%/setup.sh}
 SETUP_BRANCH=${SETUP_BRANCH:-main}
+
+# Directory for storing compiled programs
+COMPILED_PROGRAMS_DIR="$HOME/workspace/compiled-programs"
 
 # Environment detection
 is_wsl() {
@@ -193,6 +197,14 @@ initial_system_setup() {
     log_to_both "--------------------------------"
     log_to_both "# Initial System Setup"
     log_to_both "--------------------------------"
+
+    # Create directory for compiled programs
+    if [ ! -d "$COMPILED_PROGRAMS_DIR" ]; then
+        run_silent mkdir -p "$COMPILED_PROGRAMS_DIR"
+        print_status "create compiled programs directory"
+    else
+        print_status "create compiled programs directory" skip
+    fi
 
     # Update package list
     run_silent sudo apt update -y
@@ -340,7 +352,6 @@ install_essential_packages() {
         tmux
         silversearcher-ag
         tree
-        neovim
     )
 
     # Desktop environment
@@ -362,13 +373,32 @@ install_essential_packages() {
 
     # Install fzf
     if [ ! -f "$HOME/bin/fzf" ]; then
-        run_silent bash -c 'git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/bin/.fzf"'
-        run_silent bash -c '$HOME/bin/.fzf/install --no-key-bindings --no-completion --no-update-rc --no-bash --no-zsh --no-fish'
-        cp "$HOME/bin/.fzf/bin/fzf" "$HOME/bin/"
-        rm -rf "$HOME/bin/.fzf"
+        FZF_DIR="$COMPILED_PROGRAMS_DIR/fzf"
+        run_silent bash -c 'git clone --depth 1 https://github.com/junegunn/fzf.git "$1"' -- "$FZF_DIR"
+        run_silent bash -c '$1/install --no-key-bindings --no-completion --no-update-rc --no-bash --no-zsh --no-fish' -- "$FZF_DIR"
+        run_silent mkdir -p "$HOME/bin"
+        run_silent cp "$FZF_DIR/bin/fzf" "$HOME/bin/"
         print_status "install fzf"
     else
         print_status "install fzf" skip
+    fi
+
+    # Install 'Neovim'
+    if [ ! -x "$(command -v nvim)" ]; then
+        # Prerequisites
+        install_package "ninja-build"
+        install_package "gettext"
+        # Neovim
+        NEOVIM_DIR="$COMPILED_PROGRAMS_DIR/neovim"
+        run_silent bash -c 'git clone https://github.com/neovim/neovim.git "$1"' -- "$NEOVIM_DIR"
+        cd "$NEOVIM_DIR"
+        run_silent git checkout stable
+        run_silent make CMAKE_BUILD_TYPE=Release
+        run_silent sudo make install
+        cd - >/dev/null
+        print_status "install neovim"
+    else
+        print_status "install neovim" skip
     fi
 }
 
@@ -522,9 +552,10 @@ setup_desktop_environment() {
             install_package "libncurses-dev"
             install_package "libdrm-dev"
             install_package "libsystemd-dev"
-            run_silent bash -c 'git clone https://github.com/Syllo/nvtop.git "$HOME/bin/nvtop"'
-            run_silent mkdir -p "$HOME/bin/nvtop/build"
-            cd "$HOME/bin/nvtop/build"
+            NVTOP_DIR="$COMPILED_PROGRAMS_DIR/nvtop"
+            run_silent bash -c 'git clone https://github.com/Syllo/nvtop.git "$1"' -- "$NVTOP_DIR"
+            run_silent mkdir -p "$NVTOP_DIR/build"
+            cd "$NVTOP_DIR/build"
             run_silent cmake .. -DNVIDIA_SUPPORT=ON -DAMDGPU_SUPPORT=ON -DINTEL_SUPPORT=ON
             run_silent make -j
             run_silent sudo make install
@@ -731,17 +762,19 @@ setup_shell_environment() {
             install_package "libgtk-4-dev"
             install_package "libadwaita-1-dev"
 
-            # Clone and build Ghostty (cleanup old cloned repo)
-            if [ -d "$HOME/bin/ghostty" ]; then
-                rm -rf "$HOME/bin/ghostty"
+            # Clone and build Ghostty
+            GHOSTTY_DIR="$COMPILED_PROGRAMS_DIR/ghostty"
+            # Clean up existing directory if necessary
+            if [ -d "$GHOSTTY_DIR" ]; then
+                run_silent rm -rf "$GHOSTTY_DIR"
             fi
-            run_silent bash -c 'git clone https://github.com/ghostty-org/ghostty.git "$HOME/bin/ghostty" && \
-                cd "$HOME/bin/ghostty" && \
+            
+            # Clone and build
+            run_silent bash -c 'git clone https://github.com/ghostty-org/ghostty.git "$1" && \
+                cd "$1" && \
                 git checkout tags/v1.1.2 && \
-                zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true'
+                zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true' -- "$GHOSTTY_DIR"
             print_status "install ghostty"
-            cd "$HOME" >/dev/null
-            rm -rf "$HOME/bin/ghostty"
         fi
     fi
 

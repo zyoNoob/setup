@@ -21,10 +21,18 @@
     - [ ] sudo ln -s /path/to/ffmpeg-build/lib/pkgconfig/ffmpeg.pc /usr/local/lib/pkgconfig/ffmpeg.pc
     - [ ] sudo ln -s /path/to/ffmpeg-build/man /usr/local/share/man
     - [ ] sudo find /usr/local -xtype l -delete (removal of symlinks for uninstallation)
+- [ ] iperf3
+- [ ] 1password cli
+- [ ] manga tui
+- [ ] automatic file organiser musa-labs/maid on github
+- [ ] ripgrep
+- [ ] codecompanion nvim plugin
+- [ ] build a go based app that collates latest releases in AI
+- [ ] Tailscale
 - [ ] Kdiskmark
 - [ ] aria2, and a corresponding webui
-- [ ] gh cli
-- [ ] mods, gum, ship (ai based pull requests) - https://gist.githubusercontent.com/dangrondahl/2807a52f8ae11d12ac3f7a701fd822dc/raw/5e0166ee485124e0e6139ab61236c0faa863d55f/ship.sh
+- [ ] gh cli, glab cli
+- [ ] mods, gum, ship, ship_glab (ai based pull requests) - https://gist.githubusercontent.com/dangrondahl/2807a52f8ae11d12ac3f7a701fd822dc/raw/5e0166ee485124e0e6139ab61236c0faa863d55f/ship.sh
 - [ ] pulsemixer
 - [ ] https://github.com/milaq/XMousePasteBlock use this to disable paste on middle click
 - [ ] neofetch
@@ -36,7 +44,7 @@
 - [ ] Image viewer
 - [ ] Make cursor executable directly
 - [ ] tmux
-- [ ] nvim
+- [ ] nvim - build from source and also config with lazyvim and what not (default installation was also installing xclip, need to make sure xclip doesnt get fucked now)
 - [ ] btop
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
