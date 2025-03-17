@@ -6,11 +6,20 @@
   editor = vim
   autocrlf = false
 
+[init]
+	defaultBranch = main
+
 [filter "lfs"]
 	process = git-lfs filter-process
 	required = true
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
 
-[init]
-	defaultBranch = main
+[push]
+  autoSetupRemote = true
+
+[lfs]
+  concurrenttransfers = 16
+
+[http]
+    postBuffer = 524288000
