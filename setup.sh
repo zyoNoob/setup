@@ -793,6 +793,7 @@ setup_shell_environment() {
         "zsh-autocomplete https://github.com/marlonrichert/zsh-autocomplete.git"
         "F-Sy-H https://github.com/z-shell/F-Sy-H.git"
         "conda-zsh-completion https://github.com/conda-incubator/conda-zsh-completion"
+        "zsh-completions https://github.com/zsh-users/zsh-completions"
     )
 
     for entry in "${plugins[@]}"; do
