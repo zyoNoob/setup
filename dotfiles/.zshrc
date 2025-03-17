@@ -26,15 +26,13 @@ ZSH_THEME="robbyrussell"
 # plugins=(git zsh-autosuggestions zsh-autocomplete F-Sy-H conda-zsh-completion fzf)
 
 # Plugins -> fzf-tab for completion
-plugins=(
-    vi-mode
-    git 
-    zsh-autosuggestions 
-    F-Sy-H 
-    conda-zsh-completion 
-    fzf 
-    fzf-tab
-)
+plugins+=(vi-mode conda-zsh-completion)    
+
+fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
+
+autoload -U compinit; compinit
+
+plugins+=(fzf fzf-tab git zsh-autosuggestions F-Sy-H)
 
 # Add unhandled widgets to be ignored by F-Sy-H
 zle -N insert-unambiguous-or-complete
