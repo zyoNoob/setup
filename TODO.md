@@ -22,6 +22,7 @@
     - [ ] sudo ln -s /path/to/ffmpeg-build/man /usr/local/share/man
     - [ ] sudo find /usr/local -xtype l -delete (removal of symlinks for uninstallation)
 - [ ] netron via `uv tool install netron`
+- [ ] smassh via `uv tool install smashh` configure too
 - [ ] openssh-server
 - [ ] iperf3
 - [ ] 1password cli
