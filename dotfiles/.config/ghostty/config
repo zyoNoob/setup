@@ -25,6 +25,7 @@ shell-integration-features = no-cursor, title
 ## General Settings
 mouse-hide-while-typing = true
 confirm-close-surface = false
+gtk-single-instance=true
 # copy-on-select = clipboard
 
 ## Font Settings
