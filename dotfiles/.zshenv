@@ -9,6 +9,7 @@
 
 # Commands|App Aliases
 alias zshconfig="source ~/.zshrc"
+alias sudo="sudo "
 alias audio="pulsemixer"
 alias vim="nvim"
 alias cat="bat"
