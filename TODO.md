@@ -21,6 +21,12 @@
     - [ ] sudo ln -s /path/to/ffmpeg-build/lib/pkgconfig/ffmpeg.pc /usr/local/lib/pkgconfig/ffmpeg.pc
     - [ ] sudo ln -s /path/to/ffmpeg-build/man /usr/local/share/man
     - [ ] sudo find /usr/local -xtype l -delete (removal of symlinks for uninstallation)
+- [ ] samba configuration
+    - [ ] sudo apt install samba
+    - [ ] sudo nano /etc/samba/smb.conf ```[sambashare] \n comment = Shared Drive \n path = /path/to/drive/mount/point \n read only = no \n browsable = yes```
+    - [ ] sudo smbpasswd -a zyon
+    - [ ] sudo service samba restart
+    - [ ] sudo ufw allow samba
 - [ ] netron via `uv tool install netron`
 - [ ] smassh via `uv tool install smashh` configure too
 - [ ] openssh-server
