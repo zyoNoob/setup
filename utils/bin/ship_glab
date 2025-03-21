@@ -42,7 +42,7 @@ generate_pr_info() {
     pr_title="$pr_title_prefix: $pr_summary"
 
     gum style --foreground 212 "Generating Pull Request body..."
-    pr_body=$(git diff "$default_branch".. | mods -f "create a Pull Request body. Ensure markdown format and don't start the body with ''' characters or pr type. Include the diff in proper code format from most important changes. DO NOT EXCEED 1800 TOKENS" --max-tokens 2000)
+    pr_body=$(git diff "$default_branch".. | mods -f "create a Pull Request body. Ensure markdown format and don't start the body with ''' characters or pr type. DO NOT EXCEED 1800 TOKENS" --max-tokens 2000)
 
     glab mr create \
         --title "$pr_title" \
