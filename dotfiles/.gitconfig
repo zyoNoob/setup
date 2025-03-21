@@ -23,3 +23,6 @@
 
 [http]
     postBuffer = 524288000
+
+[alias]
+	setup-multi-push = "!f() { name=\"$1\"; shift; fetch_url=\"$1\"; shift; git remote add \"$name\" \"$fetch_url\"; for url in \"$fetch_url\" \"$@\"; do git remote set-url --add --push \"$name\" \"$url\"; done; }; f"
