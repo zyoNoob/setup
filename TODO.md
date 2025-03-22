@@ -41,6 +41,7 @@
 - [ ] Kdiskmark
 - [ ] aria2, and a corresponding webui
 - [ ] gh cli, glab cli
+- [ ] yeet script that handles the gcmsg " " and gp operation using mods.
 - [ ] mods, gum, ship, ship_glab (ai based pull requests) - https://gist.githubusercontent.com/dangrondahl/2807a52f8ae11d12ac3f7a701fd822dc/raw/5e0166ee485124e0e6139ab61236c0faa863d55f/ship.sh
 - [ ] pulsemixer
 - [ ] https://github.com/milaq/XMousePasteBlock use this to disable paste on middle click

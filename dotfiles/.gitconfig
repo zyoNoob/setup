@@ -3,7 +3,7 @@
 	email = 32070378+zyoNoob@users.noreply.github.com
 
 [core]
-  editor = vim
+  editor = nvim
   autocrlf = false
 
 [init]
