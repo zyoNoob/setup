@@ -18,6 +18,9 @@
 [push]
   autoSetupRemote = true
 
+[fetch]
+  prune = true
+
 [lfs]
   concurrenttransfers = 16
 
