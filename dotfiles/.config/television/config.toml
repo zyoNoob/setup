@@ -194,7 +194,9 @@ fallback_channel = "files"
   "git push",
   "gp",
   "git diff",
-  "gd"
+  "gd",
+  "git diff --staged",
+  "gds"
 ]
 "docker-images" = ["docker run"]
 "git-repos" = ["nvim", "code", "hx", "git clone"]
