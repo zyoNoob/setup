@@ -34,8 +34,14 @@ preview_command = "aws s3 ls s3://{0}"
 # Dotfiles
 [[cable_channel]]
 name = "my-dotfiles"
-source_command = "fd f . $HOME/.config"
+source_command = "fd -t l . $HOME/.config"
 preview_command = ":files:"
+
+# Executable files - Local
+[[cable_channel]]
+name = "local-executables"
+source_command = "fd -t x -I . ."
+preview_command = "file {0} && echo '' && (file -L {0} | grep -q 'ELF' && nm -C {0} 2>/dev/null | grep -E ' (T|W) ' || bat --color=always --style=numbers {0})"
 
 # Shell history
 [[cable_channel]]

@@ -12,9 +12,29 @@ _tv_smart_autocomplete() {
 
     if [[ -n $output ]]; then
         zle reset-prompt
-        RBUFFER=""
-        # add a space if the prompt does not end with one
-        [[ "${current_prompt}" != *" " ]] && current_prompt="${current_prompt} "
+        RBUFFER=""        
+        
+        # Case 1: Empty prompt - don't add space, keep output as is
+        if [[ -z "${current_prompt}" ]]; then
+            # Do nothing to the output or prompt
+        
+        # Case 2: Prompt contains './' - don't add space, remove './' from output if present
+        elif [[ "${current_prompt}" == *"./"* ]]; then
+            if [[ "${output}" == "./"* ]]; then
+                output="${output#./}"
+            fi
+            
+        # Case 3: Any other case - add space to prompt, remove './' from output if present
+        else
+            if [[ "${output}" == "./"* ]]; then
+                output="${output#./}"
+            fi
+            
+            if [[ "${current_prompt}" != *" " ]]; then
+                current_prompt="${current_prompt} "
+            fi
+        fi
+        
         LBUFFER=$current_prompt$output
 
         # uncomment this to automatically accept the line 
