@@ -50,7 +50,7 @@
 - [ ] 7zip and other Yazi formats
 - [ ] Tdf or other doc viewer
 - [ ] videoplayer - mpv
-- [ ] spotify - tui
+- [ ] spotify-player (cargo install spotify_player --features image,fzf,notify) - tui
 - [ ] Image viewer
 - [ ] Make cursor executable directly
 - [ ] tmux
