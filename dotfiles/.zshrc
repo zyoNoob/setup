@@ -93,6 +93,9 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
+# Zoxide
+eval "$(zoxide init zsh)"
+
 # keychain for ssh-agent
 eval $(keychain --eval id_rsa)
 
@@ -111,55 +114,3 @@ fi
 if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
     export TERM=xterm-256color
 fi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
