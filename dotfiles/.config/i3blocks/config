@@ -1,0 +1,59 @@
+# .config/i3blocks/config
+
+command=/usr/share/i3blocks/$BLOCK_NAME
+separator_block_width=15
+markup=none
+
+# Volume indicator
+[volume]
+label=VOL
+interval=once
+signal=10
+
+# Memory usage
+[memory]
+label=MEM
+separator=true
+interval=30
+
+# Disk usage
+[disk]
+label=HOME
+#DIR=/mnt/data
+interval=30
+
+# Network interface monitoring
+[iface]
+#IFACE=wlan0
+color=#00FF00
+interval=10
+separator=true
+
+[wifi]
+#INTERFACE=wlp3s0
+label=wifi:
+interval=10
+separator=false
+
+[bandwidth]
+#INTERFACE=eth0
+interval=5
+
+# CPU usage
+[cpu_usage]
+label=CPU
+interval=10
+min_width=CPU 100.00%
+separator=true
+
+
+# Battery indicator
+[battery]
+label=BAT
+#label=⚡
+interval=30
+
+# Date Time
+[time]
+command=date '+%Y-%m-%d %H:%M:%S'
+interval=5
