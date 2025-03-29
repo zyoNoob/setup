@@ -307,6 +307,8 @@ client.placeholder       $overlay0 $base $text  $overlay0  $overlay0
 client.background        $base
 
 ## Bar Configuration
+# bindsym --release Caps_Lock exec pkill -SIGRTMIN+11 i3blocks
+# bindsym --release Num_Lock  exec pkill -SIGRTMIN+11 i3blocks
 bar {
     font pango:MesloLGS Nerd Font 12
     position bottom
