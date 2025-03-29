@@ -27,6 +27,7 @@
     - [ ] sudo smbpasswd -a zyon
     - [ ] sudo service samba restart
     - [ ] sudo ufw allow samba
+- [ ] zoxide - cargo install zoxide --locked
 - [ ] netron via `uv tool install netron`
 - [ ] smassh via `uv tool install smashh` configure too
 - [ ] openssh-server
