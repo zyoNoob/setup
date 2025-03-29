@@ -309,8 +309,8 @@ client.background        $base
 ## Bar Configuration
 bar {
     font pango:MesloLGS Nerd Font 12
-    position top
-    status_command i3status
+    position bottom
+    status_command i3blocks
     bindsym button4 nop
     bindsym button5 nop
     tray_output $PRIMARY_MONITOR

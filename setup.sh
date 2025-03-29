@@ -319,6 +319,7 @@ install_essential_packages() {
     # Core development tools
     local packages_core=(
         curl
+        gcc
         g++
         build-essential
         pkg-config
@@ -357,6 +358,7 @@ install_essential_packages() {
     # Desktop environment
     local packages_desktop=(
         i3
+        i3blocks
         pavucontrol
         feh
         dunst
