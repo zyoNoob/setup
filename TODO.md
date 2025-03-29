@@ -21,6 +21,12 @@
     - [ ] sudo ln -s /path/to/ffmpeg-build/lib/pkgconfig/ffmpeg.pc /usr/local/lib/pkgconfig/ffmpeg.pc
     - [ ] sudo ln -s /path/to/ffmpeg-build/man /usr/local/share/man
     - [ ] sudo find /usr/local -xtype l -delete (removal of symlinks for uninstallation)
+- [ ] samba configuration
+    - [ ] sudo apt install samba
+    - [ ] sudo nano /etc/samba/smb.conf ```[sambashare] \n comment = Shared Drive \n path = /path/to/drive/mount/point \n read only = no \n browsable = yes```
+    - [ ] sudo smbpasswd -a zyon
+    - [ ] sudo service samba restart
+    - [ ] sudo ufw allow samba
 - [ ] netron via `uv tool install netron`
 - [ ] smassh via `uv tool install smashh` configure too
 - [ ] openssh-server
@@ -35,6 +41,7 @@
 - [ ] Kdiskmark
 - [ ] aria2, and a corresponding webui
 - [ ] gh cli, glab cli
+- [ ] yeet script that handles the gcmsg " " and gp operation using mods.
 - [ ] mods, gum, ship, ship_glab (ai based pull requests) - https://gist.githubusercontent.com/dangrondahl/2807a52f8ae11d12ac3f7a701fd822dc/raw/5e0166ee485124e0e6139ab61236c0faa863d55f/ship.sh
 - [ ] pulsemixer
 - [ ] https://github.com/milaq/XMousePasteBlock use this to disable paste on middle click
@@ -43,7 +50,7 @@
 - [ ] 7zip and other Yazi formats
 - [ ] Tdf or other doc viewer
 - [ ] videoplayer - mpv
-- [ ] spotify - tui
+- [ ] spotify-player (cargo install spotify_player --features image,fzf,notify) - tui
 - [ ] Image viewer
 - [ ] Make cursor executable directly
 - [ ] tmux

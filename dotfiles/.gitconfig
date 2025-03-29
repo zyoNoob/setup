@@ -3,7 +3,7 @@
 	email = 32070378+zyoNoob@users.noreply.github.com
 
 [core]
-  editor = vim
+  editor = nvim
   autocrlf = false
 
 [init]
@@ -18,8 +18,32 @@
 [push]
   autoSetupRemote = true
 
+[fetch]
+  prune = true
+
 [lfs]
   concurrenttransfers = 16
 
 [http]
     postBuffer = 524288000
+
+[alias]
+	setup-multi-push = "!f() { name=\"$1\"; shift; fetch_url=\"$1\"; shift; git remote add \"$name\" \"$fetch_url\"; for url in \"$fetch_url\" \"$@\"; do git remote set-url --add --push \"$name\" \"$url\"; done; }; f"
+
+[diff]
+    tool = nvimdiff
+
+[difftool]
+    prompt = false
+
+[difftool "nvimdiff"]
+    cmd = "nvim -d \"$LOCAL\" \"$REMOTE\""
+
+[merge]
+    tool = nvimdiff
+
+[mergetool]
+    prompt = true
+	
+[mergetool "nvimdiff"]
+    cmd = "nvim -d \"$LOCAL\" \"$REMOTE\" \"$MERGED\" -c 'wincmd w' -c 'wincmd J'"

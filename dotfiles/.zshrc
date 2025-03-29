@@ -46,9 +46,37 @@ source $ZSH/oh-my-zsh.sh
 PROMPT='%(?:%{$fg_bold[green]%}%1{OK%} :%{$fg_bold[red]%}%1{FAILED%} ) %{$fg[cyan]%}%1{($?)%}
 %(?:%{$fg_bold[green]%}%1{➜%} :%{$fg_bold[red]%}%1{➜%} ) %{$fg[cyan]%}%c% %{$fg[red]%}%(1j. [%j].)%{$reset_color%} $(git_prompt_info)'
 
-# git diff aliases to pipe to ydiff
-alias gd="git diff | ydiff -s"
-alias gds="git diff --staged | ydiff -s"
+# Alias function for gitydiff
+# Unalias if it exists (from oh-my-zsh)
+[[ -n $(alias gd 2>/dev/null) ]] && unalias gd
+gd() {
+  if ! command -v ydiff >/dev/null 2>&1; then
+    echo "Error: ydiff is not installed" >&2
+    return 1
+  fi
+
+  if [ $# -eq 0 ]; then
+    git diff . | ydiff -s
+  else
+    git diff "$@" | ydiff -s
+  fi
+}
+
+# Alias function for gitstagedydiff
+# Unalias if it exists (from oh-my-zsh)
+[[ -n $(alias gds 2>/dev/null) ]] && unalias gds
+gds() {
+  if ! command -v ydiff >/dev/null 2>&1; then
+    echo "Error: ydiff is not installed" >&2
+    return 1
+  fi
+
+  if [ $# -eq 0 ]; then
+    git diff --staged . | ydiff -s
+  else
+    git diff --staged "$@" | ydiff -s
+  fi
+}
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
@@ -64,6 +92,9 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
+
+# Zoxide
+eval "$(zoxide init zsh)"
 
 # keychain for ssh-agent
 eval $(keychain --eval id_rsa)
@@ -83,55 +114,3 @@ fi
 if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
     export TERM=xterm-256color
 fi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
