@@ -1,3 +1,5 @@
+# .config/i3blocks/config
+
 command=/usr/share/i3blocks/$BLOCK_NAME
 separator_block_width=15
 markup=none
@@ -14,26 +16,13 @@ label=MEM
 separator=true
 interval=30
 
-# [memory]
-# label=SWAP
-# instance=swap
-# separator=false
-# interval=30
-
 # Disk usage
-#
-# The directory defaults to $HOME if the instance is not specified.
-# The script may be called with a optional argument to set the alert
-# (defaults to 10 for 10%).
 [disk]
 label=HOME
 #DIR=/mnt/data
 interval=30
 
 # Network interface monitoring
-#
-# If the instance is not specified, use the interface used for default route.
-# The address can be forced to IPv4 or IPv6 with -4 or -6 switches.
 [iface]
 #IFACE=wlan0
 color=#00FF00
@@ -51,22 +40,14 @@ separator=false
 interval=5
 
 # CPU usage
-#
-# The script may be called with -w and -c switches to specify thresholds,
-# see the script for details.
 [cpu_usage]
 label=CPU
 interval=10
 min_width=CPU 100.00%
 separator=true
 
-# [load_average]
-# label=LOAD
-# interval=10
 
 # Battery indicator
-#
-# The battery instance defaults to 0.
 [battery]
 label=BAT
 #label=⚡
@@ -76,18 +57,3 @@ interval=30
 [time]
 command=date '+%Y-%m-%d %H:%M:%S'
 interval=5
-
-# OpenVPN support
-#
-# Support multiple VPN, with colors.
-# [openvpn]
-# interval=20
-
-# Temperature
-#
-# Support multiple chips, though lm-sensors.
-# The script may be called with -w and -c switches to specify thresholds,
-# see the script for details.
-# [temperature]
-# label=TEMP
-# interval=10
