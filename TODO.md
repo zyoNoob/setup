@@ -27,6 +27,7 @@
     - [ ] sudo smbpasswd -a zyon
     - [ ] sudo service samba restart
     - [ ] sudo ufw allow samba
+- [ ] add cargo-update crate for easier update of cargo based apps.
 - [ ] zoxide - cargo install zoxide --locked
 - [ ] netron via `uv tool install netron`
 - [ ] smassh via `uv tool install smashh` configure too
