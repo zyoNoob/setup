@@ -57,7 +57,7 @@ floating_modifier $win
 tiling_drag modifier titlebar
 
 ## Application Shortcuts
-bindsym $mod+Return exec ghostty
+bindsym $mod+Return exec kitty
 bindsym $mod+space exec --no-startup-id rofi -show combi
 bindsym $mod+q kill
 

@@ -112,6 +112,6 @@ fi
 
 # # Set terminal program for ssh - 
 # # **NOTE** ONLY UNCOMMENT IF REALLY NEEDED, RIGHT NOW SSH Compatibility is handled via rofi, and normal use is in TMUX anyway
-# if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
+# if [[ "$TERM_PROGRAM" == "ghostty" || "$TERM_PROGRAM" == "kitty" ]]; then
 #     export TERM=xterm-256color
 # fi

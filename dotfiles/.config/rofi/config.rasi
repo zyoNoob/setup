@@ -6,7 +6,7 @@ configuration{
     dpi: 157;
     icon-theme: "Papirus-Dark";
     show-icons: true;
-    terminal: "ghostty";
+    terminal: "kitty";
     drun-display-format: "{icon} {name}";
     location: 0;
     disable-history: true;
@@ -18,7 +18,6 @@ configuration{
     display-combi: " 󰕘  ALL    ";
     display-clipboard: "   CLIP   ";
     sidebar-mode: true;
-    run-shell-command: """{terminal} --title={cmd} -e {cmd}""";
     ssh-client: "ssh";
     ssh-command: """{terminal} -e "export TERM=xterm-256color && {ssh-client} {host}"""";
 }

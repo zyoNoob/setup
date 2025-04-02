@@ -178,14 +178,15 @@ copy_file() {
 }
 
 make_link() {
-    local src="$SETUP_DIR/config/$1"
-    local tgt="$HOME/$1"
+    local src="$1"
+    local tgt="$2"
+    local name="$3"
 
     if [ -L "$tgt" ]; then
-        print_status "make symlink $1" skip
+        print_status "symlink $name" skip
     else
         run_silent ln -s "$src" "$tgt"
-        print_status "make symlink $1"
+        print_status "symlink $name"
     fi
 }
 
@@ -777,6 +778,24 @@ setup_shell_environment() {
                 git checkout tags/v1.1.2 && \
                 zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true' -- "$GHOSTTY_DIR"
             print_status "install ghostty"
+        fi
+    fi
+
+    # Install kitty
+    if is_wsl; then
+        print_status "install kitty" "skip (WSL detected)"
+    else
+        if [ -x "$(command -v kitty)" ]; then
+            print_status "install kitty" skip
+        else
+            run_silent bash -c 'curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin'
+            # Symlink kitty binaries to .local/bin
+            for bin in "$HOME/.local/kitty.app/bin/"*; do
+                if [ -x "$bin" ]; then
+                    make_link "$(realpath "$bin")" "$HOME/.local/bin/$(basename "$bin")" "kitty/$(basename "$bin")"
+                fi
+            done
+            print_status "install kitty"
         fi
     fi
 
