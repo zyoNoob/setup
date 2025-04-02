@@ -34,6 +34,7 @@ exec --no-startup-id nm-applet
 font pango:MesloLGS Nerd Font Bold 12
 
 ## Clipboard TUI
+exec --no-startup-id rm -f ~/.cache/greenclip.history
 exec --no-startup-id greenclip daemon                                                          
 bindsym $win+v exec --no-startup-id rofi -modi "clipboard:greenclip print" -show clipboard -run-command '{cmd}'
 
@@ -56,7 +57,7 @@ floating_modifier $win
 tiling_drag modifier titlebar
 
 ## Application Shortcuts
-bindsym $mod+Return exec ghostty
+bindsym $mod+Return exec kitty
 bindsym $mod+space exec --no-startup-id rofi -show combi
 bindsym $mod+q kill
 

@@ -27,13 +27,13 @@
     - [ ] sudo smbpasswd -a zyon
     - [ ] sudo service samba restart
     - [ ] sudo ufw allow samba
-- [ ] zoxide - cargo install zoxide --locked
+- [ ] make updating all apps easier (make a simple script to handlle all sources for updates, system, uv , cargo, go, etc...)
+- [ ] add cargo-update crate for easier update of cargo based apps.
 - [ ] netron via `uv tool install netron`
 - [ ] smassh via `uv tool install smashh` configure too
 - [ ] openssh-server
 - [ ] iperf3
 - [ ] 1password cli
-- [ ] manga tui
 - [ ] automatic file organiser musa-labs/maid on github
 - [ ] ripgrep
 - [ ] codecompanion nvim plugin
@@ -47,20 +47,25 @@
 - [ ] pulsemixer
 - [ ] https://github.com/milaq/XMousePasteBlock use this to disable paste on middle click
 - [ ] neofetch
+- [ ] lazysql
 - [ ] lazygit
 - [ ] 7zip and other Yazi formats
 - [ ] Tdf or other doc viewer
 - [ ] videoplayer - mpv
-- [ ] spotify-player (cargo install spotify_player --features image,fzf,notify) - tui
+
 - [ ] Image viewer
 - [ ] Make cursor executable directly
-- [ ] tmux
 - [ ] nvim - build from source and also config with lazyvim and what not (default installation was also installing xclip, need to make sure xclip doesnt get fucked now)
-- [ ] btop
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 - [o] Yazi rust
-- [o] polybar
+- [x] kitty terminal emulator
+- [x] spotify-player (cargo install spotify_player --features image,fzf,notify) - tui
+- [x] manga tui
+- [x] zoxide - cargo install zoxide --locked
+- [x] tmux
+- [x] btop
+- [x] i3blocks - bar customisation
 - [x] dunst
 - [x] rofi
 - [x] cmake
@@ -68,14 +73,14 @@
 - [x] libcurl4-openssl-dev
 - [x] python3-dev
 - [x] rename
-- [x] use xset to set suspend i3lock to 1800 seconds (xset s 1800) 
+- [x] use xset to set suspend i3lock to 1800 seconds (xset s 1800)
 - [x] ngrok
 - [x] go installation
 - [x] fd-find rust
 - [x] nyaa rust
 - [x] television rust
 - [x] bat rust
-- [x] transmission - yet to add to autostart with i3wm as a deamon
+- [x] transmission
 - [x] nvtop - build from source
     - [x] libncurses-dev
     - [x] libdrm-dev 
@@ -88,4 +93,5 @@
 ---
 
 ## REJECTED / DISCARDED
+- [x] polybar - way to complicated for what it offers
 - [x] clipse - interactive clipboard -> NOT GOING TO USE THIS (WORKS LIKE SHIT ATM)

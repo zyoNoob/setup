@@ -6,10 +6,10 @@ configuration{
     dpi: 157;
     icon-theme: "Papirus-Dark";
     show-icons: true;
-    terminal: "ghostty";
+    terminal: "kitty";
     drun-display-format: "{icon} {name}";
     location: 0;
-    disable-history: false;
+    disable-history: true;
     hide-scrollbar: true;
     display-drun: " 󰀘  APPS   ";
     display-run: "   RUN    ";

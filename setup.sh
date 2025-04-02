@@ -178,14 +178,15 @@ copy_file() {
 }
 
 make_link() {
-    local src="$SETUP_DIR/config/$1"
-    local tgt="$HOME/$1"
+    local src="$1"
+    local tgt="$2"
+    local name="$3"
 
     if [ -L "$tgt" ]; then
-        print_status "make symlink $1" skip
+        print_status "symlink $name" skip
     else
         run_silent ln -s "$src" "$tgt"
-        print_status "make symlink $1"
+        print_status "symlink $name"
     fi
 }
 
@@ -524,6 +525,23 @@ setup_desktop_environment() {
             print_status "install nyaa" skip
         fi
 
+        # Install 'manga-tui' manga tui client
+        if [ ! -x "$(command -v manga-tui)" ]; then
+            run_silent $HOME/.cargo/bin/cargo install --locked manga-tui
+            install_package "libdbus-1-dev"
+            print_status "install manga-tui"
+        else
+            print_status "install manga-tui" skip
+        fi
+
+        # Install 'spotify-player' spotify tui client
+        if [ ! -x "$(command -v spotify_player)" ]; then
+            run_silent $HOME/.cargo/bin/cargo install spotify_player --features image,fzf,notify
+            print_status "install spotify_player"
+        else
+            print_status "install spotify_player" skip
+        fi
+
         # Install 'television' tui
         if [ ! -x "$(command -v tv)" ]; then
             run_silent $HOME/.cargo/bin/cargo install --git https://github.com/alexpasmantier/television
@@ -538,6 +556,14 @@ setup_desktop_environment() {
             print_status "install fd"
         else
             print_status "install fd" skip
+        fi
+
+        # Install 'zoxide'
+        if [ ! -x "$(command -v zoxide)" ]; then
+            run_silent $HOME/.cargo/bin/cargo install --locked zoxide
+            print_status "install zoxide"
+        else
+            print_status "install zoxide" skip
         fi
 
         # Install 'bat'
@@ -778,6 +804,32 @@ setup_shell_environment() {
                 zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true' -- "$GHOSTTY_DIR"
             print_status "install ghostty"
         fi
+    fi
+
+    # Install kitty
+    if is_wsl; then
+        print_status "install kitty" "skip (WSL detected)"
+    else
+        if [ -x "$(command -v kitty)" ]; then
+            print_status "install kitty" skip
+        else
+            run_silent bash -c 'curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin'
+            # Symlink kitty binaries to .local/bin
+            for bin in "$HOME/.local/kitty.app/bin/"*; do
+                if [ -x "$bin" ]; then
+                    make_link "$(realpath "$bin")" "$HOME/.local/bin/$(basename "$bin")" "kitty/$(basename "$bin")"
+                fi
+            done
+            print_status "install kitty"
+        fi
+    fi
+
+    # Install tpm (TmuxPluginManager)
+    if [ ! -d "$HOME/.config/tmux/plugins/tpm" ]; then
+        run_silent bash -c 'git clone https://github.com/tmux-plugins/tpm "$HOME/.config/tmux/plugins/tpm"'
+        print_status "install tpm"
+    else
+        print_status "install tpm" skip
     fi
 
     # Install Oh My Zsh
