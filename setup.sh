@@ -525,6 +525,22 @@ setup_desktop_environment() {
             print_status "install nyaa" skip
         fi
 
+        # Install 'manga-tui' manga tui client
+        if [ ! -x "$(command -v manga-tui)" ]; then
+            run_silent $HOME/.cargo/bin/cargo install --locked manga-tui
+            print_status "install manga-tui"
+        else
+            print_status "install manga-tui" skip
+        fi
+
+        # Install 'spotify-player' spotify tui client
+        if [ ! -x "$(command -v spotify_player)" ]; then
+            run_silent $HOME/.cargo/bin/cargo install spotify_player --features image,fzf,notify
+            print_status "install spotify_player"
+        else
+            print_status "install spotify_player" skip
+        fi
+
         # Install 'television' tui
         if [ ! -x "$(command -v tv)" ]; then
             run_silent $HOME/.cargo/bin/cargo install --git https://github.com/alexpasmantier/television

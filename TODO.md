@@ -34,7 +34,6 @@
 - [ ] openssh-server
 - [ ] iperf3
 - [ ] 1password cli
-- [ ] manga tui
 - [ ] automatic file organiser musa-labs/maid on github
 - [ ] ripgrep
 - [ ] codecompanion nvim plugin
@@ -53,14 +52,16 @@
 - [ ] 7zip and other Yazi formats
 - [ ] Tdf or other doc viewer
 - [ ] videoplayer - mpv
-- [ ] spotify-player (cargo install spotify_player --features image,fzf,notify) - tui
+
 - [ ] Image viewer
 - [ ] Make cursor executable directly
 - [ ] nvim - build from source and also config with lazyvim and what not (default installation was also installing xclip, need to make sure xclip doesnt get fucked now)
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 - [o] Yazi rust
-- [o] kitty terminal emulator
+- [x] kitty terminal emulator
+- [x] spotify-player (cargo install spotify_player --features image,fzf,notify) - tui
+- [x] manga tui
 - [x] zoxide - cargo install zoxide --locked
 - [x] tmux
 - [x] btop
