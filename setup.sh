@@ -528,6 +528,7 @@ setup_desktop_environment() {
         # Install 'manga-tui' manga tui client
         if [ ! -x "$(command -v manga-tui)" ]; then
             run_silent $HOME/.cargo/bin/cargo install --locked manga-tui
+            install_package "libdbus-1-dev"
             print_status "install manga-tui"
         else
             print_status "install manga-tui" skip
