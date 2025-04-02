@@ -29,7 +29,6 @@
     - [ ] sudo ufw allow samba
 - [ ] make updating all apps easier (make a simple script to handlle all sources for updates, system, uv , cargo, go, etc...)
 - [ ] add cargo-update crate for easier update of cargo based apps.
-- [ ] zoxide - cargo install zoxide --locked
 - [ ] netron via `uv tool install netron`
 - [ ] smassh via `uv tool install smashh` configure too
 - [ ] openssh-server
@@ -62,6 +61,7 @@
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 - [o] Yazi rust
 - [o] kitty terminal emulator
+- [x] zoxide - cargo install zoxide --locked
 - [x] tmux
 - [x] btop
 - [x] i3blocks - bar customisation

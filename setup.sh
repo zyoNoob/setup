@@ -541,6 +541,14 @@ setup_desktop_environment() {
             print_status "install fd" skip
         fi
 
+        # Install 'zoxide'
+        if [ ! -x "$(command -v zoxide)" ]; then
+            run_silent $HOME/.cargo/bin/cargo install --locked zoxide
+            print_status "install zoxide"
+        else
+            print_status "install zoxide" skip
+        fi
+
         # Install 'bat'
         if [ ! -x "$(command -v bat)" ]; then
             run_silent $HOME/.cargo/bin/cargo install --locked bat
@@ -797,6 +805,14 @@ setup_shell_environment() {
             done
             print_status "install kitty"
         fi
+    fi
+
+    # Install tpm (TmuxPluginManager)
+    if [ ! -d "$HOME/.config/tmux/plugins/tpm" ]; then
+        run_silent bash -c 'git clone https://github.com/tmux-plugins/tpm "$HOME/.config/tmux/plugins/tpm"'
+        print_status "install tpm"
+    else
+        print_status "install tpm" skip
     fi
 
     # Install Oh My Zsh
