@@ -110,7 +110,8 @@ if [[ $- == *i* ]] && [ -z "$TMUX" ] && [ $# -eq 0 ]; then
     tmux attach -t default || tmux new -s default
 fi
 
-# Set terminal program for ssh
-if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
-    export TERM=xterm-256color
-fi
+# # Set terminal program for ssh - 
+# # **NOTE** ONLY UNCOMMENT IF REALLY NEEDED, RIGHT NOW SSH Compatibility is handled via rofi, and normal use is in TMUX anyway
+# if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
+#     export TERM=xterm-256color
+# fi

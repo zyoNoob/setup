@@ -20,7 +20,7 @@ cursor-text = #000000
 # cursor-invert-fg-bg=true
 
 ## Shell Integration
-shell-integration-features = no-cursor, title
+shell-integration-features = no-cursor,title
 
 ## General Settings
 mouse-hide-while-typing = true
