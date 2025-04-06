@@ -329,6 +329,7 @@ install_essential_packages() {
         libssl-dev
         libcurl4-openssl-dev
         python3-dev
+        flatpak
     )
 
     # System utilities
@@ -386,7 +387,7 @@ install_essential_packages() {
         print_status "install fzf" skip
     fi
 
-    # Install 'Neovim'
+    # Install Neovim
     if [ ! -x "$(command -v nvim)" ]; then
         # Prerequisites
         install_package "ninja-build"
@@ -403,6 +404,17 @@ install_essential_packages() {
     else
         print_status "install neovim" skip
     fi
+
+    # Configure flatpak
+    if ! flatpak remotes | grep -q flathub; then
+        run_silent flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+        run_silent flatpak --user override --filesystem=$HOME/.icons/:ro
+        run_silent flatpak --user override --filesystem=/usr/share/icons/:ro
+        print_status "configure flatpak"
+    else
+        print_status "configure flatpak" skip
+    fi
+
 }
 
 # ========================================
