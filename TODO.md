@@ -59,6 +59,8 @@
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 - [o] Yazi rust
+- [x] flatseal
+- [x] discord
 - [x] script play_remote to play remote videos using mpv and ffmpeg and ssh
 - [x] add flatpak and flathub
 - [x] kitty terminal emulator
