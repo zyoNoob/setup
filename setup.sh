@@ -347,6 +347,7 @@ install_essential_packages() {
         rename
         transmission
         policykit-1-gnome
+        network-manager-gnome
     )
 
     # Terminal environmentDotfiles
@@ -582,6 +583,7 @@ setup_desktop_environment() {
 
         # Install 'spotify-player' spotify tui client
         if [ ! -x "$(command -v spotify_player)" ]; then
+            install_package "libasound2-dev"
             run_silent $HOME/.cargo/bin/cargo install spotify_player --features image,fzf,notify
             print_status "install spotify_player"
         else
@@ -618,6 +620,7 @@ setup_desktop_environment() {
             run_silent $HOME/.cargo/bin/bat cache --build
             print_status "install bat"
         else
+            run_silent $HOME/.cargo/bin/bat cache --build
             print_status "install bat" skip
         fi
 

@@ -59,10 +59,10 @@
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 - [o] Yazi rust
-- [o] Also install network-manager-gnome if not installed
-- [o] spotify-player need to install_package libasound2-dev
 - [o] stow needs to manually installed instead of via apt at version v.2.3.1 # 2.4.1 has a bug
-- [o] bat rust (need to add catppuccin theme installation)
+- [x] Also install network-manager-gnome if not installed
+- [x] spotify-player need to install_package libasound2-dev
+- [x] bat rust
 - [x] Bolt runescale launcher
 - [x] flatseal
 - [x] discord
