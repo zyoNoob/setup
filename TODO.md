@@ -59,13 +59,16 @@
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 - [o] Yazi rust
+- [o] Also install network-manager-gnome if not installed
+- [o] spotify-player need to install_package libasound2-dev
+- [o] stow needs to manually installed instead of via apt at version v.2.3.1 # 2.4.1 has a bug
+- [o] bat rust (need to add catppuccin theme installation)
 - [x] Bolt runescale launcher
 - [x] flatseal
 - [x] discord
 - [x] script play_remote to play remote videos using mpv and ffmpeg and ssh
 - [x] add flatpak and flathub
 - [x] kitty terminal emulator
-- [x] spotify-player (cargo install spotify_player --features image,fzf,notify) - tui
 - [x] manga tui
 - [x] zoxide - cargo install zoxide --locked
 - [x] tmux
@@ -84,7 +87,6 @@
 - [x] fd-find rust
 - [x] nyaa rust
 - [x] television rust
-- [x] bat rust
 - [x] transmission
 - [x] nvtop - build from source
     - [x] libncurses-dev
