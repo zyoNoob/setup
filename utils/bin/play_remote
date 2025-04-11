@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Function to play remote video files
+play_remote() {
+  local verbose=false
+  local input_arg=""
+
+  # Parse arguments
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+      -v|--verbose)
+      verbose=true
+      shift # past argument
+      ;;
+      *)    # unknown option
+      if [[ -z "$input_arg" ]]; then
+        input_arg="$1"
+      else
+        echo "Error: Too many arguments." >&2
+        echo "Usage: play_remote [-v|--verbose] server:filepath" >&2
+        return 1
+      fi
+      shift # past argument
+      ;;
+    esac
+  done
+
+  if [[ -z "$input_arg" ]]; then
+    echo "Usage: play_remote [-v|--verbose] server:filepath" >&2
+    return 1
+  fi
+
+  local server="${input_arg%%:*}"
+  local filepath="${input_arg#*:}"
+
+  if [[ "$server" == "$input_arg" ]] || [[ -z "$server" ]] || [[ -z "$filepath" ]]; then
+    echo "Invalid format. Use server:filepath" >&2
+    return 1
+  fi
+
+  # Check if mpv is installed
+  if ! command -v mpv >/dev/null 2>&1; then
+    echo "Error: mpv is not installed locally" >&2
+    return 1
+  fi
+
+  # Check if ffmpeg is likely available on the remote server via ssh check
+  if ! ssh "$server" 'command -v ffmpeg >/dev/null 2>&1'; then
+     echo "Error: ffmpeg not found on remote server $server or SSH connection failed" >&2
+     return 1
+  fi
+
+  local ffmpeg_loglevel="-loglevel error"
+  if [ "$verbose" = true ]; then
+      ffmpeg_loglevel="" # Default verbose level
+  fi
+
+  echo "Attempting to play $filepath from $server..."
+  # Execute ffmpeg on the remote server and pipe output to local mpv
+  ssh "$server" "ffmpeg $ffmpeg_loglevel -i \"$filepath\" -f mpegts -" | mpv -
+}
+
+# Call the function with all script arguments
+play_remote "$@" 
