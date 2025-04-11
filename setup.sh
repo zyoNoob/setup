@@ -40,7 +40,7 @@ run_silent() {
     # Always log the command and its output
     log_to_file "Command: $cmd"
     log_to_file "Output: $output"
-    
+
     return $exit_status
 }
 
@@ -57,7 +57,7 @@ run_verbose() {
     # Log command and output to both channels
     log_to_both "Command: $cmd"
     log_to_both "Output: $output"
-    
+
     return $exit_status
 }
 
@@ -259,7 +259,7 @@ EOL
             # Update and reinstall firefox
             run_silent sudo apt update -y
             print_status "update package list with mozilla repo"
-            
+
             # Force remove existing firefox and install from Mozilla repo
             remove_package "firefox"
             if run_silent sudo DEBIAN_FRONTEND=noninteractive apt install -y firefox; then
@@ -329,6 +329,7 @@ install_essential_packages() {
         libssl-dev
         libcurl4-openssl-dev
         python3-dev
+        flatpak
     )
 
     # System utilities
@@ -386,7 +387,7 @@ install_essential_packages() {
         print_status "install fzf" skip
     fi
 
-    # Install 'Neovim'
+    # Install Neovim
     if [ ! -x "$(command -v nvim)" ]; then
         # Prerequisites
         install_package "ninja-build"
@@ -403,6 +404,51 @@ install_essential_packages() {
     else
         print_status "install neovim" skip
     fi
+
+    # Configure flatpak
+    if ! flatpak remotes | grep -q flathub; then
+        run_silent flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+        run_silent flatpak --user override --filesystem=~/.icons/:ro
+        run_silent flatpak --user override --filesystem=~/.themes/:ro
+        run_silent flatpak --user override --filesystem=~/.fonts/:ro
+        run_silent flatpak --user override --filesystem=/usr/share/icons/:ro
+        run_silent flatpak --user override --filesystem=/usr/share/themes/:ro
+        run_silent flatpak --user override --filesystem=/usr/share/font
+        print_status "configure flatpak"
+    else
+        print_status "configure flatpak" skip
+    fi
+
+    # Install Flatseal (Flatpak permissions manager)
+    if ! flatpak list | grep -q com.github.tchx84.Flatseal; then
+        run_silent flatpak install -y flathub com.github.tchx84.Flatseal
+        print_status "install flatseal"
+    else
+        print_status "install flatseal" skip
+    fi
+
+    # Install Discord
+    if ! flatpak list | grep -q com.discordapp.Discord; then
+        run_silent flatpak install -y flathub com.discordapp.Discord
+        run_silent flatpak override --user --env=XCURSOR_PATH= com.discordapp.Discord
+        print_status "install discord"
+    else
+        # Ensure environment variables are set even if Discord is already installed
+        run_silent flatpak override --user --env=XCURSOR_PATH= com.discordapp.Discord
+        print_status "install discord" skip
+    fi
+
+    # Install Bolt (RS3 Launcher)
+    if ! flatpak list | grep -q com.adamcake.Bolt; then
+        run_silent flatpak install -y flathub com.adamcake.Bolt
+        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=200 com.adamcake.Bolt
+        print_status "install bolt"
+    else
+        # Ensure environment variables are set even if Bolt is already installed
+        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=200 com.adamcake.Bolt
+        print_status "install bolt" skip
+    fi
+
 }
 
 # ========================================
@@ -796,7 +842,7 @@ setup_shell_environment() {
             if [ -d "$GHOSTTY_DIR" ]; then
                 run_silent rm -rf "$GHOSTTY_DIR"
             fi
-            
+
             # Clone and build
             run_silent bash -c 'git clone https://github.com/ghostty-org/ghostty.git "$1" && \
                 cd "$1" && \
@@ -877,8 +923,8 @@ configure_dotfiles_and_utils() {
     log_to_both "# Configurating Dotfiles & Utils"
     log_to_both "--------------------------------"
 
-    cd "$SETUP_DIR"    
-   
+    cd "$SETUP_DIR"
+
     # Stow dotfiles with explicit target directory and adopt existing files
     run_silent stow --no-folding --adopt --override=* -v -t "$HOME" dotfiles
     print_status "stow dotfiles"

@@ -26,7 +26,7 @@ ZSH_THEME="robbyrussell"
 # plugins=(git zsh-autosuggestions zsh-autocomplete F-Sy-H conda-zsh-completion fzf)
 
 # Plugins -> fzf-tab for completion
-plugins+=(vi-mode conda-zsh-completion)    
+plugins+=(vi-mode conda-zsh-completion)
 
 fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
 
@@ -106,11 +106,12 @@ eval $(keychain --eval id_rsa)
 # 1. The shell is interactive.
 # 2. You are not already inside a tmux session.
 # 3. No command was passed to the shell.
-if [[ $- == *i* ]] && [ -z "$TMUX" ] && [ $# -eq 0 ]; then
+# 4. The terminal is kitty or ghostty.
+if [[ $- == *i* ]] && [ -z "$TMUX" ] && [ $# -eq 0 ] && [[ "$TERM" == "xterm-kitty" || "$TERM" == "xterm-ghostty" ]]; then
     tmux attach -t default || tmux new -s default
 fi
 
-# # Set terminal program for ssh - 
+# # Set terminal program for ssh -
 # # **NOTE** ONLY UNCOMMENT IF REALLY NEEDED, RIGHT NOW SSH Compatibility is handled via rofi, and normal use is in TMUX anyway
 # if [[ "$TERM_PROGRAM" == "ghostty" || "$TERM_PROGRAM" == "kitty" ]]; then
 #     export TERM=xterm-256color

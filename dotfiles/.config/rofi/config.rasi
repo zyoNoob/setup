@@ -19,8 +19,11 @@ configuration{
     display-clipboard: "   CLIP   ";
     sidebar-mode: true;
     ssh-client: "ssh";
-    ssh-command: """{terminal} -e "export TERM=xterm-256color && {ssh-client} {host}"""";
+    ssh-command: """{terminal} -e sh -c "export TERM=xterm-256color && {ssh-client} {host}"""";
 }
 
-
 @theme "catppuccin-mocha"
+
+// For ghostty use the below prompts in the above configuration
+// run-shell-command: """{terminal} --title={cmd} -e {cmd}""";
+// ssh-command: """{terminal} -e "export TERM=xterm-256color && {ssh-client} {host}"""";
