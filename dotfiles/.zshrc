@@ -41,10 +41,52 @@ zle -N recent-paths
 
 source $ZSH/oh-my-zsh.sh
 
-# There is a newline in the prompt
-# The j part shows number of suspended jobs
-PROMPT='%(?:%{$fg_bold[green]%}%1{OK%} :%{$fg_bold[red]%}%1{FAILED%} ) %{$fg[cyan]%}%1{($?)%}
-%(?:%{$fg_bold[green]%}%1{➜%} :%{$fg_bold[red]%}%1{➜%} ) %{$fg[cyan]%}%c% %{$fg[red]%}%(1j. [%j].)%{$reset_color%} $(git_prompt_info)'
+# --- Custom Prompt Configuration ---
+
+## BASIC VERSION
+# PROMPT='%(?:%{$fg_bold[green]%}%1{OK%} :%{$fg_bold[red]%}%1{FAILED%} ) %{$fg[cyan]%}%1{($?)%}
+# %(?:%{$fg_bold[green]%}%1{➜%} :%{$fg_bold[red]%}%1{➜%} ) %{$fg[cyan]%}%c% %{$fg[red]%}%(1j. [%j].)%{$reset_color%} $(git_prompt_info)'
+
+## EXTENDED VERSION (Reqires NerdFont)
+
+# Define colors
+local color_ok=$fg_bold[green]        # Green
+local color_fail=$fg_bold[red]        # Red
+local color_exitcode=$fg[cyan]        # Cyan
+local color_user=$fg[green]           # Green
+local color_system=$fg[blue]          # Blue
+local color_shell=$fg[red]            # Red
+local color_sep=$fg_bold[grey]        # Grey
+local color_path=$fg[cyan]            # Cyan
+local color_jobs=$fg_bold[red]        # Red
+local color_prompt=$fg_bold[green]    # Green
+local color_reset=$reset_color
+
+# Define NEWLINE variable (as you added previously)
+NEWLINE=$'\n'
+
+# Line 1: Status (OK/FAILED) + Exit Code
+PROMPT='%(?.%{$color_ok%}OK%{$color_reset%}.%{$color_fail%}FAILED%{$color_reset%}) %{$color_exitcode%}(%?)%{$color_reset%}${NEWLINE}'
+
+# Line 2: User Icon + User@Host + Separator + Shell Icon + Shell Type + Separator + Dir Icon + Path
+# Reordered Shell and User/Host based on your latest code structure
+PROMPT+='%{ %}%{$color_user%}%n%{$color_reset%}@%{$color_system%}%m%{$color_reset%}'                                   
+PROMPT+='%{$color_sep%} | %{$color_reset%}'                                                
+PROMPT+='%{ %}%{$color_shell%}${SHELL##*/}%{$color_reset%}'                               
+PROMPT+='%{$color_sep%} | %{$color_reset%}'                                                
+PROMPT+='%{  %}%{$color_path%}%~%{$color_reset%}'                                         
+
+# Line 2 : Gitinfo
+PROMPT+='%{$color_sep%} | %{$color_reset%}'                                                
+PROMPT+='%{ $(git_prompt_info)%}'                                                         
+
+# Line 3: Prompt Character
+PROMPT+='${NEWLINE}%{$color_prompt%}%(!.#.❯)%{$color_reset%} '                            
+
+#RPROMPT (right prompt) (Background jobs)
+RPROMPT='%(1j. %{$color_jobs%}[%j]%{$color_reset%}.)'                                      
+
+# --- End Custom Prompt Configuration ---
 
 # Alias function for gitydiff
 # Unalias if it exists (from oh-my-zsh)
