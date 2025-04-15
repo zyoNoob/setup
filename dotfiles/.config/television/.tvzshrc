@@ -6,14 +6,19 @@ _tv_smart_autocomplete() {
     current_prompt=$LBUFFER
 
     local output
+    # Get output and replace newlines with spaces
+    output=$(tv --autocomplete-prompt "$current_prompt" $* | tr '\n' ' ')
 
-    output=$(tv --autocomplete-prompt "$current_prompt" $*)
-
+    # Check if the output ends with a space and remove it
+    if [[ "${output}" == *" " ]]; then
+        # Use % to remove the shortest suffix match (a single trailing space)
+        output="${output% }"
+    fi
 
     if [[ -n $output ]]; then
-        zle reset-prompt
-        RBUFFER=""        
-        
+        # suffix (rhs of cursor)
+        local rhs=$RBUFFER
+
         # Case 1: Empty prompt - don't add space, keep output as is
         if [[ -z "${current_prompt}" ]]; then
             # Do nothing to the output or prompt
@@ -36,7 +41,10 @@ _tv_smart_autocomplete() {
         fi
         
         LBUFFER=$current_prompt$output
+        CURSOR=${#LBUFFER}
+        RBUFFER=$rhs
 
+        zle reset-prompt
         # uncomment this to automatically accept the line 
         # (i.e. run the command without having to press enter twice)
         # zle accept-line
