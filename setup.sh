@@ -442,11 +442,11 @@ install_essential_packages() {
     # Install Bolt (RS3 Launcher)
     if ! flatpak list | grep -q com.adamcake.Bolt; then
         run_silent flatpak install -y flathub com.adamcake.Bolt
-        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=200 com.adamcake.Bolt
+        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=126 com.adamcake.Bolt
         print_status "install bolt"
     else
         # Ensure environment variables are set even if Bolt is already installed
-        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=200 com.adamcake.Bolt
+        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=126 com.adamcake.Bolt
         print_status "install bolt" skip
     fi
 
