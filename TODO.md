@@ -60,6 +60,7 @@
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 - [o] Yazi rust
 - [o] stow needs to manually installed instead of via apt at version v.2.3.1 # 2.4.1 has a bug
+- [x] vibrantLinux
 - [x] Also install network-manager-gnome if not installed
 - [x] spotify-player need to install_package libasound2-dev
 - [x] bat rust

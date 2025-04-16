@@ -450,6 +450,14 @@ install_essential_packages() {
         print_status "install bolt" skip
     fi
 
+    # Install Vibrant Linux - Saturation Manager
+    if ! flatpak list | grep -q io.github.libvibrant.vibrantLinux; then
+        run_silent flatpak install -y flathub io.github.libvibrant.vibrantLinux
+        print_status "install vibrantLinux"
+    else
+        print_status "install vibrantLinux" skip
+    fi
+
 }
 
 # ========================================
