@@ -358,6 +358,8 @@ install_essential_packages() {
         picom
         polybar
         neofetch
+        avahi-daemon
+        avahi-utils
     )
 
     # Install all packages

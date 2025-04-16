@@ -58,6 +58,7 @@
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 - [o] Yazi rust
 - [o] stow needs to manually installed instead of via apt at version v.2.3.1 # 2.4.1 has a bug
+- [x] avahi-daemon avahi-utils (useful for local hostname resolution)
 - [x] openssh-server
 - [x] vibrantLinux
 - [x] Also install network-manager-gnome if not installed
