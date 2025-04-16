@@ -28,6 +28,7 @@
     - [ ] sudo ufw allow samba
 - [ ] make updating all apps easier (make a simple script to handlle all sources for updates, system, uv , cargo, go, etc...)
 - [ ] add cargo-update crate for easier update of cargo based apps.
+- [ ] barrier - mouse sharing
 - [ ] netron via `uv tool install netron`
 - [ ] smassh via `uv tool install smashh` configure too
 - [ ] iperf3
