@@ -158,3 +158,13 @@ fi
 # if [[ "$TERM_PROGRAM" == "ghostty" || "$TERM_PROGRAM" == "kitty" ]]; then
 #     export TERM=xterm-256color
 # fi
+
+# Yazi shell integration
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+		builtin cd -- "$cwd"
+	fi
+	rm -f -- "$tmp"
+}
