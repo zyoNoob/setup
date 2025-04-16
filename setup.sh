@@ -317,7 +317,7 @@ install_essential_packages() {
     log_to_both "--------------------------------"
     log_to_both "# Essential Package Installation"
     log_to_both "--------------------------------"
-    # Core development tools
+    # Core packages
     local packages_core=(
         curl
         gcc
@@ -330,10 +330,6 @@ install_essential_packages() {
         libcurl4-openssl-dev
         python3-dev
         flatpak
-    )
-
-    # System utilities
-    local packages_system=(
         htop
         btop
         speedtest-cli
@@ -348,18 +344,11 @@ install_essential_packages() {
         transmission
         policykit-1-gnome
         network-manager-gnome
-    )
-
-    # Terminal environmentDotfiles
-    local packages_terminal=(
+        openssh-server
         zsh
         tmux
         silversearcher-ag
         tree
-    )
-
-    # Desktop environment
-    local packages_desktop=(
         i3
         i3blocks
         pavucontrol
@@ -372,7 +361,7 @@ install_essential_packages() {
     )
 
     # Install all packages
-    for pkg in "${packages_core[@]}" "${packages_system[@]}" "${packages_terminal[@]}" "${packages_desktop[@]}"; do
+    for pkg in "${packages_core[@]}"; do
         install_package "$pkg"
     done
 

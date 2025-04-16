@@ -10,7 +10,6 @@
 - [ ] FULL RETRUCTURE OF INSTALLATION SCRIPT
     - [ ] Explore what is the best approach to install all the programs
     - [ ] Rust using ratatui might be a good aproach.
-
 - [ ] cycle through TUIs in this repo -> https://github.com/rothgar/awesome-tuis?tab=readme-ov-file
 - [ ] ffmpeg - download prebuilt and link
     - [ ] source https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl-shared.tar.xz
@@ -28,11 +27,9 @@
     - [ ] sudo service samba restart
     - [ ] sudo ufw allow samba
 - [ ] make updating all apps easier (make a simple script to handlle all sources for updates, system, uv , cargo, go, etc...)
-
 - [ ] add cargo-update crate for easier update of cargo based apps.
 - [ ] netron via `uv tool install netron`
 - [ ] smassh via `uv tool install smashh` configure too
-- [ ] openssh-server
 - [ ] iperf3
 - [ ] 1password cli
 - [ ] automatic file organiser musa-labs/maid on github
@@ -60,6 +57,7 @@
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 - [o] Yazi rust
 - [o] stow needs to manually installed instead of via apt at version v.2.3.1 # 2.4.1 has a bug
+- [x] openssh-server
 - [x] vibrantLinux
 - [x] Also install network-manager-gnome if not installed
 - [x] spotify-player need to install_package libasound2-dev
