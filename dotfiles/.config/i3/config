@@ -22,6 +22,10 @@ set $PRIMARY_MONITOR DP-4
 set $SECONDARY_MONITOR DP-2
 exec --no-startup-id xrdb -merge ~/.Xresources
 
+## Trackpad Configuration
+# exec --no-startup-id xinput set-prop "DELL0781:00 06CB:7E92 Touchpad" "libinput Tapping Enabled" 1
+# exec --no-startup-id xinput set-prop "DELL0781:00 06CB:7E92 Touchpad" "libinput Natural Scrolling Enabled" 1
+
 ## Start XDG autostart .desktop files using dex
 exec --no-startup-id dex --autostart --environment i3
 ## Lock screen before suspend
@@ -51,6 +55,10 @@ bindsym XF86AudioRaiseVolume exec --no-startup-id amixer set Master 10%+ && pkil
 bindsym XF86AudioLowerVolume exec --no-startup-id amixer set Master 10%- && pkill -RTMIN+10 i3blocks
 bindsym XF86AudioMute        exec --no-startup-id pactl set-sink-mute 0 toggle && $refresh_i3status
 bindsym XF86AudioMicMute     exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
+
+## Brightness controls
+bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set +5%
+bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-
 
 ## Use floating windows
 floating_modifier $win

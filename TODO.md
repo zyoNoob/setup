@@ -43,7 +43,6 @@
 - [ ] gh cli, glab cli
 - [ ] yeet script that handles the gcmsg " " and gp operation using mods.
 - [ ] mods, gum, ship, ship_glab (ai based pull requests) - https://gist.githubusercontent.com/dangrondahl/2807a52f8ae11d12ac3f7a701fd822dc/raw/5e0166ee485124e0e6139ab61236c0faa863d55f/ship.sh
-- [ ] pulsemixer
 - [ ] https://github.com/milaq/XMousePasteBlock use this to disable paste on middle click
 - [ ] neofetch
 - [ ] lazysql
@@ -58,6 +57,8 @@
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 - [o] Yazi rust
 - [o] stow needs to manually installed instead of via apt at version v.2.3.1 # 2.4.1 has a bug
+- [x] brightnessctl
+- [x] pulsemixer
 - [x] avahi-daemon avahi-utils (useful for local hostname resolution)
 - [x] openssh-server
 - [x] vibrantLinux

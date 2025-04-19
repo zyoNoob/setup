@@ -352,6 +352,7 @@ install_essential_packages() {
         i3
         i3blocks
         pavucontrol
+        pulsemixer
         feh
         dunst
         rofi
@@ -377,6 +378,15 @@ install_essential_packages() {
         print_status "install fzf"
     else
         print_status "install fzf" skip
+    fi
+
+    # Install brightnessctl
+    if [ ! -x "$(command -v brightnessctl)" ]; then
+        install_package "brightnessctl"
+        run_silent sudo chmod +s /usr/bin/brightnessctl
+        print_status "install brightnessctl"
+    else
+        print_status "install brightnessctl" skip
     fi
 
     # Install Neovim
