@@ -7,11 +7,12 @@
 ---
 
 ## TODO
-- [ ] FULL RETRUCTURE OF INSTALLATION SCRIPT
+- [ ] FULL RETRUCTURE OF INSTALLATION SCRIPT (look at christitus/linutil)
     - [ ] Explore what is the best approach to install all the programs
     - [ ] Rust using ratatui might be a good aproach.
 - [ ] cycle through TUIs in this repo -> https://github.com/rothgar/awesome-tuis?tab=readme-ov-file
 - [ ] ffmpeg - download prebuilt and link
+    - [ ] also need to figure out what will happen with the dev libraries -> sudo apt install -y ffmpeg libavformat-dev libavcodec-dev libavdevice-dev libavutil-dev libavfilter-dev libswscale-dev libswresample-dev
     - [ ] source https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl-shared.tar.xz
     - [ ] sudo ln -s /path/to/ffmpeg-build/bin/* /usr/local/bin/
     - [ ] sudo ln -s /path/to/ffmpeg-build/lib/* /usr/local/lib/
