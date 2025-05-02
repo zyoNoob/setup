@@ -322,6 +322,8 @@ install_essential_packages() {
         curl
         gcc
         g++
+        libclang-dev
+        clang
         build-essential
         pkg-config
         stow
