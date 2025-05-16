@@ -57,7 +57,7 @@
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
 - [ ] Yazi rust
-- [ ] stow needs to manually installed instead of via apt at version v.2.3.1 # 2.4.1 has a bug
+- [x] fix stow commands for the regex pattern in override arg
 - [x] brightnessctl
 - [x] pulsemixer
 - [x] avahi-daemon avahi-utils (useful for local hostname resolution)
