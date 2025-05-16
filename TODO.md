@@ -56,8 +56,8 @@
 - [ ] nvim - build from source and also config with lazyvim and what not (default installation was also installing xclip, need to make sure xclip doesnt get fucked now)
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
-- [o] Yazi rust
-- [o] stow needs to manually installed instead of via apt at version v.2.3.1 # 2.4.1 has a bug
+- [ ] Yazi rust
+- [ ] stow needs to manually installed instead of via apt at version v.2.3.1 # 2.4.1 has a bug
 - [x] brightnessctl
 - [x] pulsemixer
 - [x] avahi-daemon avahi-utils (useful for local hostname resolution)
