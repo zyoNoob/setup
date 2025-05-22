@@ -21,6 +21,7 @@
     - [ ] sudo ln -s /path/to/ffmpeg-build/lib/pkgconfig/ffmpeg.pc /usr/local/lib/pkgconfig/ffmpeg.pc
     - [ ] sudo ln -s /path/to/ffmpeg-build/man /usr/local/share/man
     - [ ] sudo find /usr/local -xtype l -delete (removal of symlinks for uninstallation)
+- [ ] automounting of drive
 - [ ] samba configuration
     - [ ] sudo apt install samba
     - [ ] sudo nano /etc/samba/smb.conf ```[sambashare] \n comment = Shared Drive \n path = /path/to/drive/mount/point \n read only = no \n browsable = yes```
@@ -29,6 +30,10 @@
     - [ ] sudo ufw allow samba
 - [ ] make updating all apps easier (make a simple script to handlle all sources for updates, system, uv , cargo, go, etc...)
 - [ ] add cargo-update crate for easier update of cargo based apps.
+- [ ] NEOVIM
+    - [x] Lazyvim
+    - [ ] Lazyvim configuration
+    - [ ] Codecompanion
 - [ ] barrier - mouse sharing
 - [ ] netron via `uv tool install netron`
 - [ ] smassh via `uv tool install smashh` configure too
@@ -36,7 +41,6 @@
 - [ ] 1password cli
 - [ ] automatic file organiser musa-labs/maid on github
 - [ ] ripgrep
-- [ ] codecompanion nvim plugin
 - [ ] build a go based app that collates latest releases in AI
 - [ ] Tailscale
 - [ ] aria2, and a corresponding webui
@@ -44,17 +48,19 @@
 - [ ] yeet script that handles the gcmsg " " and gp operation using mods.
 - [ ] mods, gum, ship, ship_glab (ai based pull requests) - https://gist.githubusercontent.com/dangrondahl/2807a52f8ae11d12ac3f7a701fd822dc/raw/5e0166ee485124e0e6139ab61236c0faa863d55f/ship.sh
 - [ ] https://github.com/milaq/XMousePasteBlock use this to disable paste on middle click
-- [ ] neofetch
+- [x] neofetch
+- [ ] fastfetch
 - [ ] lazysql
 - [ ] lazygit
-- [ ] Tdf or other doc viewer
+- [ ] tdf or other doc viewer
 - [ ] videoplayer - mpv
 - [ ] Image viewer
 - [ ] Make cursor executable directly
-- [ ] nvim - build from source and also config with lazyvim and what not (default installation was also installing xclip, need to make sure xclip doesnt get fucked now)
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
-- [ ] Yazi rust - 7zip and other Yazi formats
+- [ ] Yazi
+    - [x] Yazi
+    - [ ] [Yazi plugins](https://github.com/AnirudhG07/awesome-yazi)
 - [x] fix stow commands for the regex pattern in override arg
 - [x] brightnessctl
 - [x] pulsemixer

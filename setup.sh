@@ -330,7 +330,10 @@ install_essential_packages() {
         cmake
         libssl-dev
         libcurl4-openssl-dev
+        python3
         python3-dev
+        python3-pip
+        python3-numpy
         flatpak
         htop
         btop
@@ -636,6 +639,8 @@ setup_desktop_environment() {
             print_status "install bat" skip
         fi
 
+        
+
         # Install 'nvtop'
         if [ ! -x "$(command -v nvtop)" ]; then
             install_package "libncurses-dev"
@@ -772,7 +777,7 @@ setup_development_tools() {
         print_status "install miniconda" skip
     fi
 
-    # Install uv for Python package management
+    # Install for Python package management
     if [ ! -x "$(command -v uv)" ]; then
         run_silent bash -c 'curl -LsSf https://astral.sh/uv/install.sh | sh'
         print_status "install uv"

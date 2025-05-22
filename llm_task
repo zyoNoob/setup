@@ -1,0 +1,36 @@
+# Add the following modules to the setup flow
+
+1. **cargo crate `cargo-update`**  
+   Designed to simplify updating system cargo crates.
+
+2. **uv tool install:**  
+   - `netron`
+   - `smashh`
+   - `gdown`
+   - `"huggingface_hub[cli]"`
+   - To install `hf_transfer`, do this:
+
+     ```bash
+     source ~/.local/share/uv/tools/huggingface-hub/bin/activate
+     uv pip install hf_transfer
+     deactivate
+     ```
+
+3. **go install:**
+   - `github.com/charmbracelet/mods@latest`
+   - `github.com/charmbracelet/gum@latest`
+   - `github.com/charmbracelet/glow@latest`
+   - `github.com/jorgerojas26/lazysql@latest`
+
+4. **Install `iperf3`**
+
+5. **Install GitHub CLI and GitLab CLI**
+
+6. **Install lazygit as follows:**
+
+   ```bash
+   LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": *"v\K[^"]*')
+   curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+   tar xf lazygit.tar.gz lazygit
+   sudo install lazygit -D -t /usr/local/bin/
+   ```
