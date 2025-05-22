@@ -37,6 +37,22 @@ get_default_branch() {
     echo "$branch"
 }
 
+# Function to clean up MR description
+cleanup_mr_description() {
+    local description_content="$1"
+    # Remove potential leading/trailing ```markdown or ``` if they wrap the whole content
+    if [[ "$description_content" == \`\`\`* ]] && [[ "$description_content" == *\`\`\` ]]; then
+        temp_cleaned_description=$(echo "$description_content" | sed -E 's/^```(markdown|text|diff)?\s*//' | sed -E 's/\s*```$//')
+        # Only apply if stripping actually changes something and leaves content
+        if [ "$temp_cleaned_description" != "$description_content" ] && [ -n "$temp_cleaned_description" ]; then
+            description_content="$temp_cleaned_description"
+        fi
+    fi
+    # Trim leading/trailing whitespace and newlines from the whole block
+    description_content=$(echo "$description_content" | sed -e 's/^[[:space:]\n]*//' -e 's/[[:space:]\n]*$//')
+    echo "$description_content"
+}
+
 # Generate MR title and description
 generate_mr_info() { # Renamed from generate_pr_info to reflect GitLab terminology
     local default_branch
@@ -132,39 +148,21 @@ General instructions for the entire description:
 - Do NOT include the MR type (e.g., 'fix:', 'feat:') at the beginning of the description.
 - Adhere to a maximum token limit of around 1800 tokens for this description content."
 
-    mr_description=$(git diff "$default_branch".. | mods -f --temp 0.2 "$description_prompt" --max-tokens 2000)
+    mr_description=$(git diff "$default_branch".. | mods -f --temp 0.2 "$description_prompt" --max-tokens 10000)
+    mr_description=$(cleanup_mr_description "$mr_description")
+    gum style --foreground 212 "Generated and cleaned mr description" # Removed $mr_description to avoid large output
 
-    if [ -z "$mr_description" ] || echo "$mr_description" | grep -q '^[[:space:]]*$'; then # Check if empty or only whitespace
-        gum style --foreground "yellow" "Warning: Initial MR description generation failed or resulted in empty content. Attempting fallback..."
-        local fallback_description_prompt="Summarize the following code changes for a Merge Request description.
-Explain what was changed and why. Use Markdown format. Be concise and clear."
-        mr_description=$(git diff "$default_branch".. | mods -f --temp 0.2 "$fallback_description_prompt" --max-tokens 1000)
-        if [ -z "$mr_description" ] || echo "$mr_description" | grep -q '^[[:space:]]*$'; then
-            gum style --foreground "red" "Error: Fallback MR description generation also failed or resulted in empty content. Please create the MR manually."
-            exit 1
-        fi
-    fi
-    
-    # Clean up mr_description: remove potential leading/trailing ```markdown or ``` if they wrap the whole content
-    # and trim leading/trailing blank lines from the whole block.
-    if [[ "$mr_description" == \`\`\`* ]] && [[ "$mr_description" == *\`\`\` ]]; then
-        temp_description=$(echo "$mr_description" | sed -E 's/^```(markdown|text|diff)?\s*//' | sed -E 's/\s*```$//')
-        if [ "$temp_description" != "$mr_description" ] && [ -n "$temp_description" ]; then
-            mr_description="$temp_description"
-        fi
-    fi
-    mr_description=$(echo "$mr_description" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-
-
-    if echo "$mr_description" | grep -qv '[^[:space:]]'; then # Final check if description is all whitespace
-        gum style --foreground "red" "Error: MR description is empty or contains only whitespace after all processing."
+    if ! echo "$mr_description" | grep -q '[^[:space:]]'; then # Check if empty or only whitespace after cleanup
+        gum style --foreground "red" "Error: MR description generation failed or resulted in empty content after cleanup. Please create the MR manually or try running the script again."
         exit 1
     fi
 
-    gum style --foreground "cyan" --border double --padding "1 1" --margin "1 1" \
-        "Generated Merge Request Details:" \
-        "Title: $mr_title" \
-        "--- Description Preview (scroll if needed) ---"
+    # Fallback logic and old cleanup removed.
+
+    local header_text
+    header_text=$(printf "Generated Merge Request Details:\nTitle: %s\n--- Description Preview (scroll if needed) ---" "$mr_title")
+    
+    echo "$header_text" | gum style --foreground "cyan" --border double --padding "1 1" --margin "1 1"
     
     echo "$mr_description" | gum format
 

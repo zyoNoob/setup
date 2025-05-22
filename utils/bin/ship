@@ -37,6 +37,22 @@ get_default_branch() {
     echo "$branch"
 }
 
+# Function to clean up PR body
+cleanup_pr_body() {
+    local body_content="$1"
+    # Remove potential leading/trailing ```markdown or ``` if they wrap the whole content
+    if [[ "$body_content" == \`\`\`* ]] && [[ "$body_content" == *\`\`\` ]]; then
+        temp_cleaned_body=$(echo "$body_content" | sed -E 's/^```(markdown|text|diff)?\s*//' | sed -E 's/\s*```$//')
+        # Only apply if stripping actually changes something and leaves content
+        if [ "$temp_cleaned_body" != "$body_content" ] && [ -n "$temp_cleaned_body" ]; then
+            body_content="$temp_cleaned_body"
+        fi
+    fi
+    # Trim leading/trailing whitespace and newlines from the whole block
+    body_content=$(echo "$body_content" | sed -e 's/^[[:space:]\n]*//' -e 's/[[:space:]\n]*$//')
+    echo "$body_content"
+}
+
 # Generate PR title and body
 generate_pr_info() {
     local default_branch
@@ -132,41 +148,19 @@ General instructions for the entire body:
 - Do NOT include the PR type (e.g., 'fix:', 'feat:') at the beginning of the body.
 - Adhere to a maximum token limit of around 1800 tokens for this body content."
 
-    pr_body=$(git diff "$default_branch".. | mods -f --temp 0.2 "$body_prompt" --max-tokens 2000)
+    pr_body=$(git diff "$default_branch".. | mods -f --temp 0.2 "$body_prompt" --max-tokens 10000)
+    pr_body=$(cleanup_pr_body "$pr_body")
+    gum style --foreground 212 "Generated and cleaned pr body" # Removed $pr_body to avoid large output
 
-    if [ -z "$pr_body" ] || echo "$pr_body" | grep -q '^[[:space:]]*$'; then # Check if empty or only whitespace
-        gum style --foreground "yellow" "Warning: Initial PR body generation failed or resulted in empty content. Attempting fallback..."
-        # Fallback prompt is simpler
-        local fallback_body_prompt="Summarize the following code changes for a Pull Request body.
-Explain what was changed and why. Use Markdown format. Be concise and clear."
-        pr_body=$(git diff "$default_branch".. | mods -f --temp 0.2 "$fallback_body_prompt" --max-tokens 1000)
-        if [ -z "$pr_body" ] || echo "$pr_body" | grep -q '^[[:space:]]*$'; then
-            gum style --foreground "red" "Error: Fallback PR body generation also failed or resulted in empty content. Please create the PR manually."
-            exit 1
-        fi
-    fi
-    
-    # Clean up pr_body: remove potential leading/trailing ```markdown or ``` if they wrap the whole content
-    # and trim leading/trailing blank lines from the whole block.
-    if [[ "$pr_body" == \`\`\`* ]] && [[ "$pr_body" == *\`\`\` ]]; then
-        temp_body=$(echo "$pr_body" | sed -E 's/^```(markdown|text|diff)?\s*//' | sed -E 's/\s*```$//')
-        # Only apply if stripping actually changes something and leaves content
-        if [ "$temp_body" != "$pr_body" ] && [ -n "$temp_body" ]; then
-            pr_body="$temp_body"
-        fi
-    fi
-    pr_body=$(echo "$pr_body" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-
-
-    if echo "$pr_body" | grep -qv '[^[:space:]]'; then # Final check if body is all whitespace
-        gum style --foreground "red" "Error: PR body is empty or contains only whitespace after all processing."
+    if ! echo "$pr_body" | grep -q '[^[:space:]]'; then
+        gum style --foreground "red" "Error: PR body generation failed or resulted in empty content after cleanup. Please create the PR manually or try running the script again."
         exit 1
     fi
 
-    gum style --foreground "cyan" --border double --padding "1 1" --margin "1 1" \
-        "Generated Pull Request Details:" \
-        "Title: $pr_title" \
-        "--- Body Preview (scroll if needed) ---"
+    local header_text
+    header_text=$(printf "Generated Pull Request Details:\nTitle: %s\n--- Body Preview (scroll if needed) ---" "$pr_title")
+    
+    echo "$header_text" | gum style --foreground "cyan" --border double --padding "1 1" --margin "1 1"
     
     echo "$pr_body" | gum format # Display body using gum format for better readability
 
