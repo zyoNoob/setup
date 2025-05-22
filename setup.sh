@@ -5,7 +5,7 @@
 # --------------------------------
 
 # Exit immediately if a command exits with a non-zero status
-# set -e
+set -e
 
 # Log file path
 LOG_FILE="/tmp/setup_$(date +%Y%m%d_%H%M%S).log"
@@ -369,6 +369,7 @@ install_essential_packages() {
         avahi-utils
         iperf3
         aria2
+        wireplumber
     )
 
     # Install all packages
@@ -946,6 +947,7 @@ setup_development_tools() {
         libboost-all-dev
         libomp-dev
         libzmq3-dev
+        nlohmann-json3-dev
     )
     for pkg in "${cpp_dev_packages[@]}"; do
         install_package "$pkg"
