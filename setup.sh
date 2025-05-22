@@ -1123,6 +1123,7 @@ setup_shell_environment() {
     # Install 'zoxide'
     if [ ! -x "$(command -v zoxide)" ]; then
         run_silent $HOME/.cargo/bin/cargo install --locked zoxide
+        run_silent sudo ln -s $HOME/.cargo/bin/zoxide /usr/local/bin/zoxide
         print_status "install zoxide"
     else
         print_status "install zoxide" skip
@@ -1132,6 +1133,7 @@ setup_shell_environment() {
     if [ ! -x "$(command -v bat)" ]; then
         run_silent $HOME/.cargo/bin/cargo install --locked bat
         run_silent $HOME/.cargo/bin/bat cache --build
+        run_silent sudo ln -s $HOME/.cargo/bin/bat /usr/local/bin/bat
         print_status "install bat"
     else
         run_silent $HOME/.cargo/bin/bat cache --build
