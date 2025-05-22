@@ -18,36 +18,168 @@ done
 
 # Get the default branch from the remote repository
 get_default_branch() {
-    git remote show origin | grep 'HEAD branch' | cut -d' ' -f5
+    # Attempt to get default branch from remote, fallback to local main/master
+    local branch
+    branch=$(git remote show origin 2>/dev/null | grep 'HEAD branch' | cut -d' ' -f5)
+
+    if [ -z "$branch" ] || [ "$branch" = "(unknown)" ]; then
+        gum style --foreground "yellow" "Warning: Could not determine default branch from remote HEAD. Checking local 'main' or 'master'."
+        if git show-ref --verify --quiet refs/heads/main; then
+            branch="main"
+        elif git show-ref --verify --quiet refs/heads/master; then
+            branch="master"
+        else
+            gum style --foreground "red" "Error: Could not determine the default branch. Please ensure 'main' or 'master' exists locally, or the remote HEAD branch is set."
+            exit 1
+        fi
+        gum style --foreground "yellow" "Using '$branch' as fallback default branch."
+    fi
+    echo "$branch"
 }
 
-# Generate PR title and body
-generate_pr_info() {
+# Generate MR title and description
+generate_mr_info() { # Renamed from generate_pr_info to reflect GitLab terminology
     local default_branch
     default_branch=$(get_default_branch)
+    if [ -z "$default_branch" ]; then
+        # Error message already printed by get_default_branch
+        exit 1
+    fi
 
-    local type scope pr_title_prefix pr_summary pr_body
+    gum style --foreground 212 "Using default branch: $default_branch"
+
+    # Check for changes against the default branch
+    if git diff --quiet "$default_branch"..; then
+        gum style --foreground "yellow" "No changes detected compared to '$default_branch'. Nothing to ship."
+        exit 0
+    fi
+
+    local type scope mr_title_prefix mr_summary mr_description MAX_TOTAL_TITLE_LENGTH max_summary_length
+    MAX_TOTAL_TITLE_LENGTH=100 # Max length for the entire MR title (prefix + summary)
 
     # Using the Conventional Commit format
-    type=$(gum choose "fix" "feat" "docs" "style" "refactor" "test" "chore" "revert")
-    scope=$(gum input --placeholder "scope")
+    type=$(gum choose "fix" "feat" "docs" "style" "refactor" "test" "chore" "revert" --header "Select MR Type:")
+    if [ -z "$type" ]; then
+        gum style --foreground "red" "MR Type selection cancelled or failed."
+        exit 1
+    fi
+
+    scope=$(gum input --placeholder "scope (optional, e.g., 'api', 'ui')" --prompt "Enter scope: ")
 
     # Since the scope is optional, wrap it in parentheses if it has a value.
     [ -n "$scope" ] && scope="($scope)"
 
-    pr_title_prefix="$type$scope"
+    mr_title_prefix="$type$scope"
 
-    gum style --foreground 212 "Generating Pull Request title..."
-    pr_summary=$(git diff "$default_branch".. | mods "create a Pull Request title. First word should start with a lowercase letter. Title should not exceed 200 chars and should not start with a prefix that indicating the type of pr change.")
-    pr_title="$pr_title_prefix: $pr_summary"
+    # Calculate remaining length for the summary
+    local prefix_len=${#mr_title_prefix}
+    # prefix + ": " + summary <= MAX_TOTAL_TITLE_LENGTH
+    max_summary_length=$((MAX_TOTAL_TITLE_LENGTH - prefix_len - 2)) # -2 for ": "
 
-    gum style --foreground 212 "Generating Pull Request body..."
-    pr_body=$(git diff "$default_branch".. | mods -f "create a Pull Request body. Ensure markdown format and don't start the body with ''' characters or pr type. DO NOT EXCEED 1800 TOKENS" --max-tokens 2000)
+    if [ "$max_summary_length" -lt 15 ]; then # Ensure there's reasonable space for a summary
+        gum style --foreground "red" "Error: Prefix '$mr_title_prefix' is too long (length: $prefix_len). Leaves only $max_summary_length chars for summary (max total title length: $MAX_TOTAL_TITLE_LENGTH)."
+        exit 1
+    fi
 
+    gum style --foreground 212 "Generating Merge Request summary (max length for summary: $max_summary_length chars)..."
+    local title_prompt
+    title_prompt="Generate a concise and descriptive Merge Request summary based on the git diff. The summary should:
+- Be a single line.
+- Start with a lowercase letter.
+- NOT include any prefix like 'fix:', 'feat:', etc. (this will be added automatically).
+- Be ideally around 50 characters, and strictly not exceed $max_summary_length characters.
+- Clearly summarize the main purpose of the changes."
+
+    mr_summary=$(git diff "$default_branch".. | mods --temp 0.2 "$title_prompt")
+    
+    # Clean and truncate mr_summary
+    mr_summary=$(echo "$mr_summary" | head -n 1) # Take first line in case mods returns multiple
+    mr_summary=$(echo "$mr_summary" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//') # Trim whitespace
+
+    if [ ${#mr_summary} -gt "$max_summary_length" ]; then
+        gum style --foreground "yellow" "Warning: Generated summary (length ${#mr_summary}) exceeded $max_summary_length chars. Truncating."
+        mr_summary=$(echo "$mr_summary" | cut -c1-"$max_summary_length")
+        mr_summary=$(echo "$mr_summary" | sed -e 's/[[:space:]]*$//') # Re-trim trailing space if cut left any
+    fi
+
+    if [ -z "$mr_summary" ]; then
+        gum style --foreground "red" "Error: Failed to generate MR summary, or summary is empty after processing."
+        exit 1
+    fi
+
+    local mr_title="$mr_title_prefix: $mr_summary"
+
+    gum style --foreground 212 "Generating Merge Request description..."
+    local description_prompt # Renamed from body_prompt
+    description_prompt="Generate a structured Merge Request description in Markdown format based on the git diff. The description should include the following sections if applicable:
+
+### Overview
+A brief summary explaining the purpose and context of these changes.
+
+### Key Changes
+- Use bullet points to list the main modifications.
+- Be specific about what was added, removed, or changed.
+
+### Reasoning
+Explain why these changes were necessary or beneficial.
+
+### Testing Notes (Optional)
+Provide brief instructions or notes on how these changes can be tested. If no specific testing steps are needed, this section can be omitted or state 'N/A'.
+
+General instructions for the entire description:
+- Ensure clear and concise language.
+- Do NOT start the entire description with markdown code block fences like '''markdown or '''.
+- Do NOT include the MR type (e.g., 'fix:', 'feat:') at the beginning of the description.
+- Adhere to a maximum token limit of around 1800 tokens for this description content."
+
+    mr_description=$(git diff "$default_branch".. | mods -f --temp 0.2 "$description_prompt" --max-tokens 2000)
+
+    if [ -z "$mr_description" ] || echo "$mr_description" | grep -q '^[[:space:]]*$'; then # Check if empty or only whitespace
+        gum style --foreground "yellow" "Warning: Initial MR description generation failed or resulted in empty content. Attempting fallback..."
+        local fallback_description_prompt="Summarize the following code changes for a Merge Request description.
+Explain what was changed and why. Use Markdown format. Be concise and clear."
+        mr_description=$(git diff "$default_branch".. | mods -f --temp 0.2 "$fallback_description_prompt" --max-tokens 1000)
+        if [ -z "$mr_description" ] || echo "$mr_description" | grep -q '^[[:space:]]*$'; then
+            gum style --foreground "red" "Error: Fallback MR description generation also failed or resulted in empty content. Please create the MR manually."
+            exit 1
+        fi
+    fi
+    
+    # Clean up mr_description: remove potential leading/trailing ```markdown or ``` if they wrap the whole content
+    # and trim leading/trailing blank lines from the whole block.
+    if [[ "$mr_description" == \`\`\`* ]] && [[ "$mr_description" == *\`\`\` ]]; then
+        temp_description=$(echo "$mr_description" | sed -E 's/^```(markdown|text|diff)?\s*//' | sed -E 's/\s*```$//')
+        if [ "$temp_description" != "$mr_description" ] && [ -n "$temp_description" ]; then
+            mr_description="$temp_description"
+        fi
+    fi
+    mr_description=$(echo "$mr_description" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+
+    if echo "$mr_description" | grep -qv '[^[:space:]]'; then # Final check if description is all whitespace
+        gum style --foreground "red" "Error: MR description is empty or contains only whitespace after all processing."
+        exit 1
+    fi
+
+    gum style --foreground "cyan" --border double --padding "1 1" --margin "1 1" \
+        "Generated Merge Request Details:" \
+        "Title: $mr_title" \
+        "--- Description Preview (scroll if needed) ---"
+    
+    echo "$mr_description" | gum format
+
+    if ! gum confirm "Proceed with creating Merge Request with the above title and description?"; then
+        gum style --foreground "yellow" "MR creation aborted by user."
+        exit 0
+    fi
+
+    gum style --foreground "magenta" "Creating Merge Request on GitLab..."
     glab mr create \
-        --title "$pr_title" \
-        --description "$pr_body"
+        --title "$mr_title" \
+        --description "$mr_description"
+    
+    gum style --foreground "green" "Merge Request created successfully!"
 }
 
 # Main script execution starts here
-generate_pr_info
+generate_mr_info # Renamed
