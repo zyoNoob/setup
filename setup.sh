@@ -5,7 +5,7 @@
 # --------------------------------
 
 # Exit immediately if a command exits with a non-zero status
-# set -e
+set -e
 
 # Log file path
 LOG_FILE="/tmp/setup_$(date +%Y%m%d_%H%M%S).log"
@@ -317,29 +317,31 @@ install_essential_packages() {
     log_to_both "--------------------------------"
     log_to_both "# Essential Package Installation"
     log_to_both "--------------------------------"
-    # Core development tools
+    # Core packages
     local packages_core=(
         curl
         gcc
         g++
+        libclang-dev
+        clang
         build-essential
         pkg-config
         stow
         cmake
         libssl-dev
         libcurl4-openssl-dev
+        python3
         python3-dev
+        python3-pip
+        python3-numpy
         flatpak
-    )
-
-    # System utilities
-    local packages_system=(
         htop
         btop
         speedtest-cli
         net-tools
         screen
         unzip
+        7zip
         keychain
         maim
         xclip
@@ -347,31 +349,31 @@ install_essential_packages() {
         rename
         transmission
         policykit-1-gnome
-    )
-
-    # Terminal environmentDotfiles
-    local packages_terminal=(
+        network-manager-gnome
+        openssh-server
         zsh
         tmux
         silversearcher-ag
         tree
-    )
-
-    # Desktop environment
-    local packages_desktop=(
         i3
         i3blocks
         pavucontrol
+        pulsemixer
         feh
         dunst
         rofi
         picom
         polybar
         neofetch
+        avahi-daemon
+        avahi-utils
+        iperf3
+        aria2
+        wireplumber
     )
 
     # Install all packages
-    for pkg in "${packages_core[@]}" "${packages_system[@]}" "${packages_terminal[@]}" "${packages_desktop[@]}"; do
+    for pkg in "${packages_core[@]}"; do
         install_package "$pkg"
     done
 
@@ -385,6 +387,15 @@ install_essential_packages() {
         print_status "install fzf"
     else
         print_status "install fzf" skip
+    fi
+
+    # Install brightnessctl
+    if [ ! -x "$(command -v brightnessctl)" ]; then
+        install_package "brightnessctl"
+        run_silent sudo chmod +s /usr/bin/brightnessctl
+        print_status "install brightnessctl"
+    else
+        print_status "install brightnessctl" skip
     fi
 
     # Install Neovim
@@ -441,12 +452,20 @@ install_essential_packages() {
     # Install Bolt (RS3 Launcher)
     if ! flatpak list | grep -q com.adamcake.Bolt; then
         run_silent flatpak install -y flathub com.adamcake.Bolt
-        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=200 com.adamcake.Bolt
+        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=126 com.adamcake.Bolt
         print_status "install bolt"
     else
         # Ensure environment variables are set even if Bolt is already installed
-        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=200 com.adamcake.Bolt
+        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=126 com.adamcake.Bolt
         print_status "install bolt" skip
+    fi
+
+    # Install Vibrant Linux - Saturation Manager
+    if ! flatpak list | grep -q io.github.libvibrant.vibrantLinux; then
+        run_silent flatpak install -y flathub io.github.libvibrant.vibrantLinux
+        print_status "install vibrantLinux"
+    else
+        print_status "install vibrantLinux" skip
     fi
 
 }
@@ -555,90 +574,6 @@ setup_desktop_environment() {
             print_status "copy backgrounds" skip
         fi
 
-        # Install 'yazi' file manager
-        if [ ! -x "$(command -v yazi)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --locked yazi-fm yazi-cli
-            print_status "install yazi"
-        else
-            print_status "install yazi" skip
-        fi
-
-        # Install 'nyaa' torrent tui client
-        if [ ! -x "$(command -v nyaa)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --locked nyaa
-            print_status "install nyaa"
-        else
-            print_status "install nyaa" skip
-        fi
-
-        # Install 'manga-tui' manga tui client
-        if [ ! -x "$(command -v manga-tui)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --locked manga-tui
-            install_package "libdbus-1-dev"
-            print_status "install manga-tui"
-        else
-            print_status "install manga-tui" skip
-        fi
-
-        # Install 'spotify-player' spotify tui client
-        if [ ! -x "$(command -v spotify_player)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install spotify_player --features image,fzf,notify
-            print_status "install spotify_player"
-        else
-            print_status "install spotify_player" skip
-        fi
-
-        # Install 'television' tui
-        if [ ! -x "$(command -v tv)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --git https://github.com/alexpasmantier/television
-            print_status "install television"
-        else
-            print_status "install television" skip
-        fi
-
-        # Install 'fd'
-        if [ ! -x "$(command -v fd)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --locked fd-find
-            print_status "install fd"
-        else
-            print_status "install fd" skip
-        fi
-
-        # Install 'zoxide'
-        if [ ! -x "$(command -v zoxide)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --locked zoxide
-            print_status "install zoxide"
-        else
-            print_status "install zoxide" skip
-        fi
-
-        # Install 'bat'
-        if [ ! -x "$(command -v bat)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --locked bat
-            run_silent $HOME/.cargo/bin/bat cache --build
-            print_status "install bat"
-        else
-            print_status "install bat" skip
-        fi
-
-        # Install 'nvtop'
-        if [ ! -x "$(command -v nvtop)" ]; then
-            install_package "libncurses-dev"
-            install_package "libdrm-dev"
-            install_package "libsystemd-dev"
-            NVTOP_DIR="$COMPILED_PROGRAMS_DIR/nvtop"
-            run_silent bash -c 'git clone https://github.com/Syllo/nvtop.git "$1"' -- "$NVTOP_DIR"
-            run_silent mkdir -p "$NVTOP_DIR/build"
-            cd "$NVTOP_DIR/build"
-            run_silent cmake .. -DNVIDIA_SUPPORT=ON -DAMDGPU_SUPPORT=ON -DINTEL_SUPPORT=ON
-            run_silent make -j
-            run_silent sudo make install
-            cd - >/dev/null
-            print_status "install nvtop"
-        else
-            print_status "install nvtop" skip
-        fi
-
         # Install 'greenclip'
         if [ ! -x "$(command -v greenclip)" ]; then
             GREENCLIP_VERSION="v4.2"
@@ -648,6 +583,27 @@ setup_desktop_environment() {
         else
             print_status "install greenclip" skip
         fi
+
+        # Install XMousePasteBlock
+        if ! command -v xmousepasteblock &> /dev/null; then
+            install_package "libev-dev"
+            install_package "libx11-dev"
+            install_package "libxtst-dev"
+            install_package "libxi-dev"
+
+            XMPB_DIR="$COMPILED_PROGRAMS_DIR/XMousePasteBlock"
+            run_silent bash -c "git clone https://github.com/milaq/XMousePasteBlock.git \"$XMPB_DIR\""
+            cd "$XMPB_DIR"
+            run_silent make
+            run_silent sudo make install
+            cd - >/dev/null
+            print_status "install xmousepasteblock"
+        else
+            print_status "install xmousepasteblock" skip
+        fi
+
+        # Install mpv
+        install_package "mpv"
 
         # Setup VirtualHere Service
         if ! systemctl list-unit-files | grep -q "virtualhere.service"; then
@@ -757,7 +713,7 @@ setup_development_tools() {
         print_status "install miniconda" skip
     fi
 
-    # Install uv for Python package management
+    # Install for Python package management
     if [ ! -x "$(command -v uv)" ]; then
         run_silent bash -c 'curl -LsSf https://astral.sh/uv/install.sh | sh'
         print_status "install uv"
@@ -814,6 +770,242 @@ setup_development_tools() {
         # Finally, install ngrok using your install_package function
         install_package "ngrok"
     fi
+
+    # Install cargo-update
+    if ! $HOME/.cargo/bin/cargo install --list | grep -q "cargo-update"; then
+        run_silent $HOME/.cargo/bin/cargo install cargo-update
+        print_status "install cargo-update"
+    else
+        print_status "install cargo-update" skip
+    fi
+
+    # UV tool installs
+    local uv_tools=(
+        "netron"
+        "smassh"
+        "gdown"
+        "huggingface_hub[cli]"
+    )
+
+    for tool in "${uv_tools[@]}"; do
+        if ! $HOME/.local/bin/uv tool list | grep -q "^${tool%%\[*}"; then
+            run_silent $HOME/.local/bin/uv tool install "$tool"
+            print_status "uv install $tool"
+        else
+            print_status "uv install $tool" skip
+        fi
+    done
+
+    # Install hf_transfer
+    # Activate huggingface-hub venv and check if hf_transfer is installed
+    if ! (source "$HOME/.local/share/uv/tools/huggingface-hub/bin/activate" && \
+          "$HOME/.local/bin/uv" pip list | grep -q "hf-transfer" && \
+          deactivate); then
+        run_silent bash -c 'source "$HOME/.local/share/uv/tools/huggingface-hub/bin/activate" && \
+            "$HOME/.local/bin/uv" pip install hf_transfer && \
+            deactivate'
+        print_status "uv install hf_transfer"
+    else
+        print_status "uv install hf_transfer" skip
+    fi
+
+    # Go installs
+    local go_packages=(
+        "github.com/charmbracelet/mods@latest"
+        "github.com/charmbracelet/gum@latest"
+        "github.com/charmbracelet/glow@latest"
+        "github.com/jorgerojas26/lazysql@latest"
+    )
+
+    for pkg_url in "${go_packages[@]}"; do
+        pkg_name=$(basename "$pkg_url" | cut -d'@' -f1)
+        # Go installs binaries to $GOPATH/bin or $HOME/go/bin by default
+        # We will check $HOME/go/bin as it's a common user-level location
+        if [ ! -x "$HOME/go/bin/$pkg_name" ]; then
+            run_silent /usr/local/go/bin/go install "$pkg_url"
+            print_status "go install $pkg_name"
+        else
+            print_status "go install $pkg_name" skip
+        fi
+    done
+
+    # Install GitHub CLI
+    if ! command -v gh &> /dev/null; then
+        run_silent bash -c '
+            (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) && \
+            sudo mkdir -p -m 755 /etc/apt/keyrings && \
+            out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg && \
+            cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null && \
+            sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null && \
+            sudo apt update && \
+            sudo apt install gh -y
+        '
+        print_status "install github-cli"
+    else
+        print_status "install github-cli" skip
+    fi
+
+    # Install GitLab CLI
+    if ! command -v glab &> /dev/null; then
+        run_silent bash -c '
+            curl -sSL "https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository" | sudo bash && \
+            sudo apt update && \
+            sudo apt install -y glab
+        '
+        print_status "install gitlab-cli"
+    else
+        print_status "install gitlab-cli" skip
+    fi
+
+    # Install lazygit
+    if ! command -v lazygit &> /dev/null; then
+        run_silent bash -c '
+            LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '\''"tag_name": *"v\K[^"]*'\'') && \
+            curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" && \
+            tar xf /tmp/lazygit.tar.gz -C /tmp lazygit && \
+            sudo install /tmp/lazygit -D -t /usr/local/bin/ && \
+            rm /tmp/lazygit /tmp/lazygit.tar.gz
+        '
+        print_status "install lazygit"
+    else
+        print_status "install lazygit" skip
+    fi
+
+    # Install AWS CLI
+    # Overall status for core installation will be printed based on success/failure.
+    if [ -x "/usr/local/bin/aws" ]; then
+        print_status "aws cli core installation" skip
+        log_to_file "AWS CLI already installed. Version: $(/usr/local/bin/aws --version 2>&1 || echo 'version check failed')"
+    else
+        AWS_CLI_TMP_DIR=$(mktemp -d)
+        local aws_install_ok=false
+
+        run_silent curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "$AWS_CLI_TMP_DIR/awscliv2.zip"
+        print_status "download aws cli"
+        if [ $? -eq 0 ]; then
+            run_silent unzip -q "$AWS_CLI_TMP_DIR/awscliv2.zip" -d "$AWS_CLI_TMP_DIR"
+            print_status "unzip aws cli"
+            if [ $? -eq 0 ]; then
+                run_silent sudo "$AWS_CLI_TMP_DIR/aws/install" --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+                print_status "run aws cli installer"
+                if [ $? -eq 0 ] && [ -x "/usr/local/bin/aws" ]; then
+                    aws_install_ok=true
+                    log_to_file "AWS CLI installed successfully. Version: $(/usr/local/bin/aws --version 2>&1 || echo 'version check failed')"
+                else
+                    log_to_file "AWS CLI installation failed or command not found after install."
+                fi
+            fi
+        fi
+        run_silent rm -rf "$AWS_CLI_TMP_DIR"
+        print_status "cleanup aws cli temp files"
+
+        if $aws_install_ok; then
+            print_status "aws cli core installation"
+        else
+            print_status "aws cli core installation" 1 # Explicitly mark as failed if not ok
+        fi
+    fi
+
+    # Configure S3 accelerate endpoint (if AWS CLI is available)
+    if [ -x "/usr/local/bin/aws" ]; then
+        local current_accelerate_setting
+        # Ensure errors from `aws configure get` don't stop the script if `set -e` is active elsewhere.
+        current_accelerate_setting=$(/usr/local/bin/aws configure get default.s3.use_accelerate_endpoint 2>/dev/null || echo "key_not_found")
+        local get_status=$?
+
+        # Proceed if key was not found (get_status != 0) or if value is not "true"
+        if [ "$current_accelerate_setting" != "true" ]; then
+            run_silent /usr/local/bin/aws configure set default.s3.use_accelerate_endpoint true
+            print_status "configure aws s3 accelerate"
+        else
+            print_status "configure aws s3 accelerate" skip
+        fi
+    else
+        log_to_file "AWS CLI not available, skipping S3 accelerate configuration."
+    fi
+
+    # Install ffmpeg and dev libraries
+    local ffmpeg_packages=(
+        ffmpeg
+        libavformat-dev
+        libavcodec-dev
+        libavdevice-dev
+        libavutil-dev
+        libavfilter-dev
+        libswscale-dev
+        libswresample-dev
+    )
+    for pkg in "${ffmpeg_packages[@]}"; do
+        install_package "$pkg"
+    done
+
+    # Install GStreamer packages
+    local gstreamer_packages=(
+        libgstreamer1.0-dev
+        libgstreamer-plugins-base1.0-dev
+        libgstreamer-plugins-bad1.0-dev
+        gstreamer1.0-plugins-base
+        gstreamer1.0-plugins-good
+        gstreamer1.0-plugins-bad
+        gstreamer1.0-plugins-ugly
+        gstreamer1.0-libav
+        gstreamer1.0-tools
+        gstreamer1.0-x
+        gstreamer1.0-alsa
+        gstreamer1.0-gl
+        gstreamer1.0-gtk3
+        gstreamer1.0-qt5
+        gstreamer1.0-pulseaudio
+    )
+    for pkg in "${gstreamer_packages[@]}"; do
+        install_package "$pkg"
+    done
+
+    # Install PostgreSQL and related dev packages
+    local postgres_packages=(
+        postgresql
+        postgresql-contrib
+        libpqxx-dev
+    )
+    for pkg in "${postgres_packages[@]}"; do
+        install_package "$pkg"
+    done
+
+    # Install SQLite and related dev packages
+    local sqlite_packages=(
+        sqlite3
+        libsqlite3-dev
+    )
+    for pkg in "${sqlite_packages[@]}"; do
+        install_package "$pkg"
+    done
+
+    # Install VM tools
+    local vm_packages=(
+        libvirt-daemon-system 
+        libvirt-clients 
+        qemu-kvm 
+        qemu-utils 
+        virt-manager 
+        ovmf
+    )
+    for pkg in "${vm_packages[@]}"; do
+        install_package "$pkg"
+    done
+    run_silent sudo systemctl enable --now libvirtd
+
+    # C++ Dev Libraries
+    local cpp_dev_packages=(
+        libboost-all-dev
+        libomp-dev
+        libzmq3-dev
+        nlohmann-json3-dev
+    )
+    for pkg in "${cpp_dev_packages[@]}"; do
+        install_package "$pkg"
+    done
+
 }
 
 # ========================================
@@ -846,7 +1038,7 @@ setup_shell_environment() {
             # Clone and build
             run_silent bash -c 'git clone https://github.com/ghostty-org/ghostty.git "$1" && \
                 cd "$1" && \
-                git checkout tags/v1.1.2 && \
+                git checkout tags/v1.1.3 && \
                 zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true' -- "$GHOSTTY_DIR"
             print_status "install ghostty"
         fi
@@ -876,6 +1068,120 @@ setup_shell_environment() {
         print_status "install tpm"
     else
         print_status "install tpm" skip
+    fi
+
+    # Install 'yazi' file manager
+    if [ ! -x "$(command -v yazi)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked yazi-fm yazi-cli
+        print_status "install yazi"
+    else
+        print_status "install yazi" skip
+    fi
+
+    # Install 'nyaa' torrent tui client
+    if [ ! -x "$(command -v nyaa)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked nyaa
+        print_status "install nyaa"
+    else
+        print_status "install nyaa" skip
+    fi
+
+    # Install 'manga-tui' manga tui client
+    if [ ! -x "$(command -v manga-tui)" ]; then
+        install_package "libdbus-1-dev"
+        run_silent $HOME/.cargo/bin/cargo install --locked manga-tui
+        print_status "install manga-tui"
+    else
+        print_status "install manga-tui" skip
+    fi
+
+    # Install 'spotify-player' spotify tui client
+    if [ ! -x "$(command -v spotify_player)" ]; then
+        install_package "libasound2-dev"
+        run_silent $HOME/.cargo/bin/cargo install spotify_player --features image,fzf,notify
+        print_status "install spotify_player"
+    else
+        print_status "install spotify_player" skip
+    fi
+
+    # Install 'television' tui
+    if [ ! -x "$(command -v tv)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --git https://github.com/alexpasmantier/television
+        print_status "install television"
+    else
+        print_status "install television" skip
+    fi
+
+    # Install 'fd'
+    if [ ! -x "$(command -v fd)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked fd-find
+        print_status "install fd"
+    else
+        print_status "install fd" skip
+    fi
+
+    # Install 'zoxide'
+    if [ ! -x "$(command -v zoxide)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked zoxide
+        run_silent sudo ln -s $HOME/.cargo/bin/zoxide /usr/local/bin/zoxide
+        print_status "install zoxide"
+    else
+        print_status "install zoxide" skip
+    fi
+
+    # Install 'bat'
+    if [ ! -x "$(command -v bat)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked bat
+        run_silent $HOME/.cargo/bin/bat cache --build
+        run_silent sudo ln -s $HOME/.cargo/bin/bat /usr/local/bin/bat
+        print_status "install bat"
+    else
+        run_silent $HOME/.cargo/bin/bat cache --build
+        print_status "install bat" skip
+    fi
+
+    # Install 'fastfetch'
+    if ! command -v fastfetch &> /dev/null; then
+        log_to_file "Attempting to install fastfetch..."
+        if run_silent curl -sSLo /tmp/fastfetch.deb https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.deb; then
+            log_to_file "Fastfetch downloaded successfully."
+            if run_silent sudo dpkg -i /tmp/fastfetch.deb; then
+                print_status "install fastfetch"
+            else
+                print_status "install fastfetch (dpkg failed)"
+                log_to_file "Fastfetch installation failed (dpkg -i /tmp/fastfetch.deb)."
+            fi
+            run_silent rm /tmp/fastfetch.deb
+            log_to_file "Cleaned up /tmp/fastfetch.deb."
+        else
+            print_status "install fastfetch (download failed)"
+            log_to_file "Download of fastfetch.deb failed."
+        fi
+    else
+        print_status "install fastfetch" skip
+    fi
+
+    # Install 'nvtop'
+    if ! command -v nvtop &> /dev/null; then # Check if nvtop command exists
+        # Check if running in WSL, if so, skip nvtop installation
+        if is_wsl; then
+            print_status "install nvtop" "skip (WSL detected, nvtop requires direct GPU access)"
+        else
+            install_package "libncurses-dev"
+            install_package "libdrm-dev"
+            install_package "libsystemd-dev" # Added libsystemd-dev as it's a common build dep
+            NVTOP_DIR="$COMPILED_PROGRAMS_DIR/nvtop"
+            run_silent bash -c "git clone https://github.com/Syllo/nvtop.git \"$NVTOP_DIR\""
+            run_silent mkdir -p "$NVTOP_DIR/build" # Ensure build directory exists
+            cd "$NVTOP_DIR/build"
+            run_silent cmake .. -DNVIDIA_SUPPORT=ON -DAMDGPU_SUPPORT=ON -DINTEL_SUPPORT=ON
+            run_silent make -j
+            run_silent sudo make install
+            cd - >/dev/null
+            print_status "install nvtop"
+        fi
+    else
+        print_status "install nvtop" skip
     fi
 
     # Install Oh My Zsh
@@ -926,11 +1232,11 @@ configure_dotfiles_and_utils() {
     cd "$SETUP_DIR"
 
     # Stow dotfiles with explicit target directory and adopt existing files
-    run_silent stow --no-folding --adopt --override=* -v -t "$HOME" dotfiles
+    run_silent stow --no-folding --adopt --override=.* -v -t "$HOME" dotfiles
     print_status "stow dotfiles"
 
     # Stow utils/bin packages
-    run_silent stow --no-folding --adopt --override=* -v -t "$HOME" utils
+    run_silent stow --no-folding --adopt --override=.* -v -t "$HOME" utils
     print_status "stow utils"
 
     # Ensure Firefox profile exists
