@@ -1140,6 +1140,27 @@ setup_shell_environment() {
         print_status "install bat" skip
     fi
 
+    # Install 'fastfetch'
+    if ! command -v fastfetch &> /dev/null; then
+        log_to_file "Attempting to install fastfetch..."
+        if run_silent curl -sSLo /tmp/fastfetch.deb https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.deb; then
+            log_to_file "Fastfetch downloaded successfully."
+            if run_silent sudo dpkg -i /tmp/fastfetch.deb; then
+                print_status "install fastfetch"
+            else
+                print_status "install fastfetch (dpkg failed)"
+                log_to_file "Fastfetch installation failed (dpkg -i /tmp/fastfetch.deb)."
+            fi
+            run_silent rm /tmp/fastfetch.deb
+            log_to_file "Cleaned up /tmp/fastfetch.deb."
+        else
+            print_status "install fastfetch (download failed)"
+            log_to_file "Download of fastfetch.deb failed."
+        fi
+    else
+        print_status "install fastfetch" skip
+    fi
+
     # Install 'nvtop'
     if ! command -v nvtop &> /dev/null; then # Check if nvtop command exists
         # Check if running in WSL, if so, skip nvtop installation
