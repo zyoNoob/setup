@@ -27,7 +27,7 @@
     - [ ] Codecompanion
 - [ ] barrier - mouse sharing
 - [x] netron via `uv tool install netron`
-- [x] smassh via `uv tool install smashh` (installation part)
+- [x] smassh via `uv tool install smassh` (installation part)
 - [ ] uv tool installs:
     - [x] gdown
     - [x] huggingface_hub[cli]

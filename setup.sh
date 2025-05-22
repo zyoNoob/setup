@@ -781,7 +781,7 @@ setup_development_tools() {
     # UV tool installs
     local uv_tools=(
         "netron"
-        "smashh"
+        "smassh"
         "gdown"
         "huggingface_hub[cli]"
     )
@@ -917,6 +917,40 @@ setup_development_tools() {
     for pkg in "${postgres_packages[@]}"; do
         install_package "$pkg"
     done
+
+    # Install SQLite and related dev packages
+    local sqlite_packages=(
+        sqlite3
+        libsqlite3-dev
+    )
+    for pkg in "${sqlite_packages[@]}"; do
+        install_package "$pkg"
+    done
+
+    # Install VM tools
+    local vm_packages=(
+        libvirt-daemon-system 
+        libvirt-clients 
+        qemu-kvm 
+        qemu-utils 
+        virt-manager 
+        ovmf
+    )
+    for pkg in "${vm_packages[@]}"; do
+        install_package "$pkg"
+    done
+    run_silent sudo systemctl enable --now libvirtd
+
+    # C++ Dev Libraries
+    local cpp_dev_packages=(
+        libboost-all-dev
+        libomp-dev
+        libzmq3-dev
+    )
+    for pkg in "${cpp_dev_packages[@]}"; do
+        install_package "$pkg"
+    done
+
 }
 
 # ========================================
