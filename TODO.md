@@ -11,16 +11,7 @@
     - [ ] Explore what is the best approach to install all the programs
     - [ ] Rust using ratatui might be a good aproach.
 - [ ] cycle through TUIs in this repo -> https://github.com/rothgar/awesome-tuis?tab=readme-ov-file
-- [ ] ffmpeg - download prebuilt and link
-    - [ ] also need to figure out what will happen with the dev libraries -> sudo apt install -y ffmpeg libavformat-dev libavcodec-dev libavdevice-dev libavutil-dev libavfilter-dev libswscale-dev libswresample-dev
-    - [ ] source https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl-shared.tar.xz
-    - [ ] sudo ln -s /path/to/ffmpeg-build/bin/* /usr/local/bin/
-    - [ ] sudo ln -s /path/to/ffmpeg-build/lib/* /usr/local/lib/
-    - [ ] sudo ldconfig
-    - [ ] sudo ln -s /path/to/ffmpeg-build/include /usr/local/include/ffmpeg
-    - [ ] sudo ln -s /path/to/ffmpeg-build/lib/pkgconfig/ffmpeg.pc /usr/local/lib/pkgconfig/ffmpeg.pc
-    - [ ] sudo ln -s /path/to/ffmpeg-build/man /usr/local/share/man
-    - [ ] sudo find /usr/local -xtype l -delete (removal of symlinks for uninstallation)
+- [x] ffmpeg and dev libraries installed via apt (libavformat-dev, libavcodec-dev, etc.)
 - [ ] automounting of drive
 - [ ] samba configuration
     - [ ] sudo apt install samba
@@ -29,32 +20,41 @@
     - [ ] sudo service samba restart
     - [ ] sudo ufw allow samba
 - [ ] make updating all apps easier (make a simple script to handlle all sources for updates, system, uv , cargo, go, etc...)
-- [ ] add cargo-update crate for easier update of cargo based apps.
+- [x] add cargo-update crate for easier update of cargo based apps.
 - [ ] NEOVIM
     - [x] Lazyvim
     - [ ] Lazyvim configuration
     - [ ] Codecompanion
 - [ ] barrier - mouse sharing
-- [ ] netron via `uv tool install netron`
-- [ ] smassh via `uv tool install smashh` configure too
-- [ ] iperf3
+- [x] netron via `uv tool install netron`
+- [x] smassh via `uv tool install smashh` (installation part)
+- [ ] uv tool installs:
+    - [x] gdown
+    - [x] huggingface_hub[cli]
+    - [x] hf_transfer
+- [x] iperf3
 - [ ] 1password cli
 - [ ] automatic file organiser musa-labs/maid on github
 - [ ] ripgrep
 - [ ] build a go based app that collates latest releases in AI
 - [ ] Tailscale
-- [ ] aria2, and a corresponding webui
-- [ ] gh cli, glab cli
+- [x] aria2 (webui separate)
+- [x] gh cli, glab cli
 - [ ] yeet script that handles the gcmsg " " and gp operation using mods.
-- [ ] mods, gum, ship, ship_glab (ai based pull requests) - https://gist.githubusercontent.com/dangrondahl/2807a52f8ae11d12ac3f7a701fd822dc/raw/5e0166ee485124e0e6139ab61236c0faa863d55f/ship.sh
-- [ ] https://github.com/milaq/XMousePasteBlock use this to disable paste on middle click
+- [x] mods (go install)
+- [x] gum (go install)
+- [ ] ship, ship_glab (ai based pull requests) - https://gist.githubusercontent.com/dangrondahl/2807a52f8ae11d12ac3f7a701fd822dc/raw/5e0166ee485124e0e6139ab61236c0faa863d55f/ship.sh
+- [x] glow (go install)
+- [x] https://github.com/milaq/XMousePasteBlock use this to disable paste on middle click
 - [x] neofetch
 - [ ] fastfetch
-- [ ] lazysql
-- [ ] lazygit
+- [x] lazysql (go install)
+- [x] lazygit
 - [ ] tdf or other doc viewer
-- [ ] videoplayer - mpv
+- [x] videoplayer - mpv
 - [ ] Image viewer
+- [x] GStreamer development packages (apt)
+- [x] PostgreSQL and development libraries (apt)
 - [ ] Make cursor executable directly
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))

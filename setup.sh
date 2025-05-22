@@ -367,6 +367,8 @@ install_essential_packages() {
         neofetch
         avahi-daemon
         avahi-utils
+        iperf3
+        aria2
     )
 
     # Install all packages
@@ -571,94 +573,6 @@ setup_desktop_environment() {
             print_status "copy backgrounds" skip
         fi
 
-        # Install 'yazi' file manager
-        if [ ! -x "$(command -v yazi)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --locked yazi-fm yazi-cli
-            print_status "install yazi"
-        else
-            print_status "install yazi" skip
-        fi
-
-        # Install 'nyaa' torrent tui client
-        if [ ! -x "$(command -v nyaa)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --locked nyaa
-            print_status "install nyaa"
-        else
-            print_status "install nyaa" skip
-        fi
-
-        # Install 'manga-tui' manga tui client
-        if [ ! -x "$(command -v manga-tui)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --locked manga-tui
-            install_package "libdbus-1-dev"
-            print_status "install manga-tui"
-        else
-            print_status "install manga-tui" skip
-        fi
-
-        # Install 'spotify-player' spotify tui client
-        if [ ! -x "$(command -v spotify_player)" ]; then
-            install_package "libasound2-dev"
-            run_silent $HOME/.cargo/bin/cargo install spotify_player --features image,fzf,notify
-            print_status "install spotify_player"
-        else
-            print_status "install spotify_player" skip
-        fi
-
-        # Install 'television' tui
-        if [ ! -x "$(command -v tv)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --git https://github.com/alexpasmantier/television
-            print_status "install television"
-        else
-            print_status "install television" skip
-        fi
-
-        # Install 'fd'
-        if [ ! -x "$(command -v fd)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --locked fd-find
-            print_status "install fd"
-        else
-            print_status "install fd" skip
-        fi
-
-        # Install 'zoxide'
-        if [ ! -x "$(command -v zoxide)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --locked zoxide
-            print_status "install zoxide"
-        else
-            print_status "install zoxide" skip
-        fi
-
-        # Install 'bat'
-        if [ ! -x "$(command -v bat)" ]; then
-            run_silent $HOME/.cargo/bin/cargo install --locked bat
-            run_silent $HOME/.cargo/bin/bat cache --build
-            print_status "install bat"
-        else
-            run_silent $HOME/.cargo/bin/bat cache --build
-            print_status "install bat" skip
-        fi
-
-        
-
-        # Install 'nvtop'
-        if [ ! -x "$(command -v nvtop)" ]; then
-            install_package "libncurses-dev"
-            install_package "libdrm-dev"
-            install_package "libsystemd-dev"
-            NVTOP_DIR="$COMPILED_PROGRAMS_DIR/nvtop"
-            run_silent bash -c 'git clone https://github.com/Syllo/nvtop.git "$1"' -- "$NVTOP_DIR"
-            run_silent mkdir -p "$NVTOP_DIR/build"
-            cd "$NVTOP_DIR/build"
-            run_silent cmake .. -DNVIDIA_SUPPORT=ON -DAMDGPU_SUPPORT=ON -DINTEL_SUPPORT=ON
-            run_silent make -j
-            run_silent sudo make install
-            cd - >/dev/null
-            print_status "install nvtop"
-        else
-            print_status "install nvtop" skip
-        fi
-
         # Install 'greenclip'
         if [ ! -x "$(command -v greenclip)" ]; then
             GREENCLIP_VERSION="v4.2"
@@ -668,6 +582,27 @@ setup_desktop_environment() {
         else
             print_status "install greenclip" skip
         fi
+
+        # Install XMousePasteBlock
+        if ! command -v xmousepasteblock &> /dev/null; then
+            install_package "libev-dev"
+            install_package "libx11-dev"
+            install_package "libxtst-dev"
+            install_package "libxi-dev"
+
+            XMPB_DIR="$COMPILED_PROGRAMS_DIR/XMousePasteBlock"
+            run_silent bash -c "git clone https://github.com/milaq/XMousePasteBlock.git \"$XMPB_DIR\""
+            cd "$XMPB_DIR"
+            run_silent make
+            run_silent sudo make install
+            cd - >/dev/null
+            print_status "install xmousepasteblock"
+        else
+            print_status "install xmousepasteblock" skip
+        fi
+
+        # Install mpv
+        install_package "mpv"
 
         # Setup VirtualHere Service
         if ! systemctl list-unit-files | grep -q "virtualhere.service"; then
@@ -834,6 +769,154 @@ setup_development_tools() {
         # Finally, install ngrok using your install_package function
         install_package "ngrok"
     fi
+
+    # Install cargo-update
+    if ! $HOME/.cargo/bin/cargo install --list | grep -q "cargo-update"; then
+        run_silent $HOME/.cargo/bin/cargo install cargo-update
+        print_status "install cargo-update"
+    else
+        print_status "install cargo-update" skip
+    fi
+
+    # UV tool installs
+    local uv_tools=(
+        "netron"
+        "smashh"
+        "gdown"
+        "huggingface_hub[cli]"
+    )
+
+    for tool in "${uv_tools[@]}"; do
+        if ! $HOME/.local/bin/uv tool list | grep -q "^${tool%%\[*}"; then
+            run_silent $HOME/.local/bin/uv tool install "$tool"
+            print_status "uv install $tool"
+        else
+            print_status "uv install $tool" skip
+        fi
+    done
+
+    # Install hf_transfer
+    # Activate huggingface-hub venv and check if hf_transfer is installed
+    if ! (source "$HOME/.local/share/uv/tools/huggingface-hub/bin/activate" && \
+          "$HOME/.local/bin/uv" pip list | grep -q "hf-transfer" && \
+          deactivate); then
+        run_silent bash -c 'source "$HOME/.local/share/uv/tools/huggingface-hub/bin/activate" && \
+            "$HOME/.local/bin/uv" pip install hf_transfer && \
+            deactivate'
+        print_status "uv install hf_transfer"
+    else
+        print_status "uv install hf_transfer" skip
+    fi
+
+    # Go installs
+    local go_packages=(
+        "github.com/charmbracelet/mods@latest"
+        "github.com/charmbracelet/gum@latest"
+        "github.com/charmbracelet/glow@latest"
+        "github.com/jorgerojas26/lazysql@latest"
+    )
+
+    for pkg_url in "${go_packages[@]}"; do
+        pkg_name=$(basename "$pkg_url" | cut -d'@' -f1)
+        # Go installs binaries to $GOPATH/bin or $HOME/go/bin by default
+        # We will check $HOME/go/bin as it's a common user-level location
+        if [ ! -x "$HOME/go/bin/$pkg_name" ]; then
+            run_silent /usr/local/go/bin/go install "$pkg_url"
+            print_status "go install $pkg_name"
+        else
+            print_status "go install $pkg_name" skip
+        fi
+    done
+
+    # Install GitHub CLI
+    if ! command -v gh &> /dev/null; then
+        run_silent bash -c '
+            (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) && \
+            sudo mkdir -p -m 755 /etc/apt/keyrings && \
+            out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg && \
+            cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null && \
+            sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null && \
+            sudo apt update && \
+            sudo apt install gh -y
+        '
+        print_status "install github-cli"
+    else
+        print_status "install github-cli" skip
+    fi
+
+    # Install GitLab CLI
+    if ! command -v glab &> /dev/null; then
+        run_silent bash -c '
+            curl -sSL "https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository" | sudo bash && \
+            sudo apt update && \
+            sudo apt install -y glab
+        '
+        print_status "install gitlab-cli"
+    else
+        print_status "install gitlab-cli" skip
+    fi
+
+    # Install lazygit
+    if ! command -v lazygit &> /dev/null; then
+        run_silent bash -c '
+            LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '\''"tag_name": *"v\K[^"]*'\'') && \
+            curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" && \
+            tar xf /tmp/lazygit.tar.gz -C /tmp lazygit && \
+            sudo install /tmp/lazygit -D -t /usr/local/bin/ && \
+            rm /tmp/lazygit /tmp/lazygit.tar.gz
+        '
+        print_status "install lazygit"
+    else
+        print_status "install lazygit" skip
+    fi
+
+    # Install ffmpeg and dev libraries
+    local ffmpeg_packages=(
+        ffmpeg
+        libavformat-dev
+        libavcodec-dev
+        libavdevice-dev
+        libavutil-dev
+        libavfilter-dev
+        libswscale-dev
+        libswresample-dev
+    )
+    for pkg in "${ffmpeg_packages[@]}"; do
+        install_package "$pkg"
+    done
+
+    # Install GStreamer packages
+    local gstreamer_packages=(
+        libgstreamer1.0-dev
+        libgstreamer-plugins-base1.0-dev
+        libgstreamer-plugins-bad1.0-dev
+        gstreamer1.0-plugins-base
+        gstreamer1.0-plugins-good
+        gstreamer1.0-plugins-bad
+        gstreamer1.0-plugins-ugly
+        gstreamer1.0-libav
+        gstreamer1.0-tools
+        gstreamer1.0-x
+        gstreamer1.0-alsa
+        gstreamer1.0-gl
+        gstreamer1.0-gtk3
+        gstreamer1.0-qt5
+        gstreamer1.0-pulseaudio
+    )
+    for pkg in "${gstreamer_packages[@]}"; do
+        install_package "$pkg"
+    done
+
+    # Install PostgreSQL and related dev packages
+    local postgres_packages=(
+        postgresql
+        postgresql-contrib
+        libpqxx-dev
+    )
+    for pkg in "${postgres_packages[@]}"; do
+        install_package "$pkg"
+    done
 }
 
 # ========================================
@@ -896,6 +979,97 @@ setup_shell_environment() {
         print_status "install tpm"
     else
         print_status "install tpm" skip
+    fi
+
+    # Install 'yazi' file manager
+    if [ ! -x "$(command -v yazi)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked yazi-fm yazi-cli
+        print_status "install yazi"
+    else
+        print_status "install yazi" skip
+    fi
+
+    # Install 'nyaa' torrent tui client
+    if [ ! -x "$(command -v nyaa)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked nyaa
+        print_status "install nyaa"
+    else
+        print_status "install nyaa" skip
+    fi
+
+    # Install 'manga-tui' manga tui client
+    if [ ! -x "$(command -v manga-tui)" ]; then
+        install_package "libdbus-1-dev"
+        run_silent $HOME/.cargo/bin/cargo install --locked manga-tui
+        print_status "install manga-tui"
+    else
+        print_status "install manga-tui" skip
+    fi
+
+    # Install 'spotify-player' spotify tui client
+    if [ ! -x "$(command -v spotify_player)" ]; then
+        install_package "libasound2-dev"
+        run_silent $HOME/.cargo/bin/cargo install spotify_player --features image,fzf,notify
+        print_status "install spotify_player"
+    else
+        print_status "install spotify_player" skip
+    fi
+
+    # Install 'television' tui
+    if [ ! -x "$(command -v tv)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --git https://github.com/alexpasmantier/television
+        print_status "install television"
+    else
+        print_status "install television" skip
+    fi
+
+    # Install 'fd'
+    if [ ! -x "$(command -v fd)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked fd-find
+        print_status "install fd"
+    else
+        print_status "install fd" skip
+    fi
+
+    # Install 'zoxide'
+    if [ ! -x "$(command -v zoxide)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked zoxide
+        print_status "install zoxide"
+    else
+        print_status "install zoxide" skip
+    fi
+
+    # Install 'bat'
+    if [ ! -x "$(command -v bat)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked bat
+        run_silent $HOME/.cargo/bin/bat cache --build
+        print_status "install bat"
+    else
+        run_silent $HOME/.cargo/bin/bat cache --build
+        print_status "install bat" skip
+    fi
+
+    # Install 'nvtop'
+    if ! command -v nvtop &> /dev/null; then # Check if nvtop command exists
+        # Check if running in WSL, if so, skip nvtop installation
+        if is_wsl; then
+            print_status "install nvtop" "skip (WSL detected, nvtop requires direct GPU access)"
+        else
+            install_package "libncurses-dev"
+            install_package "libdrm-dev"
+            install_package "libsystemd-dev" # Added libsystemd-dev as it's a common build dep
+            NVTOP_DIR="$COMPILED_PROGRAMS_DIR/nvtop"
+            run_silent bash -c "git clone https://github.com/Syllo/nvtop.git \"$NVTOP_DIR\""
+            run_silent mkdir -p "$NVTOP_DIR/build" # Ensure build directory exists
+            cd "$NVTOP_DIR/build"
+            run_silent cmake .. -DNVIDIA_SUPPORT=ON -DAMDGPU_SUPPORT=ON -DINTEL_SUPPORT=ON
+            run_silent make -j
+            run_silent sudo make install
+            cd - >/dev/null
+            print_status "install nvtop"
+        fi
+    else
+        print_status "install nvtop" skip
     fi
 
     # Install Oh My Zsh
