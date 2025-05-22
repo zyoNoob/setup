@@ -878,7 +878,6 @@ setup_development_tools() {
         print_status "aws cli core installation" skip
         log_to_file "AWS CLI already installed. Version: $(/usr/local/bin/aws --version 2>&1 || echo 'version check failed')"
     else
-        log_to_both "Installing AWS CLI..."
         AWS_CLI_TMP_DIR=$(mktemp -d)
         local aws_install_ok=false
 
