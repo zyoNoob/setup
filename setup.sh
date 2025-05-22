@@ -423,6 +423,7 @@ install_essential_packages() {
         run_silent flatpak --user override --filesystem=~/.themes/:ro
         run_silent flatpak --user override --filesystem=~/.fonts/:ro
         run_silent flatpak --user override --filesystem=~/.cache/:ro
+        run_silent bash -c 'flatpak --user override --filesystem="$1"/:ro' -- "$SETUP_DIR"
         run_silent flatpak --user override --filesystem=/usr/share/icons/:ro
         run_silent flatpak --user override --filesystem=/usr/share/themes/:ro
         run_silent flatpak --user override --filesystem=/usr/share/fonts/:ro
