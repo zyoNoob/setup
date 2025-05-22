@@ -872,6 +872,60 @@ setup_development_tools() {
         print_status "install lazygit" skip
     fi
 
+    # Install AWS CLI
+    # Overall status for core installation will be printed based on success/failure.
+    if [ -x "/usr/local/bin/aws" ]; then
+        print_status "aws cli core installation" skip
+        log_to_file "AWS CLI already installed. Version: $(/usr/local/bin/aws --version 2>&1 || echo 'version check failed')"
+    else
+        log_to_both "Installing AWS CLI..."
+        AWS_CLI_TMP_DIR=$(mktemp -d)
+        local aws_install_ok=false
+
+        run_silent curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "$AWS_CLI_TMP_DIR/awscliv2.zip"
+        print_status "download aws cli"
+        if [ $? -eq 0 ]; then
+            run_silent unzip -q "$AWS_CLI_TMP_DIR/awscliv2.zip" -d "$AWS_CLI_TMP_DIR"
+            print_status "unzip aws cli"
+            if [ $? -eq 0 ]; then
+                run_silent sudo "$AWS_CLI_TMP_DIR/aws/install" --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+                print_status "run aws cli installer"
+                if [ $? -eq 0 ] && [ -x "/usr/local/bin/aws" ]; then
+                    aws_install_ok=true
+                    log_to_file "AWS CLI installed successfully. Version: $(/usr/local/bin/aws --version 2>&1 || echo 'version check failed')"
+                else
+                    log_to_file "AWS CLI installation failed or command not found after install."
+                fi
+            fi
+        fi
+        run_silent rm -rf "$AWS_CLI_TMP_DIR"
+        print_status "cleanup aws cli temp files"
+
+        if $aws_install_ok; then
+            print_status "aws cli core installation"
+        else
+            print_status "aws cli core installation" 1 # Explicitly mark as failed if not ok
+        fi
+    fi
+
+    # Configure S3 accelerate endpoint (if AWS CLI is available)
+    if [ -x "/usr/local/bin/aws" ]; then
+        local current_accelerate_setting
+        # Ensure errors from `aws configure get` don't stop the script if `set -e` is active elsewhere.
+        current_accelerate_setting=$(/usr/local/bin/aws configure get default.s3.use_accelerate_endpoint 2>/dev/null || echo "key_not_found")
+        local get_status=$?
+
+        # Proceed if key was not found (get_status != 0) or if value is not "true"
+        if [ "$current_accelerate_setting" != "true" ]; then
+            run_silent /usr/local/bin/aws configure set default.s3.use_accelerate_endpoint true
+            print_status "configure aws s3 accelerate"
+        else
+            print_status "configure aws s3 accelerate" skip
+        fi
+    else
+        log_to_file "AWS CLI not available, skipping S3 accelerate configuration."
+    fi
+
     # Install ffmpeg and dev libraries
     local ffmpeg_packages=(
         ffmpeg
@@ -985,7 +1039,7 @@ setup_shell_environment() {
             # Clone and build
             run_silent bash -c 'git clone https://github.com/ghostty-org/ghostty.git "$1" && \
                 cd "$1" && \
-                git checkout tags/v1.1.2 && \
+                git checkout tags/v1.1.3 && \
                 zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true' -- "$GHOSTTY_DIR"
             print_status "install ghostty"
         fi
