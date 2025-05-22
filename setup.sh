@@ -338,6 +338,7 @@ install_essential_packages() {
         net-tools
         screen
         unzip
+        7zip
         keychain
         maim
         xclip

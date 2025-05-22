@@ -39,7 +39,6 @@
 - [ ] codecompanion nvim plugin
 - [ ] build a go based app that collates latest releases in AI
 - [ ] Tailscale
-- [ ] Kdiskmark
 - [ ] aria2, and a corresponding webui
 - [ ] gh cli, glab cli
 - [ ] yeet script that handles the gcmsg " " and gp operation using mods.
@@ -48,7 +47,6 @@
 - [ ] neofetch
 - [ ] lazysql
 - [ ] lazygit
-- [ ] 7zip and other Yazi formats
 - [ ] Tdf or other doc viewer
 - [ ] videoplayer - mpv
 - [ ] Image viewer
@@ -56,7 +54,7 @@
 - [ ] nvim - build from source and also config with lazyvim and what not (default installation was also installing xclip, need to make sure xclip doesnt get fucked now)
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
-- [ ] Yazi rust
+- [ ] Yazi rust - 7zip and other Yazi formats
 - [x] fix stow commands for the regex pattern in override arg
 - [x] brightnessctl
 - [x] pulsemixer
