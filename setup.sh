@@ -1108,7 +1108,7 @@ setup_shell_environment() {
 
     # Install 'television' tui
     if [ ! -x "$(command -v tv)" ]; then
-        run_silent $HOME/.cargo/bin/cargo install --git https://github.com/alexpasmantier/television
+        run_silent $HOME/.cargo/bin/cargo install --locked television
         print_status "install television"
     else
         print_status "install television" skip
