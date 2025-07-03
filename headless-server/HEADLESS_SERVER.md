@@ -28,6 +28,7 @@ Change your server's hostname to something recognizable:
 sudo nano /etc/hostname
 sudo nano /etc/hosts
 ```
+
 > Example hostname: `zyon-ubuntu-server`
 
 ---
@@ -39,14 +40,19 @@ Edit the SSH daemon configuration:
 ```bash
 sudo nano /etc/ssh/sshd_config
 ```
+
 - Find the line:
+
   ```
   UsePam yes
   ```
+
 - Change it to:
+
   ```
   UsePam no
   ```
+
 - Save and exit.
 
 Restart the SSH service:
@@ -67,36 +73,69 @@ Set up password-less SSH from your client computer.
 sudo nvidia-xconfig
 sudo nano /etc/X11/xorg.conf
 ```
+
 > Update this file using the reference `xorg.conf` provided in your reference directory.
 
-**b. Update Xwrapper configuration:**
+**b. Generate Modelines for Custom Resolutions:**
+
+To add custom resolutions (such as 4K@144Hz), you need to generate a modeline. You can use either the `cvt` or `gtf` utilities:
+
+- **Using `cvt`:**
+
+  ```bash
+  cvt 3840 2160 144
+  ```
+
+  - For reduced blanking (required for high refresh rates and resolutions):
+
+    ```bash
+    cvt -r 3840 2160 144
+    ```
+
+  - **Note:** The `-r` (reduced blanking) option in `cvt` only supports refresh rates that are multiples of 60Hz (e.g., 60, 120, 180). For other refresh rates like 144Hz, use `gtf` or manually adjust the modeline.
+
+- **Using `gtf`:**
+
+  ```bash
+  gtf 3840 2160 144
+  ```
+
+  - `gtf` supports arbitrary refresh rates and can be used if `cvt -r` does not generate a modeline for your desired refresh rate.
+
+Copy the generated modeline and add it to your X configuration under the appropriate `Monitor` section.
+
+**c. Update Xwrapper configuration:**
 
 ```bash
 sudo nano /etc/X11/Xwrapper.config
 ```
 
-**c. Update GDM3 custom configuration:**
+**d. Update GDM3 custom configuration:**
 
 ```bash
 sudo nano /etc/gdm3/custom.conf
 ```
+
 > Enable autologin and set the user to your username.
 
-**d. Update user session files:**
+**e. Update user session files:**
 
 ```bash
 nano ~/.xsessionrc
 ```
+
 > Disable monitor scripts.
 
 ```bash
 nano ~/.Xresources
 ```
+
 > Set DPI to 90 for 1080p resolution.
 
 ```bash
 nano ~/.config/rofi/config.rasi
 ```
+
 > Set DPI to 90 for 1080p resolution.
 
 ---
@@ -117,6 +156,7 @@ Backup and edit the sudoers file:
 sudo cp /etc/sudoers.d/${USER} /etc/sudoers.d/${USER}.bak
 sudo visudo /etc/sudoers.d/${USER}
 ```
+
 Add the following line (replace `${USER}` with your username):
 
 ```
@@ -187,6 +227,7 @@ Create a systemd user service:
 mkdir -p ~/.config/systemd/user
 nano ~/.config/systemd/user/sunshine.service
 ```
+
 > Add the content from the reference service file.
 
 Enable and start the service:
