@@ -186,7 +186,8 @@ General instructions for the entire description:
     gum style --foreground "magenta" "Creating Merge Request on GitLab..."
     glab mr create \
         --title "$mr_title" \
-        --description "$mr_description"
+        --description "$mr_description" \
+        --target-branch "$default_branch"
     
     gum style --foreground "green" "Merge Request created successfully!"
 }

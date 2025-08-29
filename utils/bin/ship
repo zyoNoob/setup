@@ -184,7 +184,8 @@ General instructions for the entire body:
     gum style --foreground "magenta" "Creating Pull Request on GitHub..."
     gh pr create \
         --title "$pr_title" \
-        --body "$pr_body"
+        --body "$pr_body" \
+        --base "$default_branch"
     
     gum style --foreground "green" "Pull Request created successfully!"
 }
