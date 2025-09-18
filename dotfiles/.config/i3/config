@@ -66,7 +66,7 @@ tiling_drag modifier titlebar
 
 ## Application Shortcuts
 bindsym $mod+Return exec kitty
-bindsym $mod+space exec --no-startup-id rofi -show combi
+bindsym $mod+space exec --no-startup-id rofi -show drun
 bindsym $mod+q kill
 
 ## Window Focus
