@@ -604,6 +604,16 @@ setup_desktop_environment() {
             print_status "install xmousepasteblock" skip
         fi
 
+        # Install Google Chrome
+        if ! is_installed "google-chrome-stable"; then
+            run_silent wget -q "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" -O "/tmp/google-chrome.deb"
+            run_silent sudo dpkg -i "/tmp/google-chrome.deb" || run_silent sudo apt install -f -y
+            rm -f "/tmp/google-chrome.deb"
+            print_status "install google chrome"
+        else
+            print_status "install google chrome" skip
+        fi
+
         # Install mpv
         install_package "mpv"
 
@@ -752,6 +762,51 @@ setup_development_tools() {
     else
         print_status "install zig" skip
     fi
+
+    # Install Node.js and npm via nvm
+    if [ ! -x "$(command -v node)" ]; then
+        # Check if nvm is already installed
+        if [ ! -d "$HOME/.nvm" ]; then
+            # Download and install nvm:
+            run_silent bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash'
+        else
+            print_status "nvm already installed" skip
+        fi
+
+        # Source nvm in the current shell session
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+        # Download and install Node.js (latest LTS version):
+        run_silent bash -c 'source "$HOME/.nvm/nvm.sh" && nvm install --lts'
+
+        # Verify the Node.js version:
+        if run_silent bash -c 'source "$HOME/.nvm/nvm.sh" && node -v'; then
+            print_status "install nodejs and npm"
+        else
+            print_status "install nodejs and npm"
+            return 1
+        fi
+    else
+        print_status "install nodejs and npm" skip
+    fi
+
+    # Install global npm packages
+    local npm_packages=(
+        "@google/gemini-cli"
+        "opencode-ai"
+        "@openai/codex"
+        "@anthropic-ai/claude-code"
+    )
+
+    for pkg in "${npm_packages[@]}"; do
+        if ! run_silent bash -c "source \"$HOME/.nvm/nvm.sh\" && npm list -g \"$pkg\" >/dev/null 2>&1"; then
+            run_silent bash -c "source \"$HOME/.nvm/nvm.sh\" && npm install -g \"$pkg\""
+            print_status "npm install -g $pkg"
+        else
+            print_status "npm install -g $pkg" skip
+        fi
+    done
 
     # Install go
     if [ ! -x "$(command -v go)" ]; then
