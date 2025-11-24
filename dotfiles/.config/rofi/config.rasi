@@ -10,7 +10,7 @@ configuration{
     terminal: "kitty";
     drun-display-format: "{icon} {name}";
     location: 0;
-    disable-history: true;
+    disable-history: false;
     hide-scrollbar: true;
     display-drun: " 󰀘  APPS   ";
     display-run: "   RUN    ";

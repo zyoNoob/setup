@@ -1348,6 +1348,157 @@ setup_shell_environment() {
 }
 
 # ========================================
+# Desktop Entry Creation for TUI Apps
+# ========================================
+
+create_tui_desktop_entries() {
+    log_to_both "--------------------------------"
+    log_to_both "# Creating Desktop Entries for TUI Apps"
+    log_to_both "--------------------------------"
+
+    # Create desktop entries directory
+    DESKTOP_ENTRIES_DIR="$HOME/.local/share/applications"
+    mkdir -p "$DESKTOP_ENTRIES_DIR"
+
+    # Create custom icons directory
+    CUSTOM_ICONS_DIR="$HOME/.local/share/icons/tui-apps"
+    
+    # Symlink custom icons from setup repo
+    if [ -d "$SETUP_DIR/icons/tui-apps" ]; then
+        if [ -L "$CUSTOM_ICONS_DIR" ]; then
+            print_status "symlink tui app icons" skip
+        else
+            # Remove directory if it exists and is not a symlink
+            if [ -d "$CUSTOM_ICONS_DIR" ]; then
+                run_silent rm -rf "$CUSTOM_ICONS_DIR"
+            fi
+            run_silent ln -s "$SETUP_DIR/icons/tui-apps" "$CUSTOM_ICONS_DIR"
+            print_status "symlink tui app icons"
+        fi
+    else
+        print_status "symlink tui app icons" skip
+    fi
+
+    # Helper function to create a desktop entry
+    create_desktop_entry() {
+        local app_name=$1
+        local exec_command=$2
+        local display_name=$3
+        local comment=$4
+        local icon=$5
+        local categories=$6
+        local terminal=${7:-true}
+        local desktop_file="$DESKTOP_ENTRIES_DIR/${app_name}.desktop"
+
+        if [ -f "$desktop_file" ]; then
+            print_status "create desktop entry for $app_name" skip
+            return
+        fi
+
+        cat > "$desktop_file" <<EOL
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=$display_name
+Comment=$comment
+Exec=$exec_command
+Icon=$icon
+Terminal=$terminal
+Categories=$categories
+EOL
+        print_status "create desktop entry for $app_name"
+    }
+
+    # spotify_player
+    if command -v spotify_player &> /dev/null; then
+        create_desktop_entry "spotify_player" \
+            "kitty -e spotify_player" \
+            "Spotify Player" \
+            "Terminal-based Spotify client" \
+            "$CUSTOM_ICONS_DIR/spotify_player.svg" \
+            "AudioVideo;Audio;Player;" \
+            "false"
+    fi
+
+    # pulsemixer
+    if command -v pulsemixer &> /dev/null; then
+        create_desktop_entry "pulsemixer" \
+            "kitty -e pulsemixer" \
+            "PulseMixer" \
+            "Terminal-based PulseAudio mixer" \
+            "$CUSTOM_ICONS_DIR/pulsemixer.svg" \
+            "AudioVideo;Audio;Mixer;" \
+            "false"
+    fi
+
+    # neofetch
+    if command -v neofetch &> /dev/null; then
+        create_desktop_entry "neofetch" \
+            "kitty -e sh -c 'neofetch; echo; read -p \"Press Enter to exit...\"'" \
+            "Neofetch" \
+            "System information tool" \
+            "$CUSTOM_ICONS_DIR/neofetch.svg" \
+            "System;Utility;" \
+            "false"
+    fi
+
+    # yazi
+    if command -v yazi &> /dev/null; then
+        create_desktop_entry "yazi" \
+            "kitty -e yazi" \
+            "Yazi" \
+            "Blazing fast terminal file manager" \
+            "$CUSTOM_ICONS_DIR/yazi.svg" \
+            "System;FileTools;FileManager;" \
+            "false"
+    fi
+
+    # nyaa
+    if command -v nyaa &> /dev/null; then
+        create_desktop_entry "nyaa" \
+            "kitty -e nyaa" \
+            "Nyaa" \
+            "Terminal-based torrent client for anime" \
+            "$CUSTOM_ICONS_DIR/nyaa.svg" \
+            "Network;FileTransfer;" \
+            "false"
+    fi
+
+    # manga-tui
+    if command -v manga-tui &> /dev/null; then
+        create_desktop_entry "manga-tui" \
+            "kitty -e manga-tui" \
+            "Manga TUI" \
+            "Terminal-based manga reader" \
+            "$CUSTOM_ICONS_DIR/manga-tui.svg" \
+            "Graphics;Viewer;" \
+            "false"
+    fi
+
+    # fastfetch
+    if command -v fastfetch &> /dev/null; then
+        create_desktop_entry "fastfetch" \
+            "kitty -e sh -c 'fastfetch; echo; read -p \"Press Enter to exit...\"'" \
+            "Fastfetch" \
+            "Fast system information tool" \
+            "$CUSTOM_ICONS_DIR/fastfetch.svg" \
+            "System;Utility;" \
+            "false"
+    fi
+
+    # lazysql
+    if command -v lazysql &> /dev/null; then
+        create_desktop_entry "lazysql" \
+            "kitty -e lazysql" \
+            "LazySQL" \
+            "Terminal-based SQL client" \
+            "$CUSTOM_ICONS_DIR/lazysql.svg" \
+            "Development;Database;" \
+            "false"
+    fi
+}
+
+# ========================================
 # Configuration and Dotfiles
 # ========================================
 
@@ -1467,6 +1618,7 @@ main() {
     setup_development_tools
     setup_desktop_environment
     setup_shell_environment
+    create_tui_desktop_entries
     final_setup
 }
 
