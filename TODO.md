@@ -35,15 +35,15 @@
 - [x] iperf3
 - [ ] 1password cli
 - [ ] automatic file organiser musa-labs/maid on github
-- [ ] ripgrep
+- [x] ripgrep
 - [ ] build a go based app that collates latest releases in AI
-- [ ] Tailscale
+- [x] Tailscale
 - [x] aria2 (webui separate)
 - [x] gh cli, glab cli
-- [ ] yeet script that handles the gcmsg " " and gp operation using mods.
+- [x] yeet script that handles the gcmsg " " and gp operation using mods.
 - [x] mods (go install)
 - [x] gum (go install)
-- [ ] ship, ship_glab (ai based pull requests) - https://gist.githubusercontent.com/dangrondahl/2807a52f8ae11d12ac3f7a701fd822dc/raw/5e0166ee485124e0e6139ab61236c0faa863d55f/ship.sh
+- [x] ship, ship_glab (ai based pull requests) - https://gist.githubusercontent.com/dangrondahl/2807a52f8ae11d12ac3f7a701fd822dc/raw/5e0166ee485124e0e6139ab61236c0faa863d55f/ship.sh
 - [x] glow (go install)
 - [x] https://github.com/milaq/XMousePasteBlock use this to disable paste on middle click
 - [x] neofetch
@@ -58,8 +58,10 @@
 - [ ] Make cursor executable directly
 - [ ] scratchpad
 - [ ] Add imgur upload to screenshot pipeline (potentially using [this tool](https://github.com/jomo/imgur-screenshot))
-- [ ] Yazi
+- [x] Yazi
     - [x] Yazi
+    - [x] [bunny.yazi](https://github.com/stelcodes/bunny.yazi)
+    - [x] [searchjump.yazi](https://github.com/zyoNoob/searchjump.yazi)
     - [ ] [Yazi plugins](https://github.com/AnirudhG07/awesome-yazi)
 - [x] fix stow commands for the regex pattern in override arg
 - [x] brightnessctl
@@ -103,6 +105,7 @@
 - [x] Figure out how to run virtualhere
 - [x] greenclip - clipboard integration for rofi
 - [x] Mouse speed settings
+- [x] Solaar - Logitech device manager
 
 ---
 

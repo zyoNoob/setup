@@ -1,0 +1,107 @@
+#!/bin/zsh
+
+# Exit on error
+set -e
+
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Check for required commands
+for cmd in git gum mods; do
+    if ! command_exists "$cmd"; then
+        echo "Error: $cmd is not installed."
+        exit 1
+    fi
+done
+
+# Check if inside a git repository
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    gum style --foreground "red" "Error: Not a git repository."
+    exit 1
+fi
+
+# Handle staging
+if git diff --cached --quiet; then
+    if git diff --quiet; then
+        gum style --foreground "yellow" "No changes to yeet."
+        exit 0
+    fi
+    
+    gum style --foreground "yellow" "No staged changes detected."
+    
+    ACTION=$(gum choose "Stage All" "Select Files" "Abort")
+    
+    if [ "$ACTION" = "Stage All" ]; then
+        git add .
+    elif [ "$ACTION" = "Select Files" ]; then
+        FILES=$(git status --porcelain)
+        if [ -z "$FILES" ]; then
+            gum style --foreground "yellow" "No changes found."
+            exit 0
+        fi
+        
+        SELECTED=$(echo "$FILES" | gum choose --no-limit --height 15 --header "Select files to stage (Space to toggle)")
+        
+        if [ -z "$SELECTED" ]; then
+             gum style --foreground "red" "No files selected. Aborting."
+             exit 1
+        fi
+
+        # Add selected files
+        echo "$SELECTED" | while IFS= read -r line; do
+            # Extract path: remove first 3 characters (status and space)
+            fpath="${line:3}"
+            # Remove enclosing quotes if present (git status quotes paths with spaces)
+            fpath="${fpath%\"}"
+            fpath="${fpath#\"}"
+            git add "$fpath"
+        done
+    else
+        gum style --foreground "red" "Aborted."
+        exit 1
+    fi
+fi
+
+# Determine commit message
+COMMIT_MSG="$1"
+
+if [ -z "$COMMIT_MSG" ]; then
+    gum style --foreground 212 "Generating commit message via AI..."
+    
+    PROMPT="Generate a single, concise git commit message based on the provided diff.
+    - Use imperative mood (e.g., 'Add feature' not 'Added feature').
+    - Keep it under 72 characters.
+    - No Markdown formatting or code blocks.
+    - Return ONLY the message text."
+    
+    # Generate message from staged diff
+    GENERATED_MSG=$(git diff --cached | mods --temp 0.2 "$PROMPT" 2>/dev/null)
+    
+    # Sanitize output (remove surrounding quotes if any, whitespace)
+    GENERATED_MSG=$(echo "$GENERATED_MSG" | sed -e 's/^["'\'']//' -e 's/["'\'']$//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    
+    # Let user review/edit
+    COMMIT_MSG=$(gum input --value "$GENERATED_MSG" --prompt "Commit message: ")
+fi
+
+if [ -z "$COMMIT_MSG" ]; then
+    gum style --foreground "red" "Commit message cannot be empty."
+    exit 1
+fi
+
+# Commit and Yeet
+gum style --foreground 212 "Committing: $COMMIT_MSG"
+if git commit -m "$COMMIT_MSG"; then
+    gum style --foreground "magenta" "Yeeting to remote..."
+    if git push; then
+        gum style --foreground "green" "Yeeted successfully! 🚀"
+    else
+        gum style --foreground "red" "Failed to push."
+        exit 1
+    fi
+else
+    gum style --foreground "red" "Failed to commit."
+    exit 1
+fi

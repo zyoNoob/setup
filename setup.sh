@@ -631,11 +631,20 @@ WantedBy=multi-user.target
 EOL
             run_silent sudo chmod 644 "$SERVICE_FILE"
             run_silent sudo systemctl daemon-reload
-            run_silent sudo systemctl enable virtualhere.service
-            run_silent sudo systemctl start virtualhere.service
+            # run_silent sudo systemctl enable virtualhere.service
+            # run_silent sudo systemctl start virtualhere.service
             print_status "virtualhere service setup"
         else
             print_status "virtualhere service setup" skip
+        fi
+
+        # Install Solaar (Logitech device manager)
+        if ! is_installed "solaar"; then
+            run_silent sudo add-apt-repository -y ppa:solaar-unifying/stable
+            run_silent sudo apt update -y
+            install_package "solaar"
+        else
+            print_status "install solaar" skip
         fi
 
         # Apply GNOME desktop settings
@@ -771,6 +780,39 @@ setup_development_tools() {
         run_silent sudo apt update -y
         # Finally, install ngrok using your install_package function
         install_package "ngrok"
+    fi
+
+    # Install Tailscale
+    if is_installed "tailscale"; then
+        print_status "install tailscale" skip
+    else
+        # Detect OS and Codename for Tailscale repo
+        # We wrap this in a subshell/bash-c to handle variables cleanly
+        run_silent bash -c '
+            if [ -f /etc/os-release ]; then
+                . /etc/os-release
+                TS_OS=$ID
+                TS_CODENAME=$VERSION_CODENAME
+            elif command -v lsb_release >/dev/null; then
+                TS_OS=$(lsb_release -is | tr "[:upper:]" "[:lower:]")
+                TS_CODENAME=$(lsb_release -cs)
+            else
+                TS_OS="ubuntu"
+                TS_CODENAME="jammy"
+            fi
+
+            # Ensure strict "ubuntu" or "debian" mapping if needed, 
+            # generally ID from os-release works for ubuntu/debian.
+            
+            curl -fsSL "https://pkgs.tailscale.com/stable/${TS_OS}/${TS_CODENAME}.noarmor.gpg" | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+            curl -fsSL "https://pkgs.tailscale.com/stable/${TS_OS}/${TS_CODENAME}.tailscale-keyring.list" | sudo tee /etc/apt/sources.list.d/tailscale.list
+        '
+        
+        # Update apt after adding repo
+        run_silent sudo apt update -y
+        
+        # Install tailscale
+        install_package "tailscale"
     fi
 
     # Install cargo-update
@@ -1080,6 +1122,26 @@ setup_shell_environment() {
         print_status "install yazi" skip
     fi
 
+    # Install 'bunny.yazi' plugin
+    if [ -x "$HOME/.cargo/bin/ya" ]; then
+        if [ ! -d "$HOME/.config/yazi/plugins/bunny.yazi" ]; then
+            run_silent mkdir -p "$HOME/.config/yazi/plugins"
+            run_silent git clone https://github.com/stelcodes/bunny.yazi.git "$HOME/.config/yazi/plugins/bunny.yazi"
+            print_status "install yazi plugin bunny"
+        else
+            print_status "install yazi plugin bunny" skip
+        fi
+
+        # Install 'searchjump.yazi' plugin
+        if [ ! -d "$HOME/.config/yazi/plugins/searchjump.yazi" ]; then
+            run_silent mkdir -p "$HOME/.config/yazi/plugins"
+            run_silent git clone https://github.com/zyoNoob/searchjump.yazi.git "$HOME/.config/yazi/plugins/searchjump.yazi"
+            print_status "install yazi plugin searchjump"
+        else
+            print_status "install yazi plugin searchjump" skip
+        fi
+    fi
+
     # Install 'nyaa' torrent tui client
     if [ ! -x "$(command -v nyaa)" ]; then
         run_silent $HOME/.cargo/bin/cargo install --locked nyaa
@@ -1112,6 +1174,14 @@ setup_shell_environment() {
         print_status "install television"
     else
         print_status "install television" skip
+    fi
+
+    # Install 'ripgrep'
+    if [ ! -x "$(command -v rg)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked ripgrep
+        print_status "install ripgrep"
+    else
+        print_status "install ripgrep" skip
     fi
 
     # Install 'fd'
