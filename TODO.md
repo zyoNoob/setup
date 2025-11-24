@@ -102,7 +102,7 @@
 - [x] transmission
 - [x] nvtop - build from source
     - [x] libncurses-dev
-    - [x] libdrm-dev 
+    - [x] libdrm-dev
     - [x] libsystemd-dev
 - [x] polkit-gnome - autostart in i3wm
 - [x] Figure out how to run virtualhere
