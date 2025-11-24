@@ -2,6 +2,7 @@ configuration{
     modi: "drun,run,window,ssh,combi,";
     combi-modes: "drun,run,window,ssh";
     sort: true;
+    sorting-method: "fzf";
     matching: "fuzzy";
     dpi: 157;
     icon-theme: "Papirus-Dark";
