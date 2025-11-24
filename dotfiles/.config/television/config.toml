@@ -227,7 +227,7 @@ fallback_channel = "files"
 # ```
 "alias" = ["alias", "unalias"]
 "env" = ["export", "unset"]
-"dirs" = ["cd", "ls", "rmdir", "cp -r", "rm -rf", "rm -r", "z"]
+"dirs" = ["cd", "ls", "rmdir", "cp -r", "rm -rf", "rm -r", "z", "ff"]
 "local-executables" = [
   "./",
   "chmod +x",
