@@ -161,10 +161,34 @@ fi
 
 # convenience: jump to a dir using zoxide + fzf preview
 zz() {
-  # interactive jump via zoxide's database + fzf preview of ls
   local dir
-  dir=$(zoxide query --list | fzf --height=40% --reverse --preview 'ls -la --color=always {}' --ansi) || return 1
-  z "$dir" || return 1
+  dir=$(
+    zoxide query --list --separator "\0" \
+    | fzf --read0 --print0 \
+        --height=40% \
+        --reverse \
+        --ansi \
+        --preview 'ls -la --color=always -- "{}"' \
+    | tr -d '\0'
+  ) || return 1
+
+  [ -n "$dir" ] && z "$dir"
+}
+
+# convenience: find and open a file in $EDITOR using fzf
+zf() {
+  local file
+  file=$(
+    fd --type f --print0 \
+    | fzf --read0 --print0 \
+        --height=40% \
+        --reverse \
+        --ansi \
+        --preview 'bat --color=always --style=numbers --line-range=:500 -- "{}"' \
+    | tr -d '\0'
+  ) || return 1
+
+  [ -n "$file" ] && ${EDITOR:-vim} "$file"
 }
 
 # Yazi shell integration
