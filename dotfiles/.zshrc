@@ -160,30 +160,12 @@ fi
 # fi
 
 # convenience: jump to a dir using zoxide + fzf preview
-zj() {
+zz() {
   # interactive jump via zoxide's database + fzf preview of ls
   local dir
   dir=$(zoxide query --list | fzf --height=40% --reverse --preview 'ls -la --color=always {}' --ansi) || return 1
-  cd "$dir" || return 1
+  z "$dir" || return 1
 }
-
-# s: ripgrep -> fzf with bat preview -> open file at match
-s() {
-  if [ $# -eq 0 ]; then
-    echo "Usage: s <pattern>"
-    return 1
-  fi
-
-  local query="$*"
-
-   rg --hidden --glob '!.git' -n --no-heading --color=always --smart-case "$query" \
-   | fzf --ansi --delimiter : \
-       --preview-window=right:60%:wrap \
-       --height=50% --layout=reverse --border \
-       --preview 'bash -c "IFS=\":\" read -r file line col rest <<< \$(printf \"%s\" \"{}\"); [ -z \$file ] && exit; line=\${line:-1}; start=\$(( line > 6 ? line - 6 : 1 )); end=\$(( line + 6 )); sed -n \${start},\${end}p \$file | bat --style=numbers --color=always --paging=never - " ' \
-       --bind "enter:execute-silent(bash -c 'IFS=\":\" read -r file line _ <<< \"{+}\"; ${EDITOR:-vim} +${line} \"${file}\"')+abort"
-}
-
 
 # Yazi shell integration
 function y() {

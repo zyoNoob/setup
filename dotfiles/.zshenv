@@ -11,11 +11,8 @@
 alias zshconfig="source ~/.zshrc"
 # The -E option preserves the user's environment variables (like PATH)
 # This helps sudo find commands installed in user-specific directories (e.g., bat from ~/.cargo/bin)
-alias sudo="sudo -E "
 alias audio="pulsemixer"
 alias vim="nvim"
-alias cat="bat"
-alias cd="z"
 
 # Tailscale
 alias vpnstart="sudo tailscale up"
