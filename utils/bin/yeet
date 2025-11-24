@@ -51,8 +51,8 @@ if git diff --cached --quiet; then
 
         # Add selected files
         echo "$SELECTED" | while IFS= read -r line; do
-            # Extract path: remove first 3 characters (status and space)
-            fpath="${line:3}"
+            # Extract path: remove status characters and spaces
+            fpath=$(echo "$line" | sed 's/^.. *//')
             # Remove enclosing quotes if present (git status quotes paths with spaces)
             fpath="${fpath%\"}"
             fpath="${fpath#\"}"
