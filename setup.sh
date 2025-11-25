@@ -617,21 +617,21 @@ setup_desktop_environment() {
         # Install mpv
         install_package "mpv"
 
-        # Install Logseq (note-taking app)
-        if [ ! -f "$HOME/bin/logseq.AppImage" ]; then
+        # Install Obsidian (note-taking app)
+        if [ ! -f "$HOME/bin/obsidian.AppImage" ]; then
             mkdir -p "$HOME/bin"
-            LOGSEQ_URL=$(curl -s https://api.github.com/repos/logseq/logseq/releases/latest | grep "browser_download_url.*AppImage\"" | grep -v ".zsync" | head -1 | cut -d '"' -f 4)
-            run_silent wget -q "$LOGSEQ_URL" -O "$HOME/bin/logseq.AppImage"
-            run_silent chmod +x "$HOME/bin/logseq.AppImage"
+            OBSIDIAN_URL=$(curl -s https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest | grep "browser_download_url.*AppImage\"" | grep -v "arm64" | head -1 | cut -d '"' -f 4)
+            run_silent wget -q "$OBSIDIAN_URL" -O "$HOME/bin/obsidian.AppImage"
+            run_silent chmod +x "$HOME/bin/obsidian.AppImage"
             # Create wrapper script with --no-sandbox flag
-            cat > "$HOME/bin/logseq" <<'EOF'
+            cat > "$HOME/bin/obsidian" <<'EOF'
 #!/bin/bash
-exec "$HOME/bin/logseq.AppImage" --no-sandbox "$@"
+exec "$HOME/bin/obsidian.AppImage" --no-sandbox "$@"
 EOF
-            run_silent chmod +x "$HOME/bin/logseq"
-            print_status "install logseq"
+            run_silent chmod +x "$HOME/bin/obsidian"
+            print_status "install obsidian"
         else
-            print_status "install logseq" skip
+            print_status "install obsidian" skip
         fi
 
         # Setup VirtualHere Service
