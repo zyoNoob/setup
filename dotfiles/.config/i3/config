@@ -109,6 +109,10 @@ bindsym $mod+m exec --no-startup-id ~/.config/scripts/scratchpad.sh music spotif
 for_window [instance="scratchpad-monitor"] floating enable, move scratchpad, resize set 1200 800, move position center
 bindsym $mod+p exec --no-startup-id ~/.config/scripts/scratchpad.sh monitor btop
 
+# Calculator
+for_window [class="Gnome-calculator"] floating enable, move scratchpad, resize set 400 600, move position center
+bindsym $mod+c exec --no-startup-id ~/.config/scripts/scratchpad.sh Gnome-calculator --gui gnome-calculator
+
 # Notes (quick scratch file)
 for_window [instance="scratchpad-notes"] floating enable, move scratchpad, resize set 1000 700, move position center
 bindsym $mod+n exec --no-startup-id ~/.config/scripts/scratchpad.sh notes nvim ~/scratch.md
