@@ -118,7 +118,7 @@ generate_mr_info() { # Renamed from generate_pr_info to reflect GitLab terminolo
 - Be ideally around 50 characters, and strictly not exceed $max_summary_length characters.
 - Clearly summarize the main purpose of the changes."
 
-    mr_summary=$(git diff "$default_branch".. | mods --temp 0.2 "$title_prompt")
+    mr_summary=$(git diff "$default_branch".. | mods --no-cache --temp 0.2 "$title_prompt")
     
     # Clean and truncate mr_summary
     mr_summary=$(echo "$mr_summary" | head -n 1) # Take first line in case mods returns multiple
@@ -160,7 +160,7 @@ General instructions for the entire description:
 - Do NOT include the MR type (e.g., 'fix:', 'feat:') at the beginning of the description.
 - Adhere to a maximum token limit of around 1800 tokens for this description content."
 
-    mr_description=$(git diff "$default_branch".. | mods -f --temp 0.2 "$description_prompt" --max-tokens 10000)
+    mr_description=$(git diff "$default_branch".. | mods --no-cache -f --temp 0.2 "$description_prompt" --max-tokens 10000)
     mr_description=$(cleanup_mr_description "$mr_description")
     gum style --foreground 212 "Generated and cleaned mr description" # Removed $mr_description to avoid large output
 
