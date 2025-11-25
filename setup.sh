@@ -1413,6 +1413,8 @@ create_tui_desktop_entries() {
             if [ -d "$CUSTOM_ICONS_DIR" ]; then
                 run_silent rm -rf "$CUSTOM_ICONS_DIR"
             fi
+            # Create parent directory if it doesn't exist
+            run_silent mkdir -p "$(dirname "$CUSTOM_ICONS_DIR")"
             run_silent ln -s "$SETUP_DIR/icons/tui-apps" "$CUSTOM_ICONS_DIR"
             print_status "symlink tui app icons"
         fi
