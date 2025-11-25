@@ -364,7 +364,6 @@ install_essential_packages() {
         rofi
         picom
         polybar
-        neofetch
         avahi-daemon
         avahi-utils
         iperf3
@@ -1448,17 +1447,6 @@ EOL
             "false"
     fi
 
-    # neofetch
-    if command -v neofetch &> /dev/null; then
-        create_desktop_entry "neofetch" \
-            "kitty -e sh -c 'neofetch; echo; read -p \"Press Enter to exit...\"'" \
-            "Neofetch" \
-            "System information tool" \
-            "$CUSTOM_ICONS_DIR/neofetch.svg" \
-            "System;Utility;" \
-            "false"
-    fi
-
     # yazi
     if command -v yazi &> /dev/null; then
         create_desktop_entry "yazi" \
@@ -1495,7 +1483,7 @@ EOL
     # fastfetch
     if command -v fastfetch &> /dev/null; then
         create_desktop_entry "fastfetch" \
-            "kitty -e sh -c 'fastfetch; echo; read -p \"Press Enter to exit...\"'" \
+            "kitty -e zsh -c \"fastfetch; echo; echo 'Press Enter to exit...'; read\"" \
             "Fastfetch" \
             "Fast system information tool" \
             "$CUSTOM_ICONS_DIR/fastfetch.svg" \
