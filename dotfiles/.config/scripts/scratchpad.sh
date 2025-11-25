@@ -27,8 +27,8 @@ fi
 
 # Check if window with this instance/class already exists
 if i3-msg -t get_tree | grep -q "\"$SELECTOR\":\"$WINDOW_NAME\""; then
-    # Window exists, just show it
-    i3-msg "[$SELECTOR=\"$WINDOW_NAME\"] scratchpad show"
+    # Window exists, show it and move to focused output's center
+    i3-msg "[$SELECTOR=\"$WINDOW_NAME\"] scratchpad show, move position center"
 else
     # Launch the application
     if [ "$GUI_MODE" = true ]; then

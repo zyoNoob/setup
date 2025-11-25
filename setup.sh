@@ -398,18 +398,6 @@ install_essential_packages() {
         print_status "install brightnessctl" skip
     fi
 
-    # Install tdrop
-    if [ ! -x "$(command -v tdrop)" ]; then
-        TDROP_DIR="$COMPILED_PROGRAMS_DIR/tdrop"
-        run_silent bash -c 'git clone https://github.com/noctuid/tdrop.git "$1"' -- "$TDROP_DIR"
-        cd "$TDROP_DIR"
-        run_silent sudo make install
-        cd - >/dev/null
-        print_status "install tdrop"
-    else
-        print_status "install tdrop" skip
-    fi
-
     # Install Neovim
     if [ ! -x "$(command -v nvim)" ]; then
         # Prerequisites
@@ -628,6 +616,17 @@ setup_desktop_environment() {
 
         # Install mpv
         install_package "mpv"
+
+        # Install Logseq (note-taking app)
+        if [ ! -f "$HOME/bin/logseq" ]; then
+            mkdir -p "$HOME/bin"
+            LOGSEQ_URL=$(curl -s https://api.github.com/repos/logseq/logseq/releases/latest | grep "browser_download_url.*AppImage\"" | grep -v ".zsync" | head -1 | cut -d '"' -f 4)
+            run_silent wget -q "$LOGSEQ_URL" -O "$HOME/bin/logseq"
+            run_silent chmod +x "$HOME/bin/logseq"
+            print_status "install logseq"
+        else
+            print_status "install logseq" skip
+        fi
 
         # Setup VirtualHere Service
         if ! systemctl list-unit-files | grep -q "virtualhere.service"; then

@@ -97,28 +97,34 @@ bindsym $mod+a focus parent
 bindsym $mod+Shift+minus move scratchpad
 bindsym $mod+minus scratchpad show
 
-## Tdrop - Dropdown Terminal
-bindsym $mod+grave exec --no-startup-id tdrop -ma -w 70% -h 60% -x 15% -y 20% kitty tmux new-session -A -s tdrop
-
 ## Named Scratchpads
-# Music Player (spotify_player)
-for_window [instance="scratchpad-music"] floating enable, move scratchpad, resize set 1400 900, move position center
+# Dropdown Terminal with tmux - 90% screen coverage, 16:9
+for_window [instance="scratchpad-terminal"] floating enable, resize set 2592 1458, move position center, move scratchpad
+bindsym $mod+grave exec --no-startup-id ~/.config/scripts/scratchpad.sh terminal tmux new-session -A -s dropdown
+
+## Named Scratchpads - Applications
+# Music Player (spotify_player) - 90% screen coverage, 16:9
+for_window [instance="scratchpad-music"] floating enable, resize set 2592 1458, move position center, move scratchpad
 bindsym $mod+m exec --no-startup-id ~/.config/scripts/scratchpad.sh music spotify_player
 
-# System Monitor (btop)
-for_window [instance="scratchpad-monitor"] floating enable, move scratchpad, resize set 1200 800, move position center
+# System Monitor (btop) - 90% screen coverage, 16:9
+for_window [instance="scratchpad-monitor"] floating enable, resize set 2592 1458, move position center, move scratchpad
 bindsym $mod+p exec --no-startup-id ~/.config/scripts/scratchpad.sh monitor btop
 
-# Calculator
-for_window [class="Gnome-calculator"] floating enable, move scratchpad, resize set 400 600, move position center
-bindsym $mod+c exec --no-startup-id ~/.config/scripts/scratchpad.sh Gnome-calculator --gui gnome-calculator
+# Calculator - 90% screen coverage, 16:9
+for_window [class="gnome-calculator"] floating enable, resize set 2592 1458, move position center, move scratchpad
+bindsym $mod+c exec --no-startup-id ~/.config/scripts/scratchpad.sh gnome-calculator --gui gnome-calculator
 
-# Notes (quick scratch file)
-for_window [instance="scratchpad-notes"] floating enable, move scratchpad, resize set 1000 700, move position center
-bindsym $mod+n exec --no-startup-id ~/.config/scripts/scratchpad.sh notes nvim ~/scratch.md
+# Discord - 90% screen coverage, 16:9
+for_window [class="discord"] floating enable, resize set 2592 1458, move position center, move scratchpad
+bindsym $mod+d exec --no-startup-id ~/.config/scripts/scratchpad.sh discord --gui flatpak run com.discordapp.Discord
 
-# File Manager (yazi)
-for_window [instance="scratchpad-files"] floating enable, move scratchpad, resize set 1200 800, move position center
+# Notes (Logseq) - 90% screen coverage, 16:9
+for_window [class="Logseq"] floating enable, resize set 2592 1458, move position center, move scratchpad
+bindsym $mod+n exec --no-startup-id ~/.config/scripts/scratchpad.sh Logseq --gui logseq
+
+# File Manager (yazi) - 90% screen coverage, 16:9
+for_window [instance="scratchpad-files"] floating enable, resize set 2592 1458, move position center, move scratchpad
 bindsym $mod+y exec --no-startup-id ~/.config/scripts/scratchpad.sh files yazi
 
 ## i3 Management
