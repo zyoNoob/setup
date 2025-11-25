@@ -40,8 +40,20 @@ else
     # SINGLE MONITOR SETUP
     PRIMARY_MONITOR=$(xrandr --query | grep " connected" | head -n1 | cut -d" " -f1)
     
-    # Detect the preferred resolution for the monitor (highest available)
-    PREFERRED_MODE=$(xrandr --query | grep -A1 "^${PRIMARY_MONITOR} connected" | grep -E "^\s+[0-9]+x[0-9]+" | head -n1 | awk '{print $1}')
+    # Detect the preferred resolution for the monitor (highest available, capped at 3840x2160)
+    PREFERRED_MODE=$(xrandr --query | grep -A1 "^${PRIMARY_MONITOR} connected" | grep -E "^\s+[0-9]+x[0-9]+" | awk '{
+        split($1, res, "x");
+        width = res[1];
+        height = res[2];
+        if (width <= 3840 && height <= 2160) {
+            print $1;
+        }
+    }' | head -n1)
+    
+    # Fallback to 1920x1080 if no suitable resolution found
+    if [ -z "$PREFERRED_MODE" ]; then
+        PREFERRED_MODE="1920x1080"
+    fi
     
     # Get the max refresh rate for the preferred mode
     RATE_PRIMARY=$(xrandr --query | grep -A1 "^${PRIMARY_MONITOR} connected" | grep "$PREFERRED_MODE" | head -n1 | awk '{$1=""; print $0}' | tr -d '*+' | xargs -n1 | sort -nr | head -n1)
