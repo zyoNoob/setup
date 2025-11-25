@@ -100,6 +100,6 @@ desc = "Jump back to position before jump to device"
 
 # copy-file-contents.yazi - Copy file contents
 [[mgr.prepend_keymap]]
-on = [ "y", "c" ]
+on = [ "c", "y" ]
 run = "plugin copy-file-contents"
 desc = "Copy file contents to clipboard"
