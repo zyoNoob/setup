@@ -1214,7 +1214,7 @@ setup_shell_environment() {
 
         # Install yazi plugins via package manager
         if [ -x "$HOME/.cargo/bin/ya" ]; then
-            run_silent $HOME/.cargo/bin/ya pack -i
+            run_silent $HOME/.cargo/bin/ya pkg install
             print_status "install yazi plugins from package.toml"
         fi
     fi
