@@ -5,7 +5,7 @@
 # --------------------------------
 
 # Exit immediately if a command exits with a non-zero status
-set -e
+# set -e
 
 # Log file path
 LOG_FILE="/tmp/setup_$(date +%Y%m%d_%H%M%S).log"
@@ -1150,12 +1150,12 @@ setup_shell_environment() {
                 run_silent rm -rf "$GHOSTTY_DIR"
             fi
 
-            # Clone and build
-            run_silent bash -c 'git clone https://github.com/ghostty-org/ghostty.git "$1" && \
-                cd "$1" && \
-                git checkout tags/v1.1.3 && \
-                zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true' -- "$GHOSTTY_DIR"
-            print_status "install ghostty"
+            # # Clone and build
+            # run_silent bash -c 'git clone https://github.com/ghostty-org/ghostty.git "$1" && \
+            #     cd "$1" && \
+            #     git checkout tags/v1.1.3 && \
+            #     zig build -p "$HOME/.local" -Doptimize=ReleaseFast -Dgtk-adwaita=true' -- "$GHOSTTY_DIR"
+            # print_status "install ghostty"
         fi
     fi
 
