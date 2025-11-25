@@ -618,10 +618,16 @@ setup_desktop_environment() {
         install_package "mpv"
 
         # Install Logseq (note-taking app)
-        if [ ! -f "$HOME/bin/logseq" ]; then
+        if [ ! -f "$HOME/bin/logseq.AppImage" ]; then
             mkdir -p "$HOME/bin"
             LOGSEQ_URL=$(curl -s https://api.github.com/repos/logseq/logseq/releases/latest | grep "browser_download_url.*AppImage\"" | grep -v ".zsync" | head -1 | cut -d '"' -f 4)
-            run_silent wget -q "$LOGSEQ_URL" -O "$HOME/bin/logseq"
+            run_silent wget -q "$LOGSEQ_URL" -O "$HOME/bin/logseq.AppImage"
+            run_silent chmod +x "$HOME/bin/logseq.AppImage"
+            # Create wrapper script with --no-sandbox flag
+            cat > "$HOME/bin/logseq" <<'EOF'
+#!/bin/bash
+exec "$HOME/bin/logseq.AppImage" --no-sandbox "$@"
+EOF
             run_silent chmod +x "$HOME/bin/logseq"
             print_status "install logseq"
         else
