@@ -118,7 +118,7 @@ generate_pr_info() {
 - Be ideally around 50 characters, and strictly not exceed $max_summary_length characters.
 - Clearly summarize the main purpose of the changes."
 
-    pr_summary=$(git diff "$default_branch".. | mods --temp 0.2 "$title_prompt")
+    pr_summary=$(git diff "$default_branch".. | mods --no-cache --temp 0.2 "$title_prompt")
     
     # Clean and truncate pr_summary
     pr_summary=$(echo "$pr_summary" | head -n 1) # Take first line in case mods returns multiple
@@ -160,7 +160,7 @@ General instructions for the entire body:
 - Do NOT include the PR type (e.g., 'fix:', 'feat:') at the beginning of the body.
 - Adhere to a maximum token limit of around 1800 tokens for this body content."
 
-    pr_body=$(git diff "$default_branch".. | mods -f --temp 0.2 "$body_prompt" --max-tokens 10000)
+    pr_body=$(git diff "$default_branch".. | mods --no-cache -f --temp 0.2 "$body_prompt" --max-tokens 10000)
     pr_body=$(cleanup_pr_body "$pr_body")
     gum style --foreground 212 "Generated and cleaned pr body" # Removed $pr_body to avoid large output
 

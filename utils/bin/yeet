@@ -77,7 +77,7 @@ if [ -z "$COMMIT_MSG" ]; then
     - Return ONLY the message text."
     
     # Generate message from staged diff
-    GENERATED_MSG=$(git diff --cached | mods --temp 0.2 "$PROMPT" 2>/dev/null)
+    GENERATED_MSG=$(git diff --cached | mods --no-cache --temp 0.2 "$PROMPT" 2>/dev/null)
     
     # Sanitize output (remove surrounding quotes if any, whitespace)
     GENERATED_MSG=$(echo "$GENERATED_MSG" | sed -e 's/^["'\'']//' -e 's/["'\'']$//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
