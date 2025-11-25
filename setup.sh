@@ -1211,7 +1211,32 @@ setup_shell_environment() {
         else
             print_status "install yazi plugin searchjump" skip
         fi
+
+        # Install yazi plugins via package manager
+        if [ -x "$HOME/.cargo/bin/ya" ]; then
+            run_silent $HOME/.cargo/bin/ya pack -i
+            print_status "install yazi plugins from package.toml"
+        fi
     fi
+
+    # Install dependencies for yazi plugins
+    # ouch - required for ouch.yazi plugin (archive preview and compression)
+    if [ ! -x "$(command -v ouch)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked ouch
+        print_status "install ouch"
+    else
+        print_status "install ouch" skip
+    fi
+
+    # sshfs - required for sshfs.yazi plugin
+    install_package "sshfs"
+
+    # gvfs - required for gvfs.yazi plugin (mount devices, MTP, SMB, etc.)
+    install_package "gvfs"
+    install_package "gvfs-backends"
+
+    # ImageMagick - required for zoom.yazi plugin (image zoom)
+    install_package "imagemagick"
 
     # Install 'nyaa' torrent tui client
     if [ ! -x "$(command -v nyaa)" ]; then

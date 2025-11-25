@@ -1,5 +1,13 @@
 [plugin]
-deps = []
+deps = [
+	{ use = "yazi-rs/plugins:chmod", rev = "68326b4", hash = "f0e3d5e47c703bf4dd5f97fe0a8a28f2" },
+	{ use = "uhs-robert/sshfs" },
+	{ use = "ndtoan96/ouch" },
+	{ use = "KKV9/compress" },
+	{ use = "yazi-rs/plugins:zoom", rev = "68326b4", hash = "06df51e7a93e81dae36ee1e62e8f8bf0" },
+	{ use = "boydaihungst/gvfs" },
+	{ use = "AnirudhG07/plugins-yazi:copy-file-contents" },
+]
 
 [[flavor.deps]]
 use = "yazi-rs/flavors:dracula"

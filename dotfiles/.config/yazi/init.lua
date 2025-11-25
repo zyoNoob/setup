@@ -36,3 +36,17 @@ require("searchjump"):setup({
     -- mapdata = require("sjch").data,
     -- search_patterns = ({"hell[dk]d","%d+.1080p","第%d+集","第%d+话","%.E%d+","S%d+E%d+",})
 })
+
+-- sshfs.yazi plugin setup
+require("sshfs"):setup()
+
+-- gvfs.yazi plugin setup
+require("gvfs"):setup({
+    input_position = { "center", y = 0, w = 60 },
+})
+
+-- copy-file-contents.yazi plugin setup
+require("copy-file-contents"):setup({
+    append_char = "\n",
+    notification = true,
+})
