@@ -369,6 +369,7 @@ install_essential_packages() {
         iperf3
         aria2
         wireplumber
+        libfuse2
     )
 
     # Install all packages
