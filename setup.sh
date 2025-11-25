@@ -364,7 +364,6 @@ install_essential_packages() {
         rofi
         picom
         polybar
-        neofetch
         avahi-daemon
         avahi-utils
         iperf3
@@ -422,9 +421,11 @@ install_essential_packages() {
         run_silent flatpak --user override --filesystem=~/.icons/:ro
         run_silent flatpak --user override --filesystem=~/.themes/:ro
         run_silent flatpak --user override --filesystem=~/.fonts/:ro
+        run_silent flatpak --user override --filesystem=~/.cache/:ro
+        run_silent bash -c 'flatpak --user override --filesystem="$1"/:ro' -- "$SETUP_DIR"
         run_silent flatpak --user override --filesystem=/usr/share/icons/:ro
         run_silent flatpak --user override --filesystem=/usr/share/themes/:ro
-        run_silent flatpak --user override --filesystem=/usr/share/font
+        run_silent flatpak --user override --filesystem=/usr/share/fonts/:ro
         print_status "configure flatpak"
     else
         print_status "configure flatpak" skip
@@ -602,8 +603,35 @@ setup_desktop_environment() {
             print_status "install xmousepasteblock" skip
         fi
 
+        # Install Google Chrome
+        if ! is_installed "google-chrome-stable"; then
+            run_silent wget -q "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" -O "/tmp/google-chrome.deb"
+            run_silent sudo dpkg -i "/tmp/google-chrome.deb" || run_silent sudo apt install -f -y
+            rm -f "/tmp/google-chrome.deb"
+            print_status "install google chrome"
+        else
+            print_status "install google chrome" skip
+        fi
+
         # Install mpv
         install_package "mpv"
+
+        # Install Obsidian (note-taking app)
+        if [ ! -f "$HOME/bin/obsidian.AppImage" ]; then
+            mkdir -p "$HOME/bin"
+            OBSIDIAN_URL=$(curl -s https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest | grep "browser_download_url.*AppImage\"" | grep -v "arm64" | head -1 | cut -d '"' -f 4)
+            run_silent wget -q "$OBSIDIAN_URL" -O "$HOME/bin/obsidian.AppImage"
+            run_silent chmod +x "$HOME/bin/obsidian.AppImage"
+            # Create wrapper script with --no-sandbox flag
+            cat > "$HOME/bin/obsidian" <<'EOF'
+#!/bin/bash
+exec "$HOME/bin/obsidian.AppImage" --no-sandbox "$@"
+EOF
+            run_silent chmod +x "$HOME/bin/obsidian"
+            print_status "install obsidian"
+        else
+            print_status "install obsidian" skip
+        fi
 
         # Setup VirtualHere Service
         if ! systemctl list-unit-files | grep -q "virtualhere.service"; then
@@ -629,11 +657,20 @@ WantedBy=multi-user.target
 EOL
             run_silent sudo chmod 644 "$SERVICE_FILE"
             run_silent sudo systemctl daemon-reload
-            run_silent sudo systemctl enable virtualhere.service
-            run_silent sudo systemctl start virtualhere.service
+            # run_silent sudo systemctl enable virtualhere.service
+            # run_silent sudo systemctl start virtualhere.service
             print_status "virtualhere service setup"
         else
             print_status "virtualhere service setup" skip
+        fi
+
+        # Install Solaar (Logitech device manager)
+        if ! is_installed "solaar"; then
+            run_silent sudo add-apt-repository -y ppa:solaar-unifying/stable
+            run_silent sudo apt update -y
+            install_package "solaar"
+        else
+            print_status "install solaar" skip
         fi
 
         # Apply GNOME desktop settings
@@ -742,6 +779,51 @@ setup_development_tools() {
         print_status "install zig" skip
     fi
 
+    # Install Node.js and npm via nvm
+    if [ ! -x "$(command -v node)" ]; then
+        # Check if nvm is already installed
+        if [ ! -d "$HOME/.nvm" ]; then
+            # Download and install nvm:
+            run_silent bash -c 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash'
+        else
+            print_status "nvm already installed" skip
+        fi
+
+        # Source nvm in the current shell session
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+        # Download and install Node.js (latest LTS version):
+        run_silent bash -c 'source "$HOME/.nvm/nvm.sh" && nvm install --lts'
+
+        # Verify the Node.js version:
+        if run_silent bash -c 'source "$HOME/.nvm/nvm.sh" && node -v'; then
+            print_status "install nodejs and npm"
+        else
+            print_status "install nodejs and npm"
+            return 1
+        fi
+    else
+        print_status "install nodejs and npm" skip
+    fi
+
+    # Install global npm packages
+    local npm_packages=(
+        "@google/gemini-cli"
+        "opencode-ai"
+        "@openai/codex"
+        "@anthropic-ai/claude-code"
+    )
+
+    for pkg in "${npm_packages[@]}"; do
+        if ! run_silent bash -c "source \"$HOME/.nvm/nvm.sh\" && npm list -g \"$pkg\" >/dev/null 2>&1"; then
+            run_silent bash -c "source \"$HOME/.nvm/nvm.sh\" && npm install -g \"$pkg\""
+            print_status "npm install -g $pkg"
+        else
+            print_status "npm install -g $pkg" skip
+        fi
+    done
+
     # Install go
     if [ ! -x "$(command -v go)" ]; then
         GO_VERSION="1.24.0"
@@ -769,6 +851,39 @@ setup_development_tools() {
         run_silent sudo apt update -y
         # Finally, install ngrok using your install_package function
         install_package "ngrok"
+    fi
+
+    # Install Tailscale
+    if is_installed "tailscale"; then
+        print_status "install tailscale" skip
+    else
+        # Detect OS and Codename for Tailscale repo
+        # We wrap this in a subshell/bash-c to handle variables cleanly
+        run_silent bash -c '
+            if [ -f /etc/os-release ]; then
+                . /etc/os-release
+                TS_OS=$ID
+                TS_CODENAME=$VERSION_CODENAME
+            elif command -v lsb_release >/dev/null; then
+                TS_OS=$(lsb_release -is | tr "[:upper:]" "[:lower:]")
+                TS_CODENAME=$(lsb_release -cs)
+            else
+                TS_OS="ubuntu"
+                TS_CODENAME="jammy"
+            fi
+
+            # Ensure strict "ubuntu" or "debian" mapping if needed, 
+            # generally ID from os-release works for ubuntu/debian.
+            
+            curl -fsSL "https://pkgs.tailscale.com/stable/${TS_OS}/${TS_CODENAME}.noarmor.gpg" | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+            curl -fsSL "https://pkgs.tailscale.com/stable/${TS_OS}/${TS_CODENAME}.tailscale-keyring.list" | sudo tee /etc/apt/sources.list.d/tailscale.list
+        '
+        
+        # Update apt after adding repo
+        run_silent sudo apt update -y
+        
+        # Install tailscale
+        install_package "tailscale"
     fi
 
     # Install cargo-update
@@ -1078,6 +1193,51 @@ setup_shell_environment() {
         print_status "install yazi" skip
     fi
 
+    # Install 'bunny.yazi' plugin
+    if [ -x "$HOME/.cargo/bin/ya" ]; then
+        if [ ! -d "$HOME/.config/yazi/plugins/bunny.yazi" ]; then
+            run_silent mkdir -p "$HOME/.config/yazi/plugins"
+            run_silent git clone https://github.com/stelcodes/bunny.yazi.git "$HOME/.config/yazi/plugins/bunny.yazi"
+            print_status "install yazi plugin bunny"
+        else
+            print_status "install yazi plugin bunny" skip
+        fi
+
+        # Install 'searchjump.yazi' plugin
+        if [ ! -d "$HOME/.config/yazi/plugins/searchjump.yazi" ]; then
+            run_silent mkdir -p "$HOME/.config/yazi/plugins"
+            run_silent git clone https://github.com/zyoNoob/searchjump.yazi.git "$HOME/.config/yazi/plugins/searchjump.yazi"
+            print_status "install yazi plugin searchjump"
+        else
+            print_status "install yazi plugin searchjump" skip
+        fi
+
+        # Install yazi plugins via package manager
+        if [ -x "$HOME/.cargo/bin/ya" ]; then
+            run_silent $HOME/.cargo/bin/ya pkg install
+            print_status "install yazi plugins from package.toml"
+        fi
+    fi
+
+    # Install dependencies for yazi plugins
+    # ouch - required for ouch.yazi plugin (archive preview and compression)
+    if [ ! -x "$(command -v ouch)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked ouch
+        print_status "install ouch"
+    else
+        print_status "install ouch" skip
+    fi
+
+    # sshfs - required for sshfs.yazi plugin
+    install_package "sshfs"
+
+    # gvfs - required for gvfs.yazi plugin (mount devices, MTP, SMB, etc.)
+    install_package "gvfs"
+    install_package "gvfs-backends"
+
+    # ImageMagick - required for zoom.yazi plugin (image zoom)
+    install_package "imagemagick"
+
     # Install 'nyaa' torrent tui client
     if [ ! -x "$(command -v nyaa)" ]; then
         run_silent $HOME/.cargo/bin/cargo install --locked nyaa
@@ -1106,10 +1266,18 @@ setup_shell_environment() {
 
     # Install 'television' tui
     if [ ! -x "$(command -v tv)" ]; then
-        run_silent $HOME/.cargo/bin/cargo install --git https://github.com/alexpasmantier/television
+        run_silent $HOME/.cargo/bin/cargo install --locked television
         print_status "install television"
     else
         print_status "install television" skip
+    fi
+
+    # Install 'ripgrep'
+    if [ ! -x "$(command -v rg)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install --locked ripgrep
+        print_status "install ripgrep"
+    else
+        print_status "install ripgrep" skip
     fi
 
     # Install 'fd'
@@ -1218,6 +1386,146 @@ setup_shell_environment() {
             print_status "install $plugin" skip
         fi
     done
+}
+
+# ========================================
+# Desktop Entry Creation for TUI Apps
+# ========================================
+
+create_tui_desktop_entries() {
+    log_to_both "--------------------------------"
+    log_to_both "# Creating Desktop Entries for TUI Apps"
+    log_to_both "--------------------------------"
+
+    # Create desktop entries directory
+    DESKTOP_ENTRIES_DIR="$HOME/.local/share/applications"
+    mkdir -p "$DESKTOP_ENTRIES_DIR"
+
+    # Create custom icons directory
+    CUSTOM_ICONS_DIR="$HOME/.local/share/icons/tui-apps"
+    
+    # Symlink custom icons from setup repo
+    if [ -d "$SETUP_DIR/icons/tui-apps" ]; then
+        if [ -L "$CUSTOM_ICONS_DIR" ]; then
+            print_status "symlink tui app icons" skip
+        else
+            # Remove directory if it exists and is not a symlink
+            if [ -d "$CUSTOM_ICONS_DIR" ]; then
+                run_silent rm -rf "$CUSTOM_ICONS_DIR"
+            fi
+            run_silent ln -s "$SETUP_DIR/icons/tui-apps" "$CUSTOM_ICONS_DIR"
+            print_status "symlink tui app icons"
+        fi
+    else
+        print_status "symlink tui app icons" skip
+    fi
+
+    # Helper function to create a desktop entry
+    create_desktop_entry() {
+        local app_name=$1
+        local exec_command=$2
+        local display_name=$3
+        local comment=$4
+        local icon=$5
+        local categories=$6
+        local terminal=${7:-true}
+        local desktop_file="$DESKTOP_ENTRIES_DIR/${app_name}.desktop"
+
+        if [ -f "$desktop_file" ]; then
+            print_status "create desktop entry for $app_name" skip
+            return
+        fi
+
+        cat > "$desktop_file" <<EOL
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=$display_name
+Comment=$comment
+Exec=$exec_command
+Icon=$icon
+Terminal=$terminal
+Categories=$categories
+EOL
+        print_status "create desktop entry for $app_name"
+    }
+
+    # spotify_player
+    if command -v spotify_player &> /dev/null; then
+        create_desktop_entry "spotify_player" \
+            "kitty -e spotify_player" \
+            "Spotify Player" \
+            "Terminal-based Spotify client" \
+            "$CUSTOM_ICONS_DIR/spotify_player.svg" \
+            "AudioVideo;Audio;Player;" \
+            "false"
+    fi
+
+    # pulsemixer
+    if command -v pulsemixer &> /dev/null; then
+        create_desktop_entry "pulsemixer" \
+            "kitty -e pulsemixer" \
+            "PulseMixer" \
+            "Terminal-based PulseAudio mixer" \
+            "$CUSTOM_ICONS_DIR/pulsemixer.svg" \
+            "AudioVideo;Audio;Mixer;" \
+            "false"
+    fi
+
+    # yazi
+    if command -v yazi &> /dev/null; then
+        create_desktop_entry "yazi" \
+            "kitty -e yazi" \
+            "Yazi" \
+            "Blazing fast terminal file manager" \
+            "$CUSTOM_ICONS_DIR/yazi.svg" \
+            "System;FileTools;FileManager;" \
+            "false"
+    fi
+
+    # nyaa
+    if command -v nyaa &> /dev/null; then
+        create_desktop_entry "nyaa" \
+            "kitty -e nyaa" \
+            "Nyaa" \
+            "Terminal-based torrent client for anime" \
+            "$CUSTOM_ICONS_DIR/nyaa.svg" \
+            "Network;FileTransfer;" \
+            "false"
+    fi
+
+    # manga-tui
+    if command -v manga-tui &> /dev/null; then
+        create_desktop_entry "manga-tui" \
+            "kitty -e manga-tui" \
+            "Manga TUI" \
+            "Terminal-based manga reader" \
+            "$CUSTOM_ICONS_DIR/manga-tui.svg" \
+            "Graphics;Viewer;" \
+            "false"
+    fi
+
+    # fastfetch
+    if command -v fastfetch &> /dev/null; then
+        create_desktop_entry "fastfetch" \
+            "kitty -e zsh -c \"fastfetch -c all; echo; echo 'Press Enter to exit...'; read\"" \
+            "Fastfetch" \
+            "Fast system information tool" \
+            "$CUSTOM_ICONS_DIR/fastfetch.svg" \
+            "System;Utility;" \
+            "false"
+    fi
+
+    # lazysql
+    if command -v lazysql &> /dev/null; then
+        create_desktop_entry "lazysql" \
+            "kitty -e lazysql" \
+            "LazySQL" \
+            "Terminal-based SQL client" \
+            "$CUSTOM_ICONS_DIR/lazysql.svg" \
+            "Development;Database;" \
+            "false"
+    fi
 }
 
 # ========================================
@@ -1340,6 +1648,7 @@ main() {
     setup_development_tools
     setup_desktop_environment
     setup_shell_environment
+    create_tui_desktop_entries
     final_setup
 }
 

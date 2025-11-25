@@ -2,6 +2,7 @@ configuration{
     modi: "drun,run,window,ssh,combi,";
     combi-modes: "drun,run,window,ssh";
     sort: true;
+    sorting-method: "fzf";
     matching: "fuzzy";
     dpi: 157;
     icon-theme: "Papirus-Dark";
@@ -9,7 +10,7 @@ configuration{
     terminal: "kitty";
     drun-display-format: "{icon} {name}";
     location: 0;
-    disable-history: true;
+    disable-history: false;
     hide-scrollbar: true;
     display-drun: " 󰀘  APPS   ";
     display-run: "   RUN    ";

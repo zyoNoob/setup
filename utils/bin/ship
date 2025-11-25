@@ -55,14 +55,26 @@ cleanup_pr_body() {
 
 # Generate PR title and body
 generate_pr_info() {
+    local target_branch="$1"
     local default_branch
-    default_branch=$(get_default_branch)
-    if [ -z "$default_branch" ]; then
-        # Error message already printed by get_default_branch
-        exit 1
+    
+    if [ -n "$target_branch" ]; then
+        default_branch="$target_branch"
+        gum style --foreground 212 "Using target branch: $default_branch"
+    else
+        default_branch=$(get_default_branch)
+        if [ -z "$default_branch" ]; then
+            # Error message already printed by get_default_branch
+            exit 1
+        fi
+        gum style --foreground 212 "Using default branch: $default_branch"
     fi
 
-    gum style --foreground 212 "Using default branch: $default_branch"
+    # Check if default_branch is empty (shouldn't happen with the logic above, but just in case)
+    if [ -z "$default_branch" ]; then
+        gum style --foreground "red" "Error: Could not determine the target branch."
+        exit 1
+    fi
 
     # Check for changes against the default branch
     if git diff --quiet "$default_branch"..; then
@@ -172,10 +184,11 @@ General instructions for the entire body:
     gum style --foreground "magenta" "Creating Pull Request on GitHub..."
     gh pr create \
         --title "$pr_title" \
-        --body "$pr_body"
+        --body "$pr_body" \
+        --base "$default_branch"
     
     gum style --foreground "green" "Pull Request created successfully!"
 }
 
 # Main script execution starts here
-generate_pr_info
+generate_pr_info "$1"

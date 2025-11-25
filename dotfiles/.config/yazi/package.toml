@@ -1,5 +1,37 @@
-[plugin]
-deps = []
+[[plugin.deps]]
+use = "yazi-rs/plugins:chmod"
+rev = "eaf6920"
+hash = "5b2eb0cc2050cec1e4de83cfa51a5b90"
+
+[[plugin.deps]]
+use = "uhs-robert/sshfs"
+rev = "ea0b089"
+hash = "14c5b354b75e954a0b18a7e0706ac5f9"
+
+[[plugin.deps]]
+use = "ndtoan96/ouch"
+rev = "41d68cd"
+hash = "c7790dd555aee4adf4d125e200ea8611"
+
+[[plugin.deps]]
+use = "KKV9/compress"
+rev = "c264639"
+hash = "e17c11b605d989568a1d1741ca17c584"
+
+[[plugin.deps]]
+use = "yazi-rs/plugins:zoom"
+rev = "eaf6920"
+hash = "9dee2bf990ea941ccf67df74bca45468"
+
+[[plugin.deps]]
+use = "boydaihungst/gvfs"
+rev = "d4b8d83"
+hash = "8767b5484bc3e8fc23796b91e0a102b2"
+
+[[plugin.deps]]
+use = "AnirudhG07/plugins-yazi:copy-file-contents"
+rev = "71545f4"
+hash = "f8530ee84fee95dbcc26bb1d8d8019c7"
 
 [[flavor.deps]]
 use = "yazi-rs/flavors:dracula"

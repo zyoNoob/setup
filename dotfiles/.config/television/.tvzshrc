@@ -7,7 +7,7 @@ _tv_smart_autocomplete() {
 
     local output
     # Get output and replace newlines with spaces
-    output=$(tv --autocomplete-prompt "$current_prompt" $* | tr '\n' ' ')
+    output=$(tv --inline --autocomplete-prompt "$current_prompt" $* | tr '\n' ' ')
 
     # Check if the output ends with a space and remove it
     if [[ "${output}" == *" " ]]; then

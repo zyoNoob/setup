@@ -11,7 +11,7 @@ pasteinit() {
   zle -N self-insert url-quote-magic # I wonder if you'd need `.url-quote-magic`?
 }
 pastefinish() {
-   zle -N self-insert $OLD_SELF_INSERT
+  zle -N self-insert $OLD_SELF_INSERT
 }
 zstyle :bracketed-paste-magic paste-init pasteinit
 zstyle :bracketed-paste-magic paste-finish pastefinish
@@ -77,7 +77,7 @@ PROMPT+='%{$color_sep%} | %{$color_reset%}'
 PROMPT+='%{  %}%{$color_path%}%~%{$color_reset%}'                                         
 
 # Line 2 : Gitinfo
-PROMPT+='%{$color_sep%} | %{$color_reset%}'                                                
+PROMPT+='%{$color_sep%} | %{$color_reset%}'
 PROMPT+='%{ $(git_prompt_info)%}'                                                         
 
 # Line 3: Prompt Character
@@ -158,6 +158,38 @@ fi
 # if [[ "$TERM_PROGRAM" == "ghostty" || "$TERM_PROGRAM" == "kitty" ]]; then
 #     export TERM=xterm-256color
 # fi
+
+# convenience: jump to a dir using zoxide + fzf preview
+zz() {
+  local dir
+  dir=$(
+    zoxide query --list --separator "\0" \
+    | fzf --read0 --print0 \
+        --height=40% \
+        --reverse \
+        --ansi \
+        --preview 'ls -la --color=always -- "{}"' \
+    | tr -d '\0'
+  ) || return 1
+
+  [ -n "$dir" ] && z "$dir"
+}
+
+# convenience: find and open a file in $EDITOR using fzf
+zf() {
+  local file
+  file=$(
+    fd --type f --print0 \
+    | fzf --read0 --print0 \
+        --height=40% \
+        --reverse \
+        --ansi \
+        --preview 'bat --color=always --style=numbers --line-range=:500 -- "{}"' \
+    | tr -d '\0'
+  ) || return 1
+
+  [ -n "$file" ] && ${EDITOR:-vim} "$file"
+}
 
 # Yazi shell integration
 function y() {

@@ -1,0 +1,14 @@
+[metadata]
+name = "local-executables"
+description = "A channel to select local executables"
+requirements = ["fd", "bat"]
+
+[source]
+command = ["fd -t x -I . ."]
+
+[preview]
+command = "file {0} && echo '' && (file -L {0} | grep -q 'ELF' && nm -C {0} 2>/dev/null | grep -E ' (T|W) ' || bat --color=always --style=numbers {0})"
+env = { BAT_THEME = "ansi" }
+
+[keybindings]
+shortcut = "f4"

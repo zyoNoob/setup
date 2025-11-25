@@ -1,0 +1,14 @@
+[Unit]
+Description=Sunshine Game Streaming Server
+After=graphical-session.target
+
+[Service]
+Type=simple
+Environment=DISPLAY=:0
+ExecStartPre=/bin/sleep 30
+ExecStartPre=sudo /home/zyon/scripts/sunshine-setup.sh
+ExecStart=/usr/bin/sunshine
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

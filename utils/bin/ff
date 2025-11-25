@@ -1,22 +1,25 @@
 #!/bin/bash
 
-# Source: https://github.com/junegunn/fzf/wiki/Examples#searching-file-contents
-# Interactive search using ag (package: silversearcher-ag)
+# Interactive search using ripgrep
+# Searches file contents with live preview
 
-#!/bin/bash
-# Interactive search using ag (silver searcher)
+[[ -n $1 ]] && cd "$1" # go to provided folder or noop
 
-[[ -n $1 ]] && cd $1 # go to provided folder or noop
-typeset AG_DEFAULT_COMMAND="ag -i -l --hidden"
+typeset RG_DEFAULT_COMMAND="rg -i -l --hidden --glob '!.git' --color=never"
 typeset IFS=$'\n'
 typeset selected=($(
-      fzf \
-      -m \
-      -e \
-      --ansi \
-      --disabled \
-      --reverse \
-      --print-query \
-      --bind "change:reload:$AG_DEFAULT_COMMAND {q} || true" \
-      --preview "ag -i --color --context=2 {q} {}"))
-[ -n "$selected" ] && vim -c "/\\c${selected[0]}" ${selected[1]}
+    fzf \
+    -m \
+    -e \
+    --ansi \
+    --disabled \
+    --reverse \
+    --height=50% \
+    --layout=reverse \
+    --border \
+    --print-query \
+    --bind "change:reload:$RG_DEFAULT_COMMAND {q} || true" \
+    --preview "rg -i --color=always --context=2 --hidden --glob '!.git' {q} {}" \
+    --preview-window=right:60%:wrap))
+
+[ -n "${selected[1]}" ] && ${EDITOR:-vim} -c "/\\c${selected[0]}" "${selected[1]}"
