@@ -39,9 +39,16 @@ else
     echo "Detected single display, configuring single monitor setup..."
     # SINGLE MONITOR SETUP
     PRIMARY_MONITOR=$(xrandr --query | grep " connected" | head -n1 | cut -d" " -f1)
-    RATE_PRIMARY=60 # Always use 60Hz for single monitor configuration
-    echo "$PRIMARY_MONITOR (3840x2160) applying fixed rate: $RATE_PRIMARY Hz"
+    
+    # Detect the preferred resolution for the monitor (highest available)
+    PREFERRED_MODE=$(xrandr --query | grep -A1 "^${PRIMARY_MONITOR} connected" | grep -E "^\s+[0-9]+x[0-9]+" | head -n1 | awk '{print $1}')
+    
+    # Get the max refresh rate for the preferred mode
+    RATE_PRIMARY=$(xrandr --query | grep -A1 "^${PRIMARY_MONITOR} connected" | grep "$PREFERRED_MODE" | head -n1 | awk '{$1=""; print $0}' | tr -d '*+' | xargs -n1 | sort -nr | head -n1)
+    RATE_PRIMARY=${RATE_PRIMARY:-60}
+    
+    echo "$PRIMARY_MONITOR ($PREFERRED_MODE) applying rate: $RATE_PRIMARY Hz"
 
     echo "Applying single monitor settings..."
-    xrandr --output $PRIMARY_MONITOR --mode 3840x2160 --pos 0x0 --primary --rate $RATE_PRIMARY
+    xrandr --output $PRIMARY_MONITOR --mode $PREFERRED_MODE --pos 0x0 --primary --rate $RATE_PRIMARY
 fi
