@@ -100,6 +100,23 @@ bindsym $mod+minus scratchpad show
 ## Tdrop - Dropdown Terminal
 bindsym $mod+grave exec --no-startup-id tdrop -ma -w 70% -h 60% -x 15% -y 20% kitty tmux new-session -A -s tdrop
 
+## Named Scratchpads
+# Music Player (spotify_player)
+for_window [instance="scratchpad-music"] floating enable, move scratchpad, resize set 1400 900, move position center
+bindsym $mod+m exec --no-startup-id ~/.config/scripts/scratchpad.sh music spotify_player
+
+# System Monitor (btop)
+for_window [instance="scratchpad-monitor"] floating enable, move scratchpad, resize set 1200 800, move position center
+bindsym $mod+p exec --no-startup-id ~/.config/scripts/scratchpad.sh monitor btop
+
+# Notes (quick scratch file)
+for_window [instance="scratchpad-notes"] floating enable, move scratchpad, resize set 1000 700, move position center
+bindsym $mod+n exec --no-startup-id ~/.config/scripts/scratchpad.sh notes nvim ~/scratch.md
+
+# File Manager (yazi)
+for_window [instance="scratchpad-files"] floating enable, move scratchpad, resize set 1200 800, move position center
+bindsym $mod+y exec --no-startup-id ~/.config/scripts/scratchpad.sh files yazi
+
 ## i3 Management
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
