@@ -1483,7 +1483,7 @@ EOL
     # fastfetch
     if command -v fastfetch &> /dev/null; then
         create_desktop_entry "fastfetch" \
-            "kitty -e zsh -c \"fastfetch; echo; echo 'Press Enter to exit...'; read\"" \
+            "kitty -e zsh -c \"fastfetch -c all; echo; echo 'Press Enter to exit...'; read\"" \
             "Fastfetch" \
             "Fast system information tool" \
             "$CUSTOM_ICONS_DIR/fastfetch.svg" \
