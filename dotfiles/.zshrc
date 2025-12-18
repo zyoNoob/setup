@@ -163,13 +163,12 @@ fi
 zz() {
   local dir
   dir=$(
-    zoxide query --list --separator "\0" \
-    | fzf --read0 --print0 \
+    zoxide query --list \
+    | fzf \
         --height=40% \
         --reverse \
         --ansi \
-        --preview 'ls -la --color=always -- "{}"' \
-    | tr -d '\0'
+        --preview 'ls -la --color=always -- {}' \
   ) || return 1
 
   [ -n "$dir" ] && z "$dir"
@@ -179,13 +178,12 @@ zz() {
 zf() {
   local file
   file=$(
-    fd --type f --print0 \
-    | fzf --read0 --print0 \
+    fd --type f \
+    | fzf \
         --height=40% \
         --reverse \
         --ansi \
-        --preview 'bat --color=always --style=numbers --line-range=:500 -- "{}"' \
-    | tr -d '\0'
+        --preview 'bat --color=always --style=numbers --line-range=:500 -- {}' \
   ) || return 1
 
   [ -n "$file" ] && ${EDITOR:-vim} "$file"
