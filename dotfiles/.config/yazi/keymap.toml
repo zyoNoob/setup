@@ -5,7 +5,7 @@ run = "plugin bunny"
 
 [[mgr.prepend_keymap]]
 on   = [ "i" ]
-run = "plugin searchjump"
+run = "plugin searchjump -- autocd"
 desc = "searchjump mode"
 
 # chmod.yazi - Change file permissions

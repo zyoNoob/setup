@@ -14,12 +14,12 @@ typeset selected=($(
     --ansi \
     --disabled \
     --reverse \
-    --height=50% \
+    --height=40% \
     --layout=reverse \
     --border \
     --print-query \
     --bind "change:reload:$RG_DEFAULT_COMMAND {q} || true" \
-    --preview "rg -i --color=always --context=2 --hidden --glob '!.git' {q} {}" \
+    --preview "bat --color=always --style=numbers --line-range=:300 {} 2>/dev/null || rg -i --color=always --context=3 --hidden --glob '!.git' {q} {} | head -100" \
     --preview-window=right:60%:wrap))
 
 [ -n "${selected[1]}" ] && ${EDITOR:-vim} -c "/\\c${selected[0]}" "${selected[1]}"

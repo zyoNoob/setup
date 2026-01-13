@@ -369,6 +369,7 @@ install_essential_packages() {
         iperf3
         aria2
         wireplumber
+        libfuse2
     )
 
     # Install all packages
@@ -1187,7 +1188,7 @@ setup_shell_environment() {
 
     # Install 'yazi' file manager
     if [ ! -x "$(command -v yazi)" ]; then
-        run_silent $HOME/.cargo/bin/cargo install --locked yazi-fm yazi-cli
+        run_silent $HOME/.cargo/bin/cargo install --locked yazi-build
         print_status "install yazi"
     else
         print_status "install yazi" skip
