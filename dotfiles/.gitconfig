@@ -47,3 +47,6 @@
 	
 [mergetool "nvimdiff"]
     cmd = "nvim -d \"$LOCAL\" \"$REMOTE\" \"$MERGED\" -c 'wincmd w' -c 'wincmd J'"
+
+[include]
+	path = ~/.gitconfig-local
