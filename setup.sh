@@ -676,6 +676,7 @@ EOL
 
     # NVIDIA Coolbits Configuration
     setup_nvidia_coolbits
+    setup_nvidia_overclock
 
     # Apply GNOME desktop settings
     run_silent gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
@@ -732,12 +733,12 @@ setup_nvidia_coolbits() {
     fi
 
     # Create the Coolbits config file
-    local COOLBITS_FILE="/etc/X11/xorg.conf.d/20-nvidia-coolbits.conf"
+    local COOLBITS_FILE="/etc/X11/xorg.conf.d/99-nvidia-coolbits.conf"
     if [ ! -f "$COOLBITS_FILE" ]; then
         run_silent sudo tee "$COOLBITS_FILE" > /dev/null <<EOL
-Section "Device"
-    Identifier "Nvidia Card"
-    Driver "nvidia"
+Section "OutputClass"
+    Identifier "nvidia"
+    MatchDriver "nvidia-drm"
     Option "Coolbits" "28"
 EndSection
 EOL
@@ -745,6 +746,69 @@ EOL
     else
         print_status "setup nvidia coolbits" skip
     fi
+}
+
+# ========================================
+# NVIDIA Overclock Configuration
+# ========================================
+
+setup_nvidia_overclock() {
+    log_to_both "--------------------------------"
+    log_to_both "# NVIDIA Overclock Configuration"
+    log_to_both "--------------------------------"
+
+    if is_wsl; then
+        print_status "nvidia overclock" "skip (WSL detected)"
+        return
+    fi
+
+    # Check if nvidia driver is installed
+    if ! is_installed "nvidia-driver-550" && ! is_installed "nvidia-driver-535" && ! is_installed "nvidia-driver-545"; then
+        print_status "nvidia overclock" "skip (no nvidia driver detected)"
+        return
+    fi
+
+    # Create the overclock script
+    local OC_SCRIPT="/usr/local/bin/nvidia-oc.sh"
+    if [ ! -f "$OC_SCRIPT" ]; then
+        run_silent sudo tee "$OC_SCRIPT" > /dev/null <<EOL
+#!/bin/bash
+
+export DISPLAY=:0
+export XAUTHORITY=/run/user/1000/gdm/Xauthority
+
+nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels=200"
+nvidia-settings -a "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels=2000"
+EOL
+        run_silent sudo chmod +x "$OC_SCRIPT"
+        print_status "create nvidia overclock script"
+    else
+        print_status "create nvidia overclock script" skip
+    fi
+
+    # Create the systemd service
+    local OC_SERVICE="/etc/systemd/system/nvidia-oc.service"
+    if [ ! -f "$OC_SERVICE" ]; then
+        run_silent sudo tee "$OC_SERVICE" > /dev/null <<EOL
+[Unit]
+Description=NVIDIA Overclock
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/nvidia-oc.sh
+
+[Install]
+WantedBy=multi-user.target
+EOL
+        run_silent sudo systemctl daemon-reload
+        print_status "create nvidia overclock service"
+    else
+        print_status "create nvidia overclock service" skip
+    fi
+
+    # Enable the service (note: requires reboot to take effect)
+    run_silent sudo systemctl enable nvidia-oc.service
+    print_status "enable nvidia overclock service"
 }
 
 # ========================================
