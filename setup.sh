@@ -674,29 +674,76 @@ EOL
             print_status "install solaar" skip
         fi
 
-        # Apply GNOME desktop settings
-        run_silent gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
-        run_silent gsettings set org.gnome.desktop.interface cursor-size 24
-        run_silent gsettings set org.gnome.desktop.interface cursor-blink true
-        run_silent gsettings set org.gnome.desktop.interface cursor-blink-timeout 1200
-        run_silent gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
-        run_silent gsettings set org.gnome.desktop.peripherals.mouse speed -0.40
-        run_silent gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'
-        run_silent gsettings set org.gnome.desktop.interface font-name 'MesloLGS Nerd Font 12'
-        run_silent gsettings set org.gnome.desktop.interface document-font-name 'MesloLGS Nerd Font 12'
-        run_silent gsettings set org.gnome.desktop.interface monospace-font-name 'MesloLGS Nerd Font Mono 12'
-        run_silent gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-blue-standard+default'
-        run_silent gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
-        run_silent gsettings set org.gnome.desktop.interface cursor-theme 'catppuccin-mocha-dark-cursors'
-        print_status "apply gnome-desktop settings"
+    # NVIDIA Coolbits Configuration
+    setup_nvidia_coolbits
 
-        # Apply ibus settings
-        run_silent dconf write /desktop/ibus/panel/show-icon-on-systray false
-        run_silent dconf write /desktop/ibus/general/hotkey/triggers "@as []"
-        print_status "apply ibus settings"
+    # Apply GNOME desktop settings
+    run_silent gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
+    run_silent gsettings set org.gnome.desktop.interface cursor-size 24
+    run_silent gsettings set org.gnome.desktop.interface cursor-blink true
+    run_silent gsettings set org.gnome.desktop.interface cursor-blink-timeout 1200
+    run_silent gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+    run_silent gsettings set org.gnome.desktop.peripherals.mouse speed -0.40
+    run_silent gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'
+    run_silent gsettings set org.gnome.desktop.interface font-name 'MesloLGS Nerd Font 12'
+    run_silent gsettings set org.gnome.desktop.interface document-font-name 'MesloLGS Nerd Font 12'
+    run_silent gsettings set org.gnome.desktop.interface monospace-font-name 'MesloLGS Nerd Font Mono 12'
+    run_silent gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-blue-standard+default'
+    run_silent gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
+    run_silent gsettings set org.gnome.desktop.interface cursor-theme 'catppuccin-mocha-dark-cursors'
+    print_status "apply gnome-desktop settings"
+
+    # Apply ibus settings
+    run_silent dconf write /desktop/ibus/panel/show-icon-on-systray false
+    run_silent dconf write /desktop/ibus/general/hotkey/triggers "@as []"
+    print_status "apply ibus settings"
 
     else
         print_status "desktop environment setup" "skip (WSL detected)"
+    fi
+}
+
+# ========================================
+# NVIDIA Coolbits Configuration
+# ========================================
+
+setup_nvidia_coolbits() {
+    log_to_both "--------------------------------"
+    log_to_both "# NVIDIA Coolbits Configuration"
+    log_to_both "--------------------------------"
+
+    if is_wsl; then
+        print_status "nvidia coolbits" "skip (WSL detected)"
+        return
+    fi
+
+    # Check if nvidia driver is installed
+    if ! is_installed "nvidia-driver-550" && ! is_installed "nvidia-driver-535" && ! is_installed "nvidia-driver-545"; then
+        print_status "nvidia coolbits" "skip (no nvidia driver detected)"
+        return
+    fi
+
+    # Create xorg.conf.d directory if it doesn't exist
+    if [ ! -d "/etc/X11/xorg.conf.d" ]; then
+        run_silent sudo mkdir -p /etc/X11/xorg.conf.d
+        print_status "create xorg.conf.d directory"
+    else
+        print_status "create xorg.conf.d directory" skip
+    fi
+
+    # Create the Coolbits config file
+    local COOLBITS_FILE="/etc/X11/xorg.conf.d/20-nvidia-coolbits.conf"
+    if [ ! -f "$COOLBITS_FILE" ]; then
+        run_silent sudo tee "$COOLBITS_FILE" > /dev/null <<EOL
+Section "Device"
+    Identifier "Nvidia Card"
+    Driver "nvidia"
+    Option "Coolbits" "28"
+EndSection
+EOL
+        print_status "setup nvidia coolbits"
+    else
+        print_status "setup nvidia coolbits" skip
     fi
 }
 
