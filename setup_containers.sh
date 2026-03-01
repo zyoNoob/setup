@@ -40,6 +40,22 @@ run_silent() {
     return $exit_status
 }
 
+run_verbose() {
+    local cmd="$*"
+    local output
+    local exit_status
+
+    # Capture both stdout and stderr
+    output=$("$@" 2>&1)
+    exit_status=$?
+
+    # Log command and output to both channels
+    log_to_both "Command: $cmd"
+    log_to_both "Output: $output"
+
+    return $exit_status
+}
+
 print_status() {
     local status=$?
     local message=$1
@@ -150,6 +166,71 @@ uninstall_docker() {
     fi
 }
 
+install_nvidia_toolkit() {
+    log_to_both "--------------------------------"
+    log_to_both "# Installing NVIDIA Container Toolkit"
+    log_to_both "--------------------------------"
+
+    if is_installed "nvidia-container-toolkit"; then
+        print_status "install nvidia container toolkit" skip
+        return 0
+    fi
+
+    # Install prerequisites
+    run_silent sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+    run_silent sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates curl gnupg2
+    print_status "install nvidia toolkit prerequisites"
+
+    # Add GPG key
+    run_silent bash -c 'curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor --yes -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg'
+    print_status "add nvidia toolkit gpg key"
+
+    # Add repository
+    run_silent bash -c 'curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | sed "s#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g" | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list > /dev/null'
+    print_status "add nvidia toolkit repository"
+
+    # Install package
+    run_silent sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
+    if run_silent sudo DEBIAN_FRONTEND=noninteractive apt-get install -y nvidia-container-toolkit; then
+        print_status "install nvidia-container-toolkit"
+    else
+        print_status "install nvidia-container-toolkit"
+        return 1
+    fi
+
+    # Configure Docker runtime
+    run_silent sudo nvidia-ctk runtime configure --runtime=docker
+    run_silent sudo systemctl restart docker
+    print_status "configure docker for nvidia runtime"
+}
+
+uninstall_nvidia_toolkit() {
+    log_to_both "--------------------------------"
+    log_to_both "# Uninstalling NVIDIA Container Toolkit"
+    log_to_both "--------------------------------"
+
+    if is_installed "nvidia-container-toolkit"; then
+        run_silent sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y nvidia-container-toolkit
+        print_status "uninstall nvidia-container-toolkit"
+    else
+        print_status "uninstall nvidia-container-toolkit" skip
+    fi
+
+    if [ -f "/etc/apt/sources.list.d/nvidia-container-toolkit.list" ]; then
+        run_silent sudo rm -f /etc/apt/sources.list.d/nvidia-container-toolkit.list
+        print_status "remove nvidia toolkit repository"
+    else
+        print_status "remove nvidia toolkit repository" skip
+    fi
+
+    if [ -f "/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg" ]; then
+        run_silent sudo rm -f /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+        print_status "remove nvidia toolkit gpg key"
+    else
+        print_status "remove nvidia toolkit gpg key" skip
+    fi
+}
+
 install_podman() {
     log_to_both "--------------------------------"
     log_to_both "# Installing Podman"
@@ -187,6 +268,38 @@ uninstall_podman() {
     fi
 }
 
+purge_containers() {
+    log_to_both "--------------------------------"
+    log_to_both "# Purging Container Resources"
+    log_to_both "--------------------------------"
+
+    if [ "$PURGE_ACTIVE" = "true" ]; then
+        log_to_console "\e[31mWARNING: Nuclear option activated. Stopping all running containers...\e[0m"
+        
+        if is_installed "docker-ce"; then
+            run_verbose bash -c 'docker stop $(docker ps -aq) 2>/dev/null || true'
+        fi
+        
+        if is_installed "podman"; then
+            run_verbose bash -c 'podman stop -a 2>/dev/null || true'
+        fi
+    fi
+
+    if is_installed "docker-ce"; then
+        log_to_console "Purging Docker resources..."
+        run_verbose docker system prune -a --volumes -f
+    else
+        log_to_console "Docker not installed, skipping purge."
+    fi
+
+    if is_installed "podman"; then
+        log_to_console "Purging Podman resources..."
+        run_verbose podman system prune -a --volumes -f
+    else
+        log_to_console "Podman not installed, skipping purge."
+    fi
+}
+
 check_status() {
     log_to_both "--------------------------------"
     log_to_both "# Container Status"
@@ -203,14 +316,22 @@ check_status() {
     else
         log_to_console "Podman: \e[31mNot Installed\e[0m"
     fi
+
+    if is_installed "nvidia-container-toolkit"; then
+        log_to_console "NVIDIA Toolkit: \e[32mInstalled\e[0m"
+    else
+        log_to_console "NVIDIA Toolkit: \e[31mNot Installed\e[0m"
+    fi
 }
 
 show_help() {
     echo "Usage: $0 [OPTIONS]"
     echo "Options:"
-    echo "  --install      Install Docker and Podman"
-    echo "  --uninstall    Uninstall Docker and Podman"
+    echo "  --install      Install Docker, Podman, and NVIDIA Toolkit"
+    echo "  --uninstall    Uninstall Docker, Podman, and NVIDIA Toolkit"
     echo "  --status       Check installation status"
+    echo "  --purge        Purge all unused containers, networks, images, and volumes"
+    echo "  --active       When used with --purge, stops ALL active containers before purging (Nuclear option)"
     echo "  --help         Show this help message"
 }
 
@@ -221,6 +342,7 @@ if [ $# -eq 0 ]; then
 fi
 
 ACTION=""
+PURGE_ACTIVE="false"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -234,6 +356,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         --status)
             ACTION="status"
+            shift
+            ;;
+        --purge)
+            ACTION="purge"
+            shift
+            ;;
+        --active)
+            PURGE_ACTIVE="true"
             shift
             ;;
         --help|-h)
@@ -250,12 +380,16 @@ done
 
 if [ "$ACTION" = "install" ]; then
     install_docker
+    install_nvidia_toolkit
     install_podman
 elif [ "$ACTION" = "uninstall" ]; then
     uninstall_docker
+    uninstall_nvidia_toolkit
     uninstall_podman
 elif [ "$ACTION" = "status" ]; then
     check_status
+elif [ "$ACTION" = "purge" ]; then
+    purge_containers
 fi
 
 exit 0
