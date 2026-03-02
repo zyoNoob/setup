@@ -1383,6 +1383,14 @@ setup_shell_environment() {
         print_status "install television" skip
     fi
 
+    # Install 'bluetui'
+    if [ ! -x "$(command -v bluetui)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install bluetui
+        print_status "install bluetui"
+    else
+        print_status "install bluetui" skip
+    fi
+
     # Install 'ripgrep'
     if [ ! -x "$(command -v rg)" ]; then
         run_silent $HOME/.cargo/bin/cargo install --locked ripgrep
@@ -1637,6 +1645,17 @@ EOL
             "Terminal-based SQL client" \
             "$CUSTOM_ICONS_DIR/lazysql.svg" \
             "Development;Database;" \
+            "false"
+    fi
+
+    # bluetui
+    if command -v bluetui &> /dev/null; then
+        create_desktop_entry "bluetui" \
+            "kitty -e bluetui" \
+            "Bluetui" \
+            "Terminal-based Bluetooth manager" \
+            "bluetooth" \
+            "Settings;HardwareSettings;" \
             "false"
     fi
 }
