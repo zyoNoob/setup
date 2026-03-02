@@ -768,47 +768,46 @@ setup_nvidia_overclock() {
         return
     fi
 
-    # Create the overclock script
+    # Create the overclock script (always overwrite to ensure latest values)
     local OC_SCRIPT="/usr/local/bin/nvidia-oc.sh"
-    if [ ! -f "$OC_SCRIPT" ]; then
-        run_silent sudo tee "$OC_SCRIPT" > /dev/null <<EOL
+    run_silent sudo tee "$OC_SCRIPT" > /dev/null <<EOL
 #!/bin/bash
 
-export DISPLAY=:0
-export XAUTHORITY=/run/user/1000/gdm/Xauthority
+# Wait a few seconds to ensure the display server is fully ready
+sleep 5
+
+# Get the current user's display and authority if not set
+if [ -z "\$DISPLAY" ]; then
+    export DISPLAY=:0
+fi
+
+if [ -z "\$XAUTHORITY" ]; then
+    export XAUTHORITY=/run/user/\$(id -u)/gdm/Xauthority
+    if [ ! -f "\$XAUTHORITY" ]; then
+        export XAUTHORITY=~/.Xauthority
+    fi
+fi
 
 nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels=200"
-nvidia-settings -a "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels=2000"
+nvidia-settings -a "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels=6000"
 EOL
-        run_silent sudo chmod +x "$OC_SCRIPT"
-        print_status "create nvidia overclock script"
-    else
-        print_status "create nvidia overclock script" skip
-    fi
+    run_silent sudo chmod +x "$OC_SCRIPT"
+    print_status "create nvidia overclock script"
 
-    # Create the systemd service
-    local OC_SERVICE="/etc/systemd/system/nvidia-oc.service"
-    if [ ! -f "$OC_SERVICE" ]; then
-        run_silent sudo tee "$OC_SERVICE" > /dev/null <<EOL
-[Unit]
-Description=NVIDIA Overclock
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/bin/nvidia-oc.sh
-
-[Install]
-WantedBy=multi-user.target
+    # Create the XDG autostart entry
+    local AUTOSTART_DIR="/etc/xdg/autostart"
+    local AUTOSTART_FILE="$AUTOSTART_DIR/nvidia-oc.desktop"
+    
+    run_silent sudo mkdir -p "$AUTOSTART_DIR"
+    run_silent sudo tee "$AUTOSTART_FILE" > /dev/null <<EOL
+[Desktop Entry]
+Type=Application
+Name=NVIDIA Overclock
+Comment=Apply NVIDIA Overclock Settings
+Exec=/usr/local/bin/nvidia-oc.sh
+X-GNOME-Autostart-Phase=Initialization
 EOL
-        run_silent sudo systemctl daemon-reload
-        print_status "create nvidia overclock service"
-    else
-        print_status "create nvidia overclock service" skip
-    fi
-
-    # Enable the service (note: requires reboot to take effect)
-    run_silent sudo systemctl enable nvidia-oc.service
-    print_status "enable nvidia overclock service"
+    print_status "create nvidia overclock autostart entry"
 }
 
 # ========================================
