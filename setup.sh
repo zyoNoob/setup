@@ -1325,6 +1325,13 @@ setup_shell_environment() {
 
         # Install yazi plugins via package manager
         if [ -x "$HOME/.cargo/bin/ya" ]; then
+            if [ -e "$HOME/.config/yazi/flavors/dracula.yazi" ] || [ -e "$HOME/.config/yazi/flavors/catppuccin-mocha.yazi" ]; then
+                run_silent rm -rf "$HOME/.config/yazi/flavors/dracula.yazi" "$HOME/.config/yazi/flavors/catppuccin-mocha.yazi"
+                print_status "reset yazi managed flavors"
+            else
+                print_status "reset yazi managed flavors" skip
+            fi
+
             run_silent $HOME/.cargo/bin/ya pkg install
             print_status "install yazi plugins from package.toml"
         fi
