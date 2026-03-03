@@ -129,6 +129,10 @@ is_installed() {
     fi
 }
 
+has_nvidia_driver() {
+    command -v nvidia-settings &> /dev/null
+}
+
 install_package() {
     local package=$1
     local action_name="install $package"
@@ -719,7 +723,7 @@ setup_nvidia_coolbits() {
     fi
 
     # Check if nvidia driver is installed
-    if ! is_installed "nvidia-driver-550" && ! is_installed "nvidia-driver-535" && ! is_installed "nvidia-driver-545"; then
+    if ! has_nvidia_driver; then
         print_status "nvidia coolbits" "skip (no nvidia driver detected)"
         return
     fi
@@ -763,41 +767,58 @@ setup_nvidia_overclock() {
     fi
 
     # Check if nvidia driver is installed
-    if ! is_installed "nvidia-driver-550" && ! is_installed "nvidia-driver-535" && ! is_installed "nvidia-driver-545"; then
+    if ! has_nvidia_driver; then
         print_status "nvidia overclock" "skip (no nvidia driver detected)"
         return
     fi
 
+    # Create sudoers rule for passwordless nvidia-settings
+    local SUDOERS_FILE="/etc/sudoers.d/nvidia-oc"
+    local CURRENT_USER
+    CURRENT_USER=$(logname 2>/dev/null || echo "$SUDO_USER" || echo "$USER")
+    local SUDOERS_RULE="$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/nvidia-settings"
+
+    if [ ! -f "$SUDOERS_FILE" ] || ! grep -qF "$SUDOERS_RULE" "$SUDOERS_FILE"; then
+        echo "$SUDOERS_RULE" | sudo tee "$SUDOERS_FILE" > /dev/null
+        sudo chmod 0440 "$SUDOERS_FILE"
+        if sudo visudo -c -f "$SUDOERS_FILE" &> /dev/null; then
+            print_status "create nvidia-oc sudoers rule"
+        else
+            sudo rm -f "$SUDOERS_FILE"
+            print_status "create nvidia-oc sudoers rule (INVALID - removed)"
+            return
+        fi
+    else
+        print_status "create nvidia-oc sudoers rule" skip
+    fi
+
     # Create the overclock script (always overwrite to ensure latest values)
     local OC_SCRIPT="/usr/local/bin/nvidia-oc.sh"
-    run_silent sudo tee "$OC_SCRIPT" > /dev/null <<EOL
+    sudo tee "$OC_SCRIPT" > /dev/null <<'OCSCRIPT'
 #!/bin/bash
 
-# Wait a few seconds to ensure the display server is fully ready
-sleep 5
+# Wait for the display server to be fully ready
+sleep 3
 
-# Get the current user's display and authority if not set
-if [ -z "\$DISPLAY" ]; then
-    export DISPLAY=:0
+logger -t nvidia-oc "Applying overclock: +200 MHz core, +6000 MHz memory"
+
+if sudo nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels=200" &> /dev/null && \
+   sudo nvidia-settings -a "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels=6000" &> /dev/null; then
+    CORE=$(nvidia-settings -t -q "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels" 2>/dev/null)
+    MEM=$(nvidia-settings -t -q "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels" 2>/dev/null)
+    logger -t nvidia-oc "Applied — core offset: ${CORE:-?}, memory offset: ${MEM:-?}"
+else
+    logger -t nvidia-oc "ERROR: Failed to apply overclock settings"
+    exit 1
 fi
-
-if [ -z "\$XAUTHORITY" ]; then
-    export XAUTHORITY=/run/user/\$(id -u)/gdm/Xauthority
-    if [ ! -f "\$XAUTHORITY" ]; then
-        export XAUTHORITY=~/.Xauthority
-    fi
-fi
-
-nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels=200"
-nvidia-settings -a "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels=6000"
-EOL
+OCSCRIPT
     run_silent sudo chmod +x "$OC_SCRIPT"
     print_status "create nvidia overclock script"
 
     # Create the XDG autostart entry
     local AUTOSTART_DIR="/etc/xdg/autostart"
     local AUTOSTART_FILE="$AUTOSTART_DIR/nvidia-oc.desktop"
-    
+
     run_silent sudo mkdir -p "$AUTOSTART_DIR"
     run_silent sudo tee "$AUTOSTART_FILE" > /dev/null <<EOL
 [Desktop Entry]
