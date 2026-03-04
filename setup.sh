@@ -1721,6 +1721,11 @@ create_tui_desktop_entries() {
     log_to_both "# Creating Desktop Entries for TUI Apps"
     log_to_both "--------------------------------"
 
+    if is_server; then
+        print_status "desktop entries" "skip (server)"
+        return
+    fi
+
     # Create desktop entries directory
     DESKTOP_ENTRIES_DIR="$HOME/.local/share/applications"
     mkdir -p "$DESKTOP_ENTRIES_DIR"
@@ -1959,7 +1964,7 @@ final_setup() {
     fi
 
     # Final actions
-    if is_wsl; then
+    if is_wsl || is_server; then
         print_status "setup complete"
     else
         if [ "$XDG_SESSION_DESKTOP" = "i3" ] || [ "$DESKTOP_SESSION" = "i3" ]; then
