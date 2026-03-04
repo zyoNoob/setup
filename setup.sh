@@ -232,7 +232,7 @@ initial_system_setup() {
     remove_package "unattended-upgrades"
 
     # Reinstall Firefox from Mozilla repo
-    if ! is_wsl; then
+    if ! is_wsl && ! is_server; then
         # Remove snap version
         if snap list firefox &>/dev/null; then
             run_silent sudo snap remove firefox
@@ -288,6 +288,8 @@ EOL
         else
             print_status "remove firefox snap" skip
         fi
+    elif is_server; then
+        print_status "firefox reinstallation" "skip (server)"
     else
         print_status "firefox reinstallation" "skip (WSL detected)"
     fi
