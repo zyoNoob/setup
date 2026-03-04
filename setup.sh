@@ -1881,16 +1881,24 @@ configure_dotfiles_and_utils() {
 
     cd "$SETUP_DIR"
 
-    # Stow dotfiles with explicit target directory and adopt existing files
-    run_silent stow --no-folding --adopt --override=.* -v -t "$HOME" dotfiles
-    print_status "stow dotfiles"
+    # Stow common dotfiles (all environments)
+    run_silent stow --no-folding --adopt --override=.* -v -t "$HOME" dotfiles-common
+    print_status "stow dotfiles-common"
+
+    # Stow desktop dotfiles (desktop only)
+    if ! is_server; then
+        run_silent stow --no-folding --adopt --override=.* -v -t "$HOME" dotfiles-desktop
+        print_status "stow dotfiles-desktop"
+    else
+        print_status "stow dotfiles-desktop" "skip (server)"
+    fi
 
     # Stow utils/bin packages
     run_silent stow --no-folding --adopt --override=.* -v -t "$HOME" utils
     print_status "stow utils"
 
     # Ensure Firefox profile exists
-    if ! is_wsl; then
+    if ! is_wsl && ! is_server; then
         FIREFOX_PROFILE_DIR=$(find "$HOME/.mozilla/firefox" -maxdepth 1 -type d -name '*.default-release' | head -n 1)
         if [ -z "$FIREFOX_PROFILE_DIR" ]; then
             print_status "creating firefox profile"
