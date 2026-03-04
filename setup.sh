@@ -520,11 +520,6 @@ setup_desktop_environment() {
     log_to_both "# Desktop Environment Setup"
     log_to_both "--------------------------------"
 
-    if is_server; then
-        print_status "desktop environment setup" "skip (server)"
-        return
-    fi
-
     # Configure monitors (non-WSL only)
     if ! is_wsl; then
         run_silent sudo "$SETUP_DIR/dotfiles-desktop/.config/scripts/set_monitors.sh"
@@ -1721,11 +1716,6 @@ create_tui_desktop_entries() {
     log_to_both "# Creating Desktop Entries for TUI Apps"
     log_to_both "--------------------------------"
 
-    if is_server; then
-        print_status "desktop entries" "skip (server)"
-        return
-    fi
-
     # Create desktop entries directory
     DESKTOP_ENTRIES_DIR="$HOME/.local/share/applications"
     mkdir -p "$DESKTOP_ENTRIES_DIR"
@@ -2008,14 +1998,19 @@ main() {
 
     if ! is_server; then
         setup_desktop_environment
-        create_tui_desktop_entries
     else
         setup_nvidia_server
         print_status "desktop environment setup" "skip (server)"
-        print_status "desktop entries" "skip (server)"
     fi
 
     setup_shell_environment
+
+    if ! is_server; then
+        create_tui_desktop_entries
+    else
+        print_status "desktop entries" "skip (server)"
+    fi
+
     final_setup
 }
 
