@@ -520,6 +520,11 @@ setup_desktop_environment() {
     log_to_both "# Desktop Environment Setup"
     log_to_both "--------------------------------"
 
+    if is_server; then
+        print_status "desktop environment setup" "skip (server)"
+        return
+    fi
+
     # Configure monitors (non-WSL only)
     if ! is_wsl; then
         run_silent sudo "$SETUP_DIR/dotfiles/.config/scripts/set_monitors.sh"
