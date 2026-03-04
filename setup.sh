@@ -991,8 +991,8 @@ setup_development_tools() {
     log_to_both "# Development Tools Setup"
     log_to_both "--------------------------------"
 
-    # Install VS Code (non-WSL only)
-    if ! is_wsl; then
+    # Install VS Code (non-WSL, non-server only)
+    if ! is_wsl && ! is_server; then
         if ! is_installed "code"; then
             # Download and set up Microsoft's GPG key and repository in one sequence
             run_silent bash -c '
@@ -1008,7 +1008,11 @@ setup_development_tools() {
             print_status "install code" skip
         fi
     else
-        print_status "install code" "skip (WSL detected)"
+        if is_server; then
+            print_status "install code" "skip (server)"
+        else
+            print_status "install code" "skip (WSL detected)"
+        fi
     fi
 
     # Install ydiff
@@ -1179,11 +1183,17 @@ setup_development_tools() {
 
     # UV tool installs
     local uv_tools=(
-        "netron"
         "smassh"
         "gdown"
         "huggingface_hub[cli]"
     )
+
+    # Desktop-only UV tools
+    if ! is_server; then
+        uv_tools+=("netron")
+    else
+        print_status "uv install netron" "skip (server)"
+    fi
 
     for tool in "${uv_tools[@]}"; do
         if ! $HOME/.local/bin/uv tool list | grep -q "^${tool%%\[*}"; then
@@ -1349,16 +1359,27 @@ setup_development_tools() {
         gstreamer1.0-plugins-ugly
         gstreamer1.0-libav
         gstreamer1.0-tools
-        gstreamer1.0-x
         gstreamer1.0-alsa
         gstreamer1.0-gl
-        gstreamer1.0-gtk3
-        gstreamer1.0-qt5
         gstreamer1.0-pulseaudio
     )
     for pkg in "${gstreamer_packages[@]}"; do
         install_package "$pkg"
     done
+
+    # GStreamer GUI packages (desktop only)
+    if ! is_server; then
+        local gstreamer_desktop_packages=(
+            gstreamer1.0-x
+            gstreamer1.0-gtk3
+            gstreamer1.0-qt5
+        )
+        for pkg in "${gstreamer_desktop_packages[@]}"; do
+            install_package "$pkg"
+        done
+    else
+        print_status "gstreamer desktop packages" "skip (server)"
+    fi
 
     # Install PostgreSQL and related dev packages
     local postgres_packages=(
@@ -1381,16 +1402,23 @@ setup_development_tools() {
 
     # Install VM tools
     local vm_packages=(
-        libvirt-daemon-system 
-        libvirt-clients 
-        qemu-kvm 
-        qemu-utils 
-        virt-manager 
+        libvirt-daemon-system
+        libvirt-clients
+        qemu-kvm
+        qemu-utils
         ovmf
     )
     for pkg in "${vm_packages[@]}"; do
         install_package "$pkg"
     done
+
+    # virt-manager GUI (desktop only, servers use virsh)
+    if ! is_server; then
+        install_package "virt-manager"
+    else
+        print_status "install virt-manager" "skip (server)"
+    fi
+
     run_silent sudo systemctl enable --now libvirtd
 
     # C++ Dev Libraries
