@@ -119,13 +119,25 @@ is_wsl() {
     esac
 }
 
+_IS_SERVER_CACHED=""
 is_server() {
-    local default_target
-    default_target=$(systemctl get-default 2>/dev/null || echo "unknown")
-    case "$default_target" in
-        multi-user.target | rescue.target ) return 0 ;;
-        * ) return 1 ;;
-    esac
+    if [ -n "$_IS_SERVER_CACHED" ]; then
+        return "$_IS_SERVER_CACHED"
+    fi
+    # Check for desktop metapackages (most reliable indicator)
+    local pkg
+    for pkg in ubuntu-desktop ubuntu-desktop-minimal kubuntu-desktop xubuntu-desktop lubuntu-desktop; do
+        if dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
+            _IS_SERVER_CACHED=1; return 1
+        fi
+    done
+    # Fallback: check for display server packages
+    for pkg in xserver-xorg-core xwayland; do
+        if dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
+            _IS_SERVER_CACHED=1; return 1
+        fi
+    done
+    _IS_SERVER_CACHED=0; return 0
 }
 
 # Package management helpers
@@ -371,6 +383,8 @@ install_essential_packages() {
         avahi-utils
         iperf3
         aria2
+        pulsemixer
+        network-manager
     )
 
     # Install all packages
@@ -391,7 +405,6 @@ install_essential_packages() {
             i3
             i3blocks
             pavucontrol
-            pulsemixer
             feh
             dunst
             rofi
@@ -404,7 +417,7 @@ install_essential_packages() {
             install_package "$pkg"
         done
     else
-        print_status "desktop packages (18 packages)" "skip (server)"
+        print_status "desktop packages (17 packages)" "skip (server)"
     fi
 
     # Install fzf
