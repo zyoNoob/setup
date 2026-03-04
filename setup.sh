@@ -353,7 +353,6 @@ install_essential_packages() {
         python3-dev
         python3-pip
         python3-numpy
-        flatpak
         htop
         btop
         speedtest-cli
@@ -362,39 +361,51 @@ install_essential_packages() {
         unzip
         7zip
         keychain
-        maim
-        xclip
-        xdotool
         rename
-        transmission
-        policykit-1-gnome
-        network-manager-gnome
         openssh-server
         zsh
         tmux
         silversearcher-ag
         tree
-        i3
-        i3blocks
-        pavucontrol
-        pulsemixer
-        feh
-        dunst
-        rofi
-        picom
-        polybar
         avahi-daemon
         avahi-utils
         iperf3
         aria2
-        wireplumber
-        libfuse2
     )
 
     # Install all packages
     for pkg in "${packages_core[@]}"; do
         install_package "$pkg"
     done
+
+    # Desktop-only packages
+    if ! is_server; then
+        local packages_desktop=(
+            flatpak
+            maim
+            xclip
+            xdotool
+            transmission
+            policykit-1-gnome
+            network-manager-gnome
+            i3
+            i3blocks
+            pavucontrol
+            pulsemixer
+            feh
+            dunst
+            rofi
+            picom
+            polybar
+            wireplumber
+            libfuse2
+        )
+        for pkg in "${packages_desktop[@]}"; do
+            install_package "$pkg"
+        done
+    else
+        print_status "desktop packages (18 packages)" "skip (server)"
+    fi
 
     # Install fzf
     if [ ! -f "$HOME/bin/fzf" ]; then
