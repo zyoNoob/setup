@@ -119,6 +119,15 @@ is_wsl() {
     esac
 }
 
+is_server() {
+    local default_target
+    default_target=$(systemctl get-default 2>/dev/null || echo "unknown")
+    case "$default_target" in
+        multi-user.target | rescue.target ) return 0 ;;
+        * ) return 1 ;;
+    esac
+}
+
 # Package management helpers
 is_installed() {
     # Only log to file, return status for logic
@@ -130,6 +139,10 @@ is_installed() {
 }
 
 has_nvidia_driver() {
+    command -v nvidia-settings &> /dev/null || command -v nvidia-smi &> /dev/null
+}
+
+has_nvidia_gui() {
     command -v nvidia-settings &> /dev/null
 }
 
