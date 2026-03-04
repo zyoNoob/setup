@@ -1443,9 +1443,9 @@ setup_shell_environment() {
     log_to_both "# Shell Environment Setup"
     log_to_both "--------------------------------"
 
-    # Install Ghostty if not in WSL
-    if is_wsl; then
-        print_status "install ghostty" "skip (WSL detected)"
+    # Install Ghostty if not in WSL/server
+    if is_wsl || is_server; then
+        print_status "install ghostty" "skip (WSL/server detected)"
     else
         if [ -x "$(command -v ghostty)" ]; then
             print_status "install ghostty" skip
@@ -1471,8 +1471,8 @@ setup_shell_environment() {
     fi
 
     # Install kitty
-    if is_wsl; then
-        print_status "install kitty" "skip (WSL detected)"
+    if is_wsl || is_server; then
+        print_status "install kitty" "skip (WSL/server detected)"
     else
         if [ -x "$(command -v kitty)" ]; then
             print_status "install kitty" skip
@@ -1543,8 +1543,13 @@ setup_shell_environment() {
     install_package "sshfs"
 
     # gvfs - required for gvfs.yazi plugin (mount devices, MTP, SMB, etc.)
-    install_package "gvfs"
-    install_package "gvfs-backends"
+    if ! is_server; then
+        install_package "gvfs"
+        install_package "gvfs-backends"
+    else
+        print_status "install gvfs" "skip (server)"
+        print_status "install gvfs-backends" "skip (server)"
+    fi
 
     # ImageMagick - required for zoom.yazi plugin (image zoom)
     install_package "imagemagick"
