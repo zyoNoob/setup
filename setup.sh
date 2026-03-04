@@ -520,10 +520,14 @@ setup_desktop_environment() {
     log_to_both "# Desktop Environment Setup"
     log_to_both "--------------------------------"
 
-    # Configure monitors (non-WSL only)
+    # Configure monitors (non-WSL only, requires active display)
     if ! is_wsl; then
-        run_silent "$SETUP_DIR/dotfiles-desktop/.config/scripts/set_monitors.sh"
-        print_status "setup monitors"
+        if xrandr --query &>/dev/null; then
+            run_silent "$SETUP_DIR/dotfiles-desktop/.config/scripts/set_monitors.sh"
+            print_status "setup monitors"
+        else
+            print_status "setup monitors" "skip (no display)"
+        fi
         run_silent sudo cp "$HOME/.config/monitors.xml" "/var/lib/gdm3/.config/"
         print_status "copy monitors.xml to gdm3"
         run_silent sudo chown gdm:gdm /var/lib/gdm3/.config/monitors.xml
@@ -823,7 +827,7 @@ setup_nvidia_overclock() {
     CURRENT_USER=$(logname 2>/dev/null || echo "$SUDO_USER" || echo "$USER")
     local SUDOERS_RULE="$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/nvidia-settings"
 
-    if [ ! -f "$SUDOERS_FILE" ] || ! grep -qF "$SUDOERS_RULE" "$SUDOERS_FILE"; then
+    if [ ! -f "$SUDOERS_FILE" ] || ! sudo grep -qF "$SUDOERS_RULE" "$SUDOERS_FILE"; then
         echo "$SUDOERS_RULE" | sudo tee "$SUDOERS_FILE" > /dev/null
         sudo chmod 0440 "$SUDOERS_FILE"
         if sudo visudo -c -f "$SUDOERS_FILE" &> /dev/null; then
@@ -911,7 +915,7 @@ setup_nvidia_server() {
     CURRENT_USER=$(logname 2>/dev/null || echo "$SUDO_USER" || echo "$USER")
     local SUDOERS_RULE="$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/nvidia-smi"
 
-    if [ ! -f "$SUDOERS_FILE" ] || ! grep -qF "$SUDOERS_RULE" "$SUDOERS_FILE"; then
+    if [ ! -f "$SUDOERS_FILE" ] || ! sudo grep -qF "$SUDOERS_RULE" "$SUDOERS_FILE"; then
         echo "$SUDOERS_RULE" | sudo tee "$SUDOERS_FILE" > /dev/null
         sudo chmod 0440 "$SUDOERS_FILE"
         if sudo visudo -c -f "$SUDOERS_FILE" &> /dev/null; then
