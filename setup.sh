@@ -1984,13 +1984,30 @@ final_setup() {
 main() {
     print_status "Starting setup..."
 
+    # Log detected environment
+    if is_wsl; then
+        log_to_both "Environment: WSL"
+    elif is_server; then
+        log_to_both "Environment: Ubuntu Server (headless)"
+    else
+        log_to_both "Environment: Ubuntu Desktop"
+    fi
+
     initial_system_setup
     install_essential_packages
     configure_dotfiles_and_utils
     setup_development_tools
-    setup_desktop_environment
+
+    if ! is_server; then
+        setup_desktop_environment
+        create_tui_desktop_entries
+    else
+        setup_nvidia_server
+        print_status "desktop environment setup" "skip (server)"
+        print_status "desktop entries" "skip (server)"
+    fi
+
     setup_shell_environment
-    create_tui_desktop_entries
     final_setup
 }
 
