@@ -762,8 +762,13 @@ setup_nvidia_coolbits() {
         return
     fi
 
+    if is_server; then
+        print_status "nvidia coolbits" "skip (server)"
+        return
+    fi
+
     # Check if nvidia driver is installed
-    if ! has_nvidia_driver; then
+    if ! has_nvidia_gui; then
         print_status "nvidia coolbits" "skip (no nvidia driver detected)"
         return
     fi
@@ -806,8 +811,13 @@ setup_nvidia_overclock() {
         return
     fi
 
+    if is_server; then
+        print_status "nvidia overclock" "skip (server)"
+        return
+    fi
+
     # Check if nvidia driver is installed
-    if ! has_nvidia_driver; then
+    if ! has_nvidia_gui; then
         print_status "nvidia overclock" "skip (no nvidia driver detected)"
         return
     fi
@@ -869,6 +879,107 @@ Exec=/usr/local/bin/nvidia-oc.sh
 X-GNOME-Autostart-Phase=Initialization
 EOL
     print_status "create nvidia overclock autostart entry"
+}
+
+# ========================================
+# NVIDIA Server Configuration
+# ========================================
+
+setup_nvidia_server() {
+    log_to_both "--------------------------------"
+    log_to_both "# NVIDIA Server Configuration"
+    log_to_both "--------------------------------"
+
+    if is_wsl; then
+        print_status "nvidia server setup" "skip (WSL detected)"
+        return
+    fi
+
+    if ! is_server; then
+        print_status "nvidia server setup" "skip (not a server)"
+        return
+    fi
+
+    # Check if nvidia driver is installed (via nvidia-smi on servers)
+    if ! command -v nvidia-smi &> /dev/null; then
+        print_status "nvidia server setup" "skip (no nvidia driver detected)"
+        return
+    fi
+
+    # Enable persistence mode
+    run_silent sudo nvidia-smi -pm 1
+    print_status "enable nvidia persistence mode"
+
+    # Create sudoers rule for passwordless nvidia-smi
+    local SUDOERS_FILE="/etc/sudoers.d/nvidia-oc"
+    local CURRENT_USER
+    CURRENT_USER=$(logname 2>/dev/null || echo "$SUDO_USER" || echo "$USER")
+    local SUDOERS_RULE="$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/nvidia-smi"
+
+    if [ ! -f "$SUDOERS_FILE" ] || ! grep -qF "$SUDOERS_RULE" "$SUDOERS_FILE"; then
+        echo "$SUDOERS_RULE" | sudo tee "$SUDOERS_FILE" > /dev/null
+        sudo chmod 0440 "$SUDOERS_FILE"
+        if sudo visudo -c -f "$SUDOERS_FILE" &> /dev/null; then
+            print_status "create nvidia-smi sudoers rule"
+        else
+            sudo rm -f "$SUDOERS_FILE"
+            print_status "create nvidia-smi sudoers rule (INVALID - removed)"
+            return
+        fi
+    else
+        print_status "create nvidia-smi sudoers rule" skip
+    fi
+
+    # Create the server overclock script (always overwrite to ensure latest values)
+    local OC_SCRIPT="/usr/local/bin/nvidia-oc-server.sh"
+    sudo tee "$OC_SCRIPT" > /dev/null <<'OCSCRIPT'
+#!/bin/bash
+
+logger -t nvidia-oc "Applying server GPU configuration"
+
+# Enable persistence mode
+if ! nvidia-smi -pm 1 &> /dev/null; then
+    logger -t nvidia-oc "ERROR: Failed to enable persistence mode"
+    exit 1
+fi
+
+# Lock GPU clocks (adjust min,max values as needed)
+# nvidia-smi --lock-gpu-clocks=<min>,<max>
+# nvidia-smi --lock-memory-clocks=<freq>
+
+# Set power limit (in watts, adjust as needed)
+# nvidia-smi -pl <watts>
+
+logger -t nvidia-oc "Server GPU configuration applied"
+nvidia-smi --query-gpu=name,clocks.current.graphics,clocks.current.memory,power.draw --format=csv,noheader 2>/dev/null | \
+    while IFS= read -r line; do logger -t nvidia-oc "GPU status: $line"; done
+OCSCRIPT
+    run_silent sudo chmod +x "$OC_SCRIPT"
+    print_status "create nvidia server overclock script"
+
+    # Create systemd oneshot service
+    local SERVICE_FILE="/etc/systemd/system/nvidia-oc.service"
+    if [ ! -f "$SERVICE_FILE" ]; then
+        sudo tee "$SERVICE_FILE" > /dev/null <<EOL
+[Unit]
+Description=NVIDIA GPU Server Configuration
+After=nvidia-persistenced.service
+Wants=nvidia-persistenced.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/nvidia-oc-server.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOL
+        run_silent sudo systemctl daemon-reload
+        run_silent sudo systemctl enable nvidia-oc.service
+        print_status "create nvidia server overclock service"
+    else
+        print_status "create nvidia server overclock service" skip
+    fi
 }
 
 # ========================================
