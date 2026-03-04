@@ -419,13 +419,17 @@ install_essential_packages() {
         print_status "install fzf" skip
     fi
 
-    # Install brightnessctl
-    if [ ! -x "$(command -v brightnessctl)" ]; then
-        install_package "brightnessctl"
-        run_silent sudo chmod +s /usr/bin/brightnessctl
-        print_status "install brightnessctl"
+    # Install brightnessctl (desktop only)
+    if ! is_server; then
+        if [ ! -x "$(command -v brightnessctl)" ]; then
+            install_package "brightnessctl"
+            run_silent sudo chmod +s /usr/bin/brightnessctl
+            print_status "install brightnessctl"
+        else
+            print_status "install brightnessctl" skip
+        fi
     else
-        print_status "install brightnessctl" skip
+        print_status "install brightnessctl" "skip (server)"
     fi
 
     # Install Neovim
@@ -446,58 +450,63 @@ install_essential_packages() {
         print_status "install neovim" skip
     fi
 
-    # Configure flatpak
-    if ! flatpak remotes | grep -q flathub; then
-        run_silent flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-        run_silent flatpak --user override --filesystem=~/.icons/:ro
-        run_silent flatpak --user override --filesystem=~/.themes/:ro
-        run_silent flatpak --user override --filesystem=~/.fonts/:ro
-        run_silent flatpak --user override --filesystem=~/.cache/:ro
-        run_silent bash -c 'flatpak --user override --filesystem="$1"/:ro' -- "$SETUP_DIR"
-        run_silent flatpak --user override --filesystem=/usr/share/icons/:ro
-        run_silent flatpak --user override --filesystem=/usr/share/themes/:ro
-        run_silent flatpak --user override --filesystem=/usr/share/fonts/:ro
-        print_status "configure flatpak"
-    else
-        print_status "configure flatpak" skip
-    fi
+    # Configure flatpak and install desktop apps (desktop only)
+    if ! is_server; then
+        # Configure flatpak
+        if ! flatpak remotes | grep -q flathub; then
+            run_silent flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+            run_silent flatpak --user override --filesystem=~/.icons/:ro
+            run_silent flatpak --user override --filesystem=~/.themes/:ro
+            run_silent flatpak --user override --filesystem=~/.fonts/:ro
+            run_silent flatpak --user override --filesystem=~/.cache/:ro
+            run_silent bash -c 'flatpak --user override --filesystem="$1"/:ro' -- "$SETUP_DIR"
+            run_silent flatpak --user override --filesystem=/usr/share/icons/:ro
+            run_silent flatpak --user override --filesystem=/usr/share/themes/:ro
+            run_silent flatpak --user override --filesystem=/usr/share/fonts/:ro
+            print_status "configure flatpak"
+        else
+            print_status "configure flatpak" skip
+        fi
 
-    # Install Flatseal (Flatpak permissions manager)
-    if ! flatpak list | grep -q com.github.tchx84.Flatseal; then
-        run_silent flatpak install -y flathub com.github.tchx84.Flatseal
-        print_status "install flatseal"
-    else
-        print_status "install flatseal" skip
-    fi
+        # Install Flatseal (Flatpak permissions manager)
+        if ! flatpak list | grep -q com.github.tchx84.Flatseal; then
+            run_silent flatpak install -y flathub com.github.tchx84.Flatseal
+            print_status "install flatseal"
+        else
+            print_status "install flatseal" skip
+        fi
 
-    # Install Discord
-    if ! flatpak list | grep -q com.discordapp.Discord; then
-        run_silent flatpak install -y flathub com.discordapp.Discord
-        run_silent flatpak override --user --env=XCURSOR_PATH= com.discordapp.Discord
-        print_status "install discord"
-    else
-        # Ensure environment variables are set even if Discord is already installed
-        run_silent flatpak override --user --env=XCURSOR_PATH= com.discordapp.Discord
-        print_status "install discord" skip
-    fi
+        # Install Discord
+        if ! flatpak list | grep -q com.discordapp.Discord; then
+            run_silent flatpak install -y flathub com.discordapp.Discord
+            run_silent flatpak override --user --env=XCURSOR_PATH= com.discordapp.Discord
+            print_status "install discord"
+        else
+            # Ensure environment variables are set even if Discord is already installed
+            run_silent flatpak override --user --env=XCURSOR_PATH= com.discordapp.Discord
+            print_status "install discord" skip
+        fi
 
-    # Install Bolt (RS3 Launcher)
-    if ! flatpak list | grep -q com.adamcake.Bolt; then
-        run_silent flatpak install -y flathub com.adamcake.Bolt
-        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=126 com.adamcake.Bolt
-        print_status "install bolt"
-    else
-        # Ensure environment variables are set even if Bolt is already installed
-        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=126 com.adamcake.Bolt
-        print_status "install bolt" skip
-    fi
+        # Install Bolt (RS3 Launcher)
+        if ! flatpak list | grep -q com.adamcake.Bolt; then
+            run_silent flatpak install -y flathub com.adamcake.Bolt
+            run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=126 com.adamcake.Bolt
+            print_status "install bolt"
+        else
+            # Ensure environment variables are set even if Bolt is already installed
+            run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=126 com.adamcake.Bolt
+            print_status "install bolt" skip
+        fi
 
-    # Install Vibrant Linux - Saturation Manager
-    if ! flatpak list | grep -q io.github.libvibrant.vibrantLinux; then
-        run_silent flatpak install -y flathub io.github.libvibrant.vibrantLinux
-        print_status "install vibrantLinux"
+        # Install Vibrant Linux - Saturation Manager
+        if ! flatpak list | grep -q io.github.libvibrant.vibrantLinux; then
+            run_silent flatpak install -y flathub io.github.libvibrant.vibrantLinux
+            print_status "install vibrantLinux"
+        else
+            print_status "install vibrantLinux" skip
+        fi
     else
-        print_status "install vibrantLinux" skip
+        print_status "flatpak and desktop apps" "skip (server)"
     fi
 
 }
