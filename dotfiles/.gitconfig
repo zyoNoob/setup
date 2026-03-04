@@ -1,5 +1,5 @@
 [user]
-	name = zyon
+	name = zyoN
 	email = 32070378+zyoNoob@users.noreply.github.com
 
 [core]
@@ -47,3 +47,6 @@
 	
 [mergetool "nvimdiff"]
     cmd = "nvim -d \"$LOCAL\" \"$REMOTE\" \"$MERGED\" -c 'wincmd w' -c 'wincmd J'"
+
+[include]
+	path = ~/.gitconfig-local

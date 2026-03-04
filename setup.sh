@@ -129,6 +129,10 @@ is_installed() {
     fi
 }
 
+has_nvidia_driver() {
+    command -v nvidia-settings &> /dev/null
+}
+
 install_package() {
     local package=$1
     local action_name="install $package"
@@ -674,30 +678,157 @@ EOL
             print_status "install solaar" skip
         fi
 
-        # Apply GNOME desktop settings
-        run_silent gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
-        run_silent gsettings set org.gnome.desktop.interface cursor-size 24
-        run_silent gsettings set org.gnome.desktop.interface cursor-blink true
-        run_silent gsettings set org.gnome.desktop.interface cursor-blink-timeout 1200
-        run_silent gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
-        run_silent gsettings set org.gnome.desktop.peripherals.mouse speed -0.40
-        run_silent gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'
-        run_silent gsettings set org.gnome.desktop.interface font-name 'MesloLGS Nerd Font 12'
-        run_silent gsettings set org.gnome.desktop.interface document-font-name 'MesloLGS Nerd Font 12'
-        run_silent gsettings set org.gnome.desktop.interface monospace-font-name 'MesloLGS Nerd Font Mono 12'
-        run_silent gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-blue-standard+default'
-        run_silent gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
-        run_silent gsettings set org.gnome.desktop.interface cursor-theme 'catppuccin-mocha-dark-cursors'
-        print_status "apply gnome-desktop settings"
+    # NVIDIA Coolbits Configuration
+    setup_nvidia_coolbits
+    setup_nvidia_overclock
 
-        # Apply ibus settings
-        run_silent dconf write /desktop/ibus/panel/show-icon-on-systray false
-        run_silent dconf write /desktop/ibus/general/hotkey/triggers "@as []"
-        print_status "apply ibus settings"
+    # Apply GNOME desktop settings
+    run_silent gsettings set org.gnome.desktop.interface gtk-enable-primary-paste false
+    run_silent gsettings set org.gnome.desktop.interface cursor-size 24
+    run_silent gsettings set org.gnome.desktop.interface cursor-blink true
+    run_silent gsettings set org.gnome.desktop.interface cursor-blink-timeout 1200
+    run_silent gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+    run_silent gsettings set org.gnome.desktop.peripherals.mouse speed -0.40
+    run_silent gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'
+    run_silent gsettings set org.gnome.desktop.interface font-name 'MesloLGS Nerd Font 12'
+    run_silent gsettings set org.gnome.desktop.interface document-font-name 'MesloLGS Nerd Font 12'
+    run_silent gsettings set org.gnome.desktop.interface monospace-font-name 'MesloLGS Nerd Font Mono 12'
+    run_silent gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-blue-standard+default'
+    run_silent gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
+    run_silent gsettings set org.gnome.desktop.interface cursor-theme 'catppuccin-mocha-dark-cursors'
+    print_status "apply gnome-desktop settings"
+
+    # Apply ibus settings
+    run_silent dconf write /desktop/ibus/panel/show-icon-on-systray false
+    run_silent dconf write /desktop/ibus/general/hotkey/triggers "@as []"
+    print_status "apply ibus settings"
 
     else
         print_status "desktop environment setup" "skip (WSL detected)"
     fi
+}
+
+# ========================================
+# NVIDIA Coolbits Configuration
+# ========================================
+
+setup_nvidia_coolbits() {
+    log_to_both "--------------------------------"
+    log_to_both "# NVIDIA Coolbits Configuration"
+    log_to_both "--------------------------------"
+
+    if is_wsl; then
+        print_status "nvidia coolbits" "skip (WSL detected)"
+        return
+    fi
+
+    # Check if nvidia driver is installed
+    if ! has_nvidia_driver; then
+        print_status "nvidia coolbits" "skip (no nvidia driver detected)"
+        return
+    fi
+
+    # Create xorg.conf.d directory if it doesn't exist
+    if [ ! -d "/etc/X11/xorg.conf.d" ]; then
+        run_silent sudo mkdir -p /etc/X11/xorg.conf.d
+        print_status "create xorg.conf.d directory"
+    else
+        print_status "create xorg.conf.d directory" skip
+    fi
+
+    # Create the Coolbits config file
+    local COOLBITS_FILE="/etc/X11/xorg.conf.d/99-nvidia-coolbits.conf"
+    if [ ! -f "$COOLBITS_FILE" ]; then
+        run_silent sudo tee "$COOLBITS_FILE" > /dev/null <<EOL
+Section "OutputClass"
+    Identifier "nvidia"
+    MatchDriver "nvidia-drm"
+    Option "Coolbits" "28"
+EndSection
+EOL
+        print_status "setup nvidia coolbits"
+    else
+        print_status "setup nvidia coolbits" skip
+    fi
+}
+
+# ========================================
+# NVIDIA Overclock Configuration
+# ========================================
+
+setup_nvidia_overclock() {
+    log_to_both "--------------------------------"
+    log_to_both "# NVIDIA Overclock Configuration"
+    log_to_both "--------------------------------"
+
+    if is_wsl; then
+        print_status "nvidia overclock" "skip (WSL detected)"
+        return
+    fi
+
+    # Check if nvidia driver is installed
+    if ! has_nvidia_driver; then
+        print_status "nvidia overclock" "skip (no nvidia driver detected)"
+        return
+    fi
+
+    # Create sudoers rule for passwordless nvidia-settings
+    local SUDOERS_FILE="/etc/sudoers.d/nvidia-oc"
+    local CURRENT_USER
+    CURRENT_USER=$(logname 2>/dev/null || echo "$SUDO_USER" || echo "$USER")
+    local SUDOERS_RULE="$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/nvidia-settings"
+
+    if [ ! -f "$SUDOERS_FILE" ] || ! grep -qF "$SUDOERS_RULE" "$SUDOERS_FILE"; then
+        echo "$SUDOERS_RULE" | sudo tee "$SUDOERS_FILE" > /dev/null
+        sudo chmod 0440 "$SUDOERS_FILE"
+        if sudo visudo -c -f "$SUDOERS_FILE" &> /dev/null; then
+            print_status "create nvidia-oc sudoers rule"
+        else
+            sudo rm -f "$SUDOERS_FILE"
+            print_status "create nvidia-oc sudoers rule (INVALID - removed)"
+            return
+        fi
+    else
+        print_status "create nvidia-oc sudoers rule" skip
+    fi
+
+    # Create the overclock script (always overwrite to ensure latest values)
+    local OC_SCRIPT="/usr/local/bin/nvidia-oc.sh"
+    sudo tee "$OC_SCRIPT" > /dev/null <<'OCSCRIPT'
+#!/bin/bash
+
+# Wait for the display server to be fully ready
+sleep 3
+
+logger -t nvidia-oc "Applying overclock: +200 MHz core, +6000 MHz memory"
+
+if sudo nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels=200" &> /dev/null && \
+   sudo nvidia-settings -a "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels=6000" &> /dev/null; then
+    CORE=$(nvidia-settings -t -q "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels" 2>/dev/null)
+    MEM=$(nvidia-settings -t -q "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels" 2>/dev/null)
+    logger -t nvidia-oc "Applied — core offset: ${CORE:-?}, memory offset: ${MEM:-?}"
+else
+    logger -t nvidia-oc "ERROR: Failed to apply overclock settings"
+    exit 1
+fi
+OCSCRIPT
+    run_silent sudo chmod +x "$OC_SCRIPT"
+    print_status "create nvidia overclock script"
+
+    # Create the XDG autostart entry
+    local AUTOSTART_DIR="/etc/xdg/autostart"
+    local AUTOSTART_FILE="$AUTOSTART_DIR/nvidia-oc.desktop"
+
+    run_silent sudo mkdir -p "$AUTOSTART_DIR"
+    run_silent sudo tee "$AUTOSTART_FILE" > /dev/null <<EOL
+[Desktop Entry]
+Type=Application
+Name=NVIDIA Overclock
+Comment=Apply NVIDIA Overclock Settings
+Exec=/usr/local/bin/nvidia-oc.sh
+X-GNOME-Autostart-Phase=Initialization
+EOL
+    print_status "create nvidia overclock autostart entry"
 }
 
 # ========================================
@@ -1273,6 +1404,14 @@ setup_shell_environment() {
         print_status "install television" skip
     fi
 
+    # Install 'bluetui'
+    if [ ! -x "$(command -v bluetui)" ]; then
+        run_silent $HOME/.cargo/bin/cargo install bluetui
+        print_status "install bluetui"
+    else
+        print_status "install bluetui" skip
+    fi
+
     # Install 'ripgrep'
     if [ ! -x "$(command -v rg)" ]; then
         run_silent $HOME/.cargo/bin/cargo install --locked ripgrep
@@ -1527,6 +1666,17 @@ EOL
             "Terminal-based SQL client" \
             "$CUSTOM_ICONS_DIR/lazysql.svg" \
             "Development;Database;" \
+            "false"
+    fi
+
+    # bluetui
+    if command -v bluetui &> /dev/null; then
+        create_desktop_entry "bluetui" \
+            "kitty -e bluetui" \
+            "Bluetui" \
+            "Terminal-based Bluetooth manager" \
+            "bluetooth" \
+            "Settings;HardwareSettings;" \
             "false"
     fi
 }

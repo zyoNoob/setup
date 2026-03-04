@@ -21,8 +21,10 @@ alias vpnstatus="sudo tailscale status"
 
 # Git
 alias gpl="git pull"
+alias gplr="git pull --recurse-submodules"
 alias gd="gitydiff "
 alias gds="gitstagedydiff "
+alias lg="lazygit"
 
 # RipGrep
 alias rga='rg -uu --hidden'            # search absolutely everything
