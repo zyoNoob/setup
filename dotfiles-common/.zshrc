@@ -136,7 +136,7 @@ unset __conda_setup
 # <<< conda initialize <<<
 
 # Zoxide
-eval "$(zoxide init zsh)"
+eval "$(zoxide init --cmd cd zsh)"
 
 # keychain for ssh-agent
 eval $(keychain --eval id_rsa)
