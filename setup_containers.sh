@@ -236,11 +236,11 @@ install_podman() {
     log_to_both "# Installing Podman"
     log_to_both "--------------------------------"
 
-    if is_installed "podman"; then
+    if is_installed "podman" && is_installed "podman-compose"; then
         print_status "install podman" skip
     else
         run_silent sudo DEBIAN_FRONTEND=noninteractive apt-get update -y
-        if run_silent sudo DEBIAN_FRONTEND=noninteractive apt-get install -y podman; then
+        if run_silent sudo DEBIAN_FRONTEND=noninteractive apt-get install -y podman podman-compose; then
             print_status "install podman"
         else
             print_status "install podman"
@@ -254,8 +254,8 @@ uninstall_podman() {
     log_to_both "# Uninstalling Podman"
     log_to_both "--------------------------------"
 
-    if is_installed "podman"; then
-        if run_silent sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y podman; then
+    if is_installed "podman" || is_installed "podman-compose"; then
+        if run_silent sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y podman podman-compose; then
             print_status "uninstall podman"
             run_silent sudo DEBIAN_FRONTEND=noninteractive apt-get autoremove -y
             print_status "autoremove podman dependencies"
@@ -317,6 +317,12 @@ check_status() {
         log_to_console "Podman: \e[31mNot Installed\e[0m"
     fi
 
+    if is_installed "podman-compose"; then
+        log_to_console "Podman Compose: \e[32mInstalled\e[0m"
+    else
+        log_to_console "Podman Compose: \e[31mNot Installed\e[0m"
+    fi
+
     if is_installed "nvidia-container-toolkit"; then
         log_to_console "NVIDIA Toolkit: \e[32mInstalled\e[0m"
     else
@@ -327,8 +333,8 @@ check_status() {
 show_help() {
     echo "Usage: $0 [OPTIONS]"
     echo "Options:"
-    echo "  --install      Install Docker, Podman, and NVIDIA Toolkit"
-    echo "  --uninstall    Uninstall Docker, Podman, and NVIDIA Toolkit"
+    echo "  --install      Install Docker, Podman, Podman Compose, and NVIDIA Toolkit"
+    echo "  --uninstall    Uninstall Docker, Podman, Podman Compose, and NVIDIA Toolkit"
     echo "  --status       Check installation status"
     echo "  --purge        Purge all unused containers, networks, images, and volumes"
     echo "  --active       When used with --purge, stops ALL active containers before purging (Nuclear option)"
