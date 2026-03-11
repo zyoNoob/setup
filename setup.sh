@@ -862,9 +862,9 @@ setup_nvidia_overclock() {
 # Wait for the display server to be fully ready
 sleep 3
 
-logger -t nvidia-oc "Applying overclock: +200 MHz core, +6000 MHz memory"
+logger -t nvidia-oc "Applying overclock: +250 MHz core, +6000 MHz memory"
 
-if sudo nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels=200" &> /dev/null && \
+if sudo nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels=250" &> /dev/null && \
    sudo nvidia-settings -a "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels=6000" &> /dev/null; then
     CORE=$(nvidia-settings -t -q "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels" 2>/dev/null)
     MEM=$(nvidia-settings -t -q "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels" 2>/dev/null)
