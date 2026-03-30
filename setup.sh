@@ -236,9 +236,29 @@ initial_system_setup() {
         print_status "create compiled programs directory" skip
     fi
 
+    # Force APT to use IPv4 (fixes slow CDN routing)
+    local IPV4_CONF="/etc/apt/apt.conf.d/99force-ipv4"
+    if [ ! -f "$IPV4_CONF" ]; then
+        echo 'Acquire::ForceIPv4 "true";' | sudo tee "$IPV4_CONF" > /dev/null
+        print_status "configure apt force ipv4"
+    else
+        print_status "configure apt force ipv4" skip
+    fi
+
     # Update package list
     run_silent sudo apt update -y
     print_status "update package list"
+
+    # Install apt-fast for parallel downloads
+    if ! command -v apt-fast &> /dev/null; then
+        install_package "aria2"
+        run_silent sudo add-apt-repository -y ppa:apt-fast/stable
+        run_silent sudo apt update -y
+        run_silent sudo DEBIAN_FRONTEND=noninteractive apt install -y apt-fast
+        print_status "install apt-fast"
+    else
+        print_status "install apt-fast" skip
+    fi
 
     # Remove unnecessary packages
     remove_package "unattended-upgrades"
@@ -382,7 +402,6 @@ install_essential_packages() {
         avahi-daemon
         avahi-utils
         iperf3
-        aria2
         pulsemixer
         network-manager
     )
