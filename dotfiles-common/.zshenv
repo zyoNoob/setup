@@ -35,3 +35,6 @@ alias rgg='rg --glob'                  # pass custom globs easily
 alias rgm='rg -U -z'                   # multiline search mode
 alias rgl='rg -l'                      # show only filenames
 alias rgr='rg --hidden -S --glob "!.git"' 
+
+# Aria2c
+alias dl='aria2c -x 16 -s 16'
