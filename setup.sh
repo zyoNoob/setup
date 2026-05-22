@@ -1464,8 +1464,8 @@ setup_development_tools() {
         ovmf
     )
     for pkg in "${vm_packages[@]}"; do
-        if [ "$pkg" = "qemu-kvm" ] && is_server; then
-            print_status "install qemu-kvm" "skip (server)"
+        if { [ "$pkg" = "qemu-kvm" ] || [ "$pkg" = "qemu-utils" ] || [ "$pkg" = "ovmf" ]; } && is_server; then
+            print_status "install $pkg" "skip (server)"
         else
             install_package "$pkg"
         fi
