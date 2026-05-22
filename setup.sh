@@ -1464,7 +1464,7 @@ setup_development_tools() {
         ovmf
     )
     for pkg in "${vm_packages[@]}"; do
-        if { [ "$pkg" = "qemu-kvm" ] || [ "$pkg" = "qemu-utils" ] || [ "$pkg" = "ovmf" ]; } && is_server; then
+        if is_server; then
             print_status "install $pkg" "skip (server)"
         else
             install_package "$pkg"
@@ -1478,7 +1478,11 @@ setup_development_tools() {
         print_status "install virt-manager" "skip (server)"
     fi
 
-    run_silent sudo systemctl enable --now libvirtd
+    if ! is_server; then
+        run_silent sudo systemctl enable --now libvirtd
+    else
+        print_status "enable libvirtd service" "skip (server)"
+    fi
 
     # C++ Dev Libraries
     local cpp_dev_packages=(
