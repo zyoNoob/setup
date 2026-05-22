@@ -1464,7 +1464,11 @@ setup_development_tools() {
         ovmf
     )
     for pkg in "${vm_packages[@]}"; do
-        install_package "$pkg"
+        if [ "$pkg" = "qemu-kvm" ] && is_server; then
+            print_status "install qemu-kvm" "skip (server)"
+        else
+            install_package "$pkg"
+        fi
     done
 
     # virt-manager GUI (desktop only, servers use virsh)
