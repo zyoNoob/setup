@@ -93,7 +93,9 @@
 - [x] ngrok
 - [x] go installation
 - [x] nodejs and npm via nvm
-- [x] npm global packages (@google/gemini-cli, opencode-ai, @openai/codex, @anthropic-ai/claude-code)
+- [x] npm global packages (opencode-ai, @openai/codex)
+- [x] Claude Code (via curl)
+- [x] Antigravity CLI (via curl)
 - [x] google chrome
 - [x] fd-find rust
 - [x] nyaa rust

@@ -70,8 +70,12 @@ print_status() {
     local time_stamp=$(timestamp)
     local output
 
-    if [ "$skip" = "skip" ]; then
-        output=$(printf "%s | %-${width}s \e[90mSKIPPED\e[0m" "$time_stamp" "$message")
+    if [ -n "$skip" ]; then
+        local skip_label="SKIPPED"
+        if [[ "$skip" =~ ^skip\ \((.*)\)$ ]]; then
+            skip_label="SKIPPED (${BASH_REMATCH[1]})"
+        fi
+        output=$(printf "%s | %-${width}s \e[90m%s\e[0m" "$time_stamp" "$message" "$skip_label")
     else
         if [ "$status" -eq 0 ]; then
             output=$(printf "%s | %-${width}s \e[32mDONE\e[0m" "$time_stamp" "$message")
@@ -1127,10 +1131,8 @@ setup_development_tools() {
 
     # Install global npm packages
     local npm_packages=(
-        "@google/gemini-cli"
         "opencode-ai"
         "@openai/codex"
-        "@anthropic-ai/claude-code"
     )
 
     for pkg in "${npm_packages[@]}"; do
@@ -1141,6 +1143,28 @@ setup_development_tools() {
             print_status "npm install -g $pkg" skip
         fi
     done
+
+    # Install Claude Code via curl
+    if [ ! -x "$(command -v claude)" ]; then
+        if run_silent bash -c "curl -fsSL https://claude.ai/install.sh | bash"; then
+            print_status "install claude"
+        else
+            print_status "install claude"
+        fi
+    else
+        print_status "install claude" skip
+    fi
+
+    # Install Antigravity CLI via curl
+    if [ ! -x "$(command -v antigravity)" ]; then
+        if run_silent bash -c "curl -fsSL https://antigravity.google/cli/install.sh | bash"; then
+            print_status "install antigravity-cli"
+        else
+            print_status "install antigravity-cli"
+        fi
+    else
+        print_status "install antigravity-cli" skip
+    fi
 
     # Install go
     if [ ! -x "$(command -v go)" ]; then

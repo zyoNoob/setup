@@ -64,8 +64,12 @@ print_status() {
     local time_stamp=$(timestamp)
     local output
 
-    if [ "$skip" = "skip" ]; then
-        output=$(printf "%s | %-${width}s \e[90mSKIPPED\e[0m" "$time_stamp" "$message")
+    if [ -n "$skip" ]; then
+        local skip_label="SKIPPED"
+        if [[ "$skip" =~ ^skip\ \((.*)\)$ ]]; then
+            skip_label="SKIPPED (${BASH_REMATCH[1]})"
+        fi
+        output=$(printf "%s | %-${width}s \e[90m%s\e[0m" "$time_stamp" "$message" "$skip_label")
     else
         if [ "$status" -eq 0 ]; then
             output=$(printf "%s | %-${width}s \e[32mDONE\e[0m" "$time_stamp" "$message")
