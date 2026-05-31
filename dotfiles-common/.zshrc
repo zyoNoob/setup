@@ -136,7 +136,7 @@ unset __conda_setup
 # <<< conda initialize <<<
 
 # keychain for ssh-agent
-eval $(keychain --eval id_rsa)
+eval $(keychain --eval id_ed25519 id_rsa)
 
 # Integrate television
 [ -f "$HOME/.config/television/.tvzshrc" ] && . "$HOME/.config/television/.tvzshrc"
