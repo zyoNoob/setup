@@ -159,6 +159,7 @@ EOL
     fi
 }
 
+
 handle_nvidia_driver_update() {
     log_to_both "--------------------------------"
     log_to_both "# Checking NVIDIA Driver Upgrade/Downgrade"
@@ -325,6 +326,11 @@ main() {
 
     # 1. Nvidia Driver Pinning (First Priority)
     setup_nvidia_pinning
+
+    # Ensure any legacy dev pinning file is removed
+    if [ -f "/etc/apt/preferences.d/nvidia-dev-libraries" ]; then
+        run_silent sudo rm -f /etc/apt/preferences.d/nvidia-dev-libraries
+    fi
 
     # 2. System apt package update
     log_to_both "# Updating APT package lists..."
@@ -568,7 +574,7 @@ main() {
     fi
 
     local upgradable_list
-    upgradable_list=$(apt list --upgradable 2>/dev/null | grep -E '^[a-zA-Z0-9.+_-]+/[a-zA-Z0-9.+_-]+' | cut -d'/' -f1)
+    upgradable_list=$(apt list --upgradable 2>/dev/null | grep -E '^[a-zA-Z0-9.+_-]+/[a-zA-Z0-9.+_-]+' | cut -d'/' -f1 | grep -Ev 'cuda|cudnn|tensorrt|nvinfer|nvparsers|nvonnxparser')
 
     if [ -n "$upgradable_list" ]; then
         if [ -n "$gum_cmd" ]; then
