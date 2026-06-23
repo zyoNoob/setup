@@ -204,6 +204,14 @@ Pin-Priority: 1001
 Package: libnvidia*
 Pin: version ${nvidia_major}.*
 Pin-Priority: 1001
+
+Package: xserver-xorg-video-nvidia*
+Pin: version ${nvidia_major}.*
+Pin-Priority: 1001
+
+Package: libxnvctrl*
+Pin: version ${nvidia_major}.*
+Pin-Priority: 1001
 EOL
         print_status "nvidia driver pinning (branch $nvidia_major)"
     fi
