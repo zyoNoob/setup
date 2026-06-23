@@ -162,6 +162,53 @@ has_nvidia_gui() {
     command -v nvidia-settings &> /dev/null
 }
 
+setup_nvidia_pinning() {
+    log_to_both "# NVIDIA Driver Pinning Configuration"
+    
+    if is_wsl; then
+        print_status "nvidia driver pinning" "skip (WSL detected)"
+        return
+    fi
+
+    # Check if any nvidia driver package is installed
+    local nvidia_ver
+    nvidia_ver=$(dpkg-query -W -f='${Version}\n' 'nvidia-*' 'libnvidia-*' 2>/dev/null | grep -E "^[0-9]" | head -n 1)
+    
+    if [ -z "$nvidia_ver" ]; then
+        print_status "nvidia driver pinning" "skip (no nvidia driver detected)"
+        return
+    fi
+    
+    local nvidia_major
+    nvidia_major=$(echo "$nvidia_ver" | cut -d'.' -f1)
+    
+    if [[ ! "$nvidia_major" =~ ^[0-9]+$ ]]; then
+        print_status "nvidia driver pinning" "skip (could not parse driver major version)"
+        return
+    fi
+    
+    local pin_file="/etc/apt/preferences.d/nvidia-$nvidia_major"
+    
+    if [ -f "$pin_file" ]; then
+        print_status "nvidia driver pinning (branch $nvidia_major)" skip
+    else
+        # Remove any other nvidia-* pin files in preferences.d to avoid conflicts
+        run_silent sudo rm -f /etc/apt/preferences.d/nvidia-[0-9]*
+        
+        # Create the new pin file
+        run_silent sudo tee "$pin_file" > /dev/null <<EOL
+Package: nvidia*
+Pin: version ${nvidia_major}.*
+Pin-Priority: 1001
+
+Package: libnvidia*
+Pin: version ${nvidia_major}.*
+Pin-Priority: 1001
+EOL
+        print_status "nvidia driver pinning (branch $nvidia_major)"
+    fi
+}
+
 install_package() {
     local package=$1
     local action_name="install $package"
@@ -263,6 +310,9 @@ initial_system_setup() {
     else
         print_status "install apt-fast" skip
     fi
+
+    # Pin Nvidia driver branch if present
+    setup_nvidia_pinning
 
     # Remove unnecessary packages
     remove_package "unattended-upgrades"
@@ -1156,7 +1206,7 @@ setup_development_tools() {
     fi
 
     # Install Antigravity CLI via curl
-    if [ ! -x "$(command -v antigravity)" ]; then
+    if [ ! -x "$(command -v agy)" ] && [ ! -x "$(command -v antigravity)" ]; then
         if run_silent bash -c "curl -fsSL https://antigravity.google/cli/install.sh | bash"; then
             print_status "install antigravity-cli"
         else
