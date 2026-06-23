@@ -376,7 +376,7 @@ main() {
             run_silent git checkout master && \
             run_silent git fetch origin --tags -f && \
             run_silent git checkout stable && \
-            run_silent make CMAKE_BUILD_TYPE=Release && \
+            (run_silent make CMAKE_BUILD_TYPE=Release || (run_silent make distclean && run_silent make CMAKE_BUILD_TYPE=Release)) && \
             run_silent sudo make install
         )
         print_status "update neovim"
@@ -388,7 +388,7 @@ main() {
     if [ -d "$HOME/miniconda3" ]; then
         log_to_both "Updating Miniconda..."
         # Accept Terms of Service if required
-        if "$HOME/miniconda3/bin/conda" help tos &>/dev/null; then
+        if "$HOME/miniconda3/bin/conda" tos -h &>/dev/null; then
             run_silent "$HOME/miniconda3/bin/conda" tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
             run_silent "$HOME/miniconda3/bin/conda" tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
         fi
