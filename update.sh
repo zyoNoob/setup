@@ -373,9 +373,9 @@ main() {
         (
             cd "$nvim_dir" && \
             run_silent git stash && \
-            run_silent git fetch origin && \
+            run_silent git checkout master && \
+            run_silent git fetch origin --tags -f && \
             run_silent git checkout stable && \
-            run_silent git reset --hard origin/stable && \
             run_silent make CMAKE_BUILD_TYPE=Release && \
             run_silent sudo make install
         )
@@ -387,6 +387,11 @@ main() {
     # Miniconda
     if [ -d "$HOME/miniconda3" ]; then
         log_to_both "Updating Miniconda..."
+        # Accept Terms of Service if required
+        if "$HOME/miniconda3/bin/conda" help tos &>/dev/null; then
+            run_silent "$HOME/miniconda3/bin/conda" tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+            run_silent "$HOME/miniconda3/bin/conda" tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+        fi
         if run_silent "$HOME/miniconda3/bin/conda" update -n base -c defaults conda -y; then
             print_status "update miniconda"
         else
@@ -420,7 +425,26 @@ main() {
         # Cargo packages via cargo-update
         if command -v cargo &>/dev/null && cargo install --list | grep -q "cargo-update"; then
             log_to_both "Updating Cargo packages..."
-            if run_silent cargo install-update -a; then
+            # Query which packages need updates
+            local cargo_upgrades
+            cargo_upgrades=$(cargo install-update -l 2>/dev/null | awk '$NF == "Yes" {print $1}' | grep -Ev '^(yazi-fm|yazi-cli)$' | tr '\n' ' ')
+            
+            local cargo_ok=true
+            if [ -n "$cargo_upgrades" ]; then
+                if ! run_silent cargo install-update $cargo_upgrades; then
+                    cargo_ok=false
+                fi
+            fi
+            
+            # Update Yazi via yazi-build if needed
+            if cargo install-update -l 2>/dev/null | grep -E '^(yazi-fm|yazi-cli)\s+' | grep -q 'Yes$'; then
+                log_to_both "Updating Yazi file manager..."
+                if ! run_silent cargo install --locked yazi-build; then
+                    cargo_ok=false
+                fi
+            fi
+            
+            if $cargo_ok; then
                 print_status "update cargo packages"
             else
                 print_status "update cargo packages"
@@ -574,7 +598,7 @@ main() {
     fi
 
     local upgradable_list
-    upgradable_list=$(apt list --upgradable 2>/dev/null | grep -E '^[a-zA-Z0-9.+_-]+/[a-zA-Z0-9.+_-]+' | cut -d'/' -f1 | grep -Ev 'cuda|cudnn|tensorrt|nvinfer|nvparsers|nvonnxparser')
+    upgradable_list=$(apt list --upgradable 2>/dev/null | grep -E '^[a-zA-Z0-9.+_-]+/[a-zA-Z0-9.+_-]+' | cut -d'/' -f1 | grep -Ev 'cuda|cudnn|tensorrt|nvinfer|nvparsers|nvonnxparser|nvidia|libxnvctrl')
 
     if [ -n "$upgradable_list" ]; then
         if [ -n "$gum_cmd" ]; then
