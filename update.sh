@@ -45,6 +45,24 @@ run_silent() {
     return $exit_status
 }
 
+# Helper to retry git fetch commands on transient network errors
+run_silent_git_fetch_retry() {
+    local max_attempts=3
+    local attempt=1
+    local delay=2
+
+    until run_silent "$@"; do
+        if [ $attempt -eq $max_attempts ]; then
+            return 1
+        fi
+        log_to_both "Git fetch failed (attempt $attempt/$max_attempts). Retrying in ${delay}s..."
+        sleep $delay
+        attempt=$((attempt + 1))
+        delay=$((delay * 2))
+    done
+    return 0
+}
+
 # Function to print status messages
 print_status() {
     local status=$?
@@ -355,7 +373,7 @@ main() {
         (
             cd "$fzf_dir" && \
             run_silent git stash && \
-            run_silent git fetch origin && \
+            run_silent_git_fetch_retry git fetch origin && \
             run_silent git checkout master && \
             run_silent git reset --hard origin/master && \
             run_silent ./install --no-key-bindings --no-completion --no-update-rc --no-bash --no-zsh --no-fish && \
@@ -374,7 +392,7 @@ main() {
             cd "$nvim_dir" && \
             run_silent git stash && \
             run_silent git checkout master && \
-            run_silent git fetch origin --tags -f && \
+            run_silent_git_fetch_retry git fetch origin --tags -f && \
             run_silent git checkout stable && \
             (run_silent make CMAKE_BUILD_TYPE=Release || (run_silent make distclean && run_silent make CMAKE_BUILD_TYPE=Release)) && \
             run_silent sudo make install
