@@ -421,6 +421,13 @@ main() {
 
     # Python UV tools
     if command -v uv &>/dev/null; then
+        log_to_both "Updating UV..."
+        if run_silent uv self update; then
+            print_status "update uv self"
+        else
+            print_status "update uv self"
+        fi
+
         log_to_both "Updating UV tools..."
         if run_silent uv tool upgrade --all; then
             print_status "update uv tools"
@@ -428,6 +435,7 @@ main() {
             print_status "update uv tools"
         fi
     else
+        print_status "update uv self" "skip (not installed)"
         print_status "update uv tools" "skip (not installed)"
     fi
 
@@ -470,6 +478,18 @@ main() {
         fi
     else
         print_status "update rust" "skip (not installed)"
+    fi
+
+    # Yazi plugins
+    if command -v ya &>/dev/null; then
+        log_to_both "Updating Yazi plugins..."
+        if run_silent ya pkg upgrade; then
+            print_status "update yazi plugins"
+        else
+            print_status "update yazi plugins"
+        fi
+    else
+        print_status "update yazi plugins" "skip (not installed)"
     fi
 
     # Node.js and global npm packages via NVM
