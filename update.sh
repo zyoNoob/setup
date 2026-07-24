@@ -202,19 +202,9 @@ handle_nvidia_driver_update() {
         return
     fi
 
-    # Check if open-source or proprietary driver is installed
-    local is_open_driver=false
-    if dpkg -l | grep -E '^ii  nvidia-driver-.*-open|^ii  nvidia-open' &>/dev/null; then
-        is_open_driver=true
-    fi
-
-    # Find available driver branches in repositories
+    # Always target the open-source kernel module driver variant (nvidia-open)
     local available_branches
-    if $is_open_driver; then
-        available_branches=$(apt-cache search --names-only "^nvidia-driver-[0-9]+-open$" | grep -oE '[0-9]+' | sort -un)
-    else
-        available_branches=$(apt-cache search --names-only "^nvidia-driver-[0-9]+$" | grep -oE '[0-9]+' | sort -un)
-    fi
+    available_branches=$(apt-cache search --names-only "^nvidia-driver-[0-9]+-open$" | grep -oE '[0-9]+' | sort -un)
 
     # Check if there are other branches available besides current
     local has_other_branches=false
@@ -264,12 +254,7 @@ handle_nvidia_driver_update() {
                 chosen_branch=$(echo "$chosen_choice" | grep -oE '[0-9]+')
                 
                 if [ -n "$chosen_branch" ] && [ "$chosen_branch" -ne "$nvidia_major" ]; then
-                    local target_package
-                    if $is_open_driver; then
-                        target_package="nvidia-driver-${chosen_branch}-open"
-                    else
-                        target_package="nvidia-driver-${chosen_branch}"
-                    fi
+                    local target_package="nvidia-driver-${chosen_branch}-open"
 
                     local clean_install=false
                     if "$gum_cmd" confirm "Perform a clean installation (purge existing NVIDIA packages and configs first)?"; then
