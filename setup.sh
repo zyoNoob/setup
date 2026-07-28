@@ -123,24 +123,58 @@ is_wsl() {
     esac
 }
 
+pkg_is_installed() {
+    dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "install ok installed"
+}
+
+# Returns true if any of the named packages is installed
+any_pkg_installed() {
+    local pkg
+    for pkg in "$@"; do
+        pkg_is_installed "$pkg" && return 0
+    done
+    return 1
+}
+
 _IS_SERVER_CACHED=""
 is_server() {
     if [ -n "$_IS_SERVER_CACHED" ]; then
         return "$_IS_SERVER_CACHED"
     fi
-    # Check for desktop metapackages (most reliable indicator)
-    local pkg
-    for pkg in ubuntu-desktop ubuntu-desktop-minimal kubuntu-desktop xubuntu-desktop lubuntu-desktop; do
-        if dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
-            _IS_SERVER_CACHED=1; return 1
-        fi
-    done
-    # Fallback: check for display server packages
-    for pkg in xserver-xorg-core xwayland; do
-        if dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
-            _IS_SERVER_CACHED=1; return 1
-        fi
-    done
+
+    # Explicit override always wins over autodetection
+    case "${SETUP_PROFILE:-}" in
+        server )  _IS_SERVER_CACHED=0; return 0 ;;
+        desktop ) _IS_SERVER_CACHED=1; return 1 ;;
+    esac
+
+    # Desktop metapackages (most reliable indicator)
+    if any_pkg_installed ubuntu-desktop ubuntu-desktop-minimal kubuntu-desktop \
+                         xubuntu-desktop lubuntu-desktop; then
+        _IS_SERVER_CACHED=1; return 1
+    fi
+
+    # Display managers and desktop session packages. Nothing installs these by
+    # accident, which is what makes them safe to key off of.
+    if any_pkg_installed gdm3 sddm lightdm lxdm nodm \
+                         gnome-session ubuntu-session plasma-desktop \
+                         xfce4-session lxqt-session mate-session-manager \
+                         cinnamon-session; then
+        _IS_SERVER_CACHED=1; return 1
+    fi
+
+    # The xserver-xorg metapackage means someone deliberately asked for a full
+    # X stack (e.g. a hand-built i3 box with no display manager).
+    #
+    # Deliberately NOT xserver-xorg-core: the nvidia-driver metapackage depends
+    # on xserver-xorg-video-nvidia, which depends on xserver-xorg-core, so a
+    # headless machine gets -core the moment you install the GPU driver. Keying
+    # off it made this script take the desktop path on a server and pull in
+    # ~300 GNOME packages.
+    if any_pkg_installed xserver-xorg; then
+        _IS_SERVER_CACHED=1; return 1
+    fi
+
     _IS_SERVER_CACHED=0; return 0
 }
 
