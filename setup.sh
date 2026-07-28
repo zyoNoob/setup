@@ -2059,11 +2059,11 @@ configure_dotfiles_and_utils() {
     copy_file "$SETUP_DIR/config/.creds" "$HOME/.creds" "Credentials .creds"
 
     # Generate SSH key
-    if [ ! -f "$HOME/.ssh/id_rsa" ]; then
+    if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
         mkdir -p "$HOME/.ssh"
-        run_silent ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N ""
-        run_silent chmod 600 "$HOME/.ssh/id_rsa"
-        run_silent chmod 644 "$HOME/.ssh/id_rsa.pub"
+        run_silent ssh-keygen -t ed25519 -f "$HOME/.ssh/id_ed25519" -N ""
+        run_silent chmod 600 "$HOME/.ssh/id_ed25519"
+        run_silent chmod 644 "$HOME/.ssh/id_ed25519.pub"
         print_status "generate ssh key"
     else
         print_status "generate ssh key" skip

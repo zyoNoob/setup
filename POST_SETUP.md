@@ -14,7 +14,7 @@ This checklist outlines manual configuration steps that might be necessary after
   git config --global user.email "your.email@example.com"
   ```
 - [ ] **SSH Key for Git Platforms**:
-    - Add your public SSH key (`~/.ssh/id_rsa.pub`) to your GitHub, GitLab, or other Git hosting services.
+    - Add your public SSH key (`~/.ssh/id_ed25519.pub`) to your GitHub, GitLab, or other Git hosting services.
     - Test the connection:
       ```bash
       ssh -T git@github.com
