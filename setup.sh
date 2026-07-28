@@ -146,6 +146,8 @@ is_server() {
     case "${SETUP_PROFILE:-}" in
         server )  _IS_SERVER_CACHED=0; return 0 ;;
         desktop ) _IS_SERVER_CACHED=1; return 1 ;;
+        "" )      ;;
+        * ) log_to_both "WARNING: ignoring unrecognized SETUP_PROFILE='${SETUP_PROFILE}' (expected 'server' or 'desktop'), falling back to autodetection" ;;
     esac
 
     # Desktop metapackages (most reliable indicator)
