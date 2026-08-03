@@ -38,3 +38,8 @@ alias rgr='rg --hidden -S --glob "!.git"'
 
 # Aria2c
 alias dl='aria2c -x 16 -s 16'
+
+# Coding TUIs
+alias clauded='claude --dangerously-skip-permissions'
+alias codexed='codex --dangerously-bypass-approvals-and-sandbox'
+alias agyd='agy --dangerously-skip-permissions'
