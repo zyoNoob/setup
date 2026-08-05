@@ -47,8 +47,9 @@ min_width=CPU 100.00%
 separator=true
 
 
-# Battery indicator
+# Battery indicator (real system batteries only, not peripherals — see scripts/battery)
 [battery]
+command=$HOME/.config/i3blocks/scripts/battery
 label=BAT
 #label=⚡
 interval=30
