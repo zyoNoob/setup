@@ -3,7 +3,13 @@
 set -euo pipefail
 
 # Configuration
-LM_MODELS_DIR="${HOME}/.cache/lm-studio/models"
+if [[ -f "${HOME}/.lmstudio-home-pointer" ]]; then
+    LM_MODELS_DIR="$(<"${HOME}/.lmstudio-home-pointer")/models"
+elif [[ -d "${HOME}/.lmstudio/models" ]]; then
+    LM_MODELS_DIR="${HOME}/.lmstudio/models"
+else
+    LM_MODELS_DIR="${HOME}/.cache/lm-studio/models"
+fi
 HF_TOKEN="${HF_TOKEN:-}" # Optional: reads HF_TOKEN from environment if exported
 
 usage() {
@@ -29,7 +35,7 @@ if ! command -v aria2c &>/dev/null; then
     exit 1
 fi
 
-if [[ $# -lt 1 ]]; then
+if [[ $# -lt 1 ]] || [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
     usage
 fi
 
@@ -43,13 +49,51 @@ if [[ "$INPUT" =~ huggingface\.co/([^/]+)/([^/]+)/(blob|resolve)/([^/]+)/(.+\.gg
     REVISION="${BASH_REMATCH[4]}"
     FILENAME="${BASH_REMATCH[5]}"
     DOWNLOAD_URL="https://huggingface.co/${CREATOR}/${REPO}/resolve/${REVISION}/${FILENAME}"
-elif [[ "$INPUT" =~ ^([^/]+)/([^/]+)$ ]]; then
-    if [[ -z "$FILENAME" ]]; then
-        echo "Error: When passing repo path, you must supply the filename as the second argument." >&2
-        usage
+elif [[ "$INPUT" =~ (https?://)?huggingface\.co/([^/]+)/([^/]+)/?$ ]] || [[ "$INPUT" =~ ^([^/]+)/([^/]+)$ ]]; then
+    if [[ "$INPUT" =~ huggingface\.co/([^/]+)/([^/]+) ]]; then
+        CREATOR="${BASH_REMATCH[1]}"
+        REPO="${BASH_REMATCH[2]}"
+    else
+        CREATOR="${BASH_REMATCH[1]}"
+        REPO="${BASH_REMATCH[2]}"
     fi
-    CREATOR="${BASH_REMATCH[1]}"
-    REPO="${BASH_REMATCH[2]}"
+
+    if [[ -z "$FILENAME" ]]; then
+        echo "Fetching available GGUF files for ${CREATOR}/${REPO}..."
+        API_URL="https://huggingface.co/api/models/${CREATOR}/${REPO}/tree/main"
+        CURL_ARGS=()
+        if [[ -n "$HF_TOKEN" ]]; then
+            CURL_ARGS+=(-H "Authorization: Bearer ${HF_TOKEN}")
+        fi
+
+        TREE_JSON=$(curl -sSL "${CURL_ARGS[@]}" "$API_URL" || true)
+        GGUF_LIST=$(echo "$TREE_JSON" | grep -o '"path":"[^"]*\.gguf"' | sed 's/"path":"//;s/"//' || true)
+
+        if [[ -z "$GGUF_LIST" ]]; then
+            echo "Error: No GGUF files found in repository ${CREATOR}/${REPO}, or failed to query Hugging Face API." >&2
+            exit 1
+        fi
+
+        GGUF_COUNT=$(echo "$GGUF_LIST" | wc -l)
+        if [[ "$GGUF_COUNT" -eq 1 ]]; then
+            FILENAME="$GGUF_LIST"
+            echo "Found single GGUF: $FILENAME"
+        elif command -v fzf &>/dev/null && [ -t 0 ]; then
+            echo "Multiple GGUF files found. Please select one:"
+            FILENAME=$(echo "$GGUF_LIST" | fzf --prompt="Select GGUF: ")
+            if [[ -z "$FILENAME" ]]; then
+                echo "Selection cancelled." >&2
+                exit 1
+            fi
+        else
+            echo "Multiple GGUF files found in ${CREATOR}/${REPO}:"
+            echo "$GGUF_LIST"
+            echo ""
+            echo "Please run again specifying the file name, e.g.:"
+            echo "  $(basename "$0") \"${INPUT}\" \"$(echo "$GGUF_LIST" | head -n1)\""
+            exit 1
+        fi
+    fi
     DOWNLOAD_URL="https://huggingface.co/${CREATOR}/${REPO}/resolve/main/${FILENAME}"
 else
     echo "Error: Unrecognized format or missing .gguf extension." >&2
