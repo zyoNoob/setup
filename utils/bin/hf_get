@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# Quick GGUF downloader for LM Studio using aria2c
+set -euo pipefail
+
+# Configuration
+LM_MODELS_DIR="${HOME}/.cache/lm-studio/models"
+HF_TOKEN="${HF_TOKEN:-}" # Optional: reads HF_TOKEN from environment if exported
+
+usage() {
+    cat <<EOF
+Usage: $(basename "$0") <HuggingFace_URL_or_Identifier> [GGUF_Filename]
+
+Examples:
+  # Direct Hugging Face file link:
+  $(basename "$0") "https://huggingface.co/bartowski/Qwen2.5-Coder-32B-Instruct-GGUF/resolve/main/Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf"
+
+  # Blob link copied from browser:
+  $(basename "$0") "https://huggingface.co/bartowski/Qwen2.5-Coder-32B-Instruct-GGUF/blob/main/Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf"
+
+  # Short notation:
+  $(basename "$0") "bartowski/Qwen2.5-Coder-32B-Instruct-GGUF" "Qwen2.5-Coder-32B-Instruct-Q4_K_M.gguf"
+EOF
+    exit 1
+}
+
+# Ensure aria2c is installed
+if ! command -v aria2c &>/dev/null; then
+    echo "Error: 'aria2c' is not installed. Install via your package manager (e.g., sudo pacman -S aria2, sudo apt install aria2, or brew install aria2)." >&2
+    exit 1
+fi
+
+if [[ $# -lt 1 ]]; then
+    usage
+fi
+
+INPUT="$1"
+FILENAME="${2:-}"
+
+# Parse URL or Repo identifier
+if [[ "$INPUT" =~ huggingface\.co/([^/]+)/([^/]+)/(blob|resolve)/([^/]+)/(.+\.gguf) ]]; then
+    CREATOR="${BASH_REMATCH[1]}"
+    REPO="${BASH_REMATCH[2]}"
+    REVISION="${BASH_REMATCH[4]}"
+    FILENAME="${BASH_REMATCH[5]}"
+    DOWNLOAD_URL="https://huggingface.co/${CREATOR}/${REPO}/resolve/${REVISION}/${FILENAME}"
+elif [[ "$INPUT" =~ ^([^/]+)/([^/]+)$ ]]; then
+    if [[ -z "$FILENAME" ]]; then
+        echo "Error: When passing repo path, you must supply the filename as the second argument." >&2
+        usage
+    fi
+    CREATOR="${BASH_REMATCH[1]}"
+    REPO="${BASH_REMATCH[2]}"
+    DOWNLOAD_URL="https://huggingface.co/${CREATOR}/${REPO}/resolve/main/${FILENAME}"
+else
+    echo "Error: Unrecognized format or missing .gguf extension." >&2
+    usage
+fi
+
+TARGET_DIR="${LM_MODELS_DIR}/${CREATOR}/${REPO}"
+mkdir -p "$TARGET_DIR"
+
+echo "=========================================="
+echo "Creator:     $CREATOR"
+echo "Repository:  $REPO"
+echo "File:        $FILENAME"
+echo "Destination: $TARGET_DIR"
+echo "=========================================="
+
+# Build aria2c header arguments
+HEADER_ARGS=()
+if [[ -n "$HF_TOKEN" ]]; then
+    HEADER_ARGS+=(--header="Authorization: Bearer ${HF_TOKEN}")
+fi
+
+# Execute accelerated parallel download
+aria2c \
+    -x 16 \
+    -s 16 \
+    -j 16 \
+    -k 1M \
+    --file-allocation=falloc \
+    --continue=true \
+    --auto-file-renaming=false \
+    --allow-overwrite=true \
+    --summary-interval=5 \
+    --dir="$TARGET_DIR" \
+    --out="$FILENAME" \
+    "${HEADER_ARGS[@]}" \
+    "$DOWNLOAD_URL"
+
+echo ""
+echo "Done. Open LM Studio -> 'My Models' and click 'Refresh' to index the file."

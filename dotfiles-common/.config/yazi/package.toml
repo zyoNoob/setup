@@ -1,7 +1,7 @@
 [[plugin.deps]]
 use = "yazi-rs/plugins:chmod"
-rev = "56d6277"
-hash = "5b1c276b75cae91cbbdbe7863f39a540"
+rev = "c591a36"
+hash = "87472b05a8c420100f6a2b9cde1e7746"
 
 [[plugin.deps]]
 use = "uhs-robert/sshfs"
@@ -10,35 +10,35 @@ hash = "8c1b36103121a66b37308afaf7124575"
 
 [[plugin.deps]]
 use = "ndtoan96/ouch"
-rev = "406ce6c"
-hash = "f5afc904d5106ee368c8aa2ded43bd74"
+rev = "cfe4f50"
+hash = "eff5702573b6cfba61e4ac8b1969629a"
 
 [[plugin.deps]]
 use = "KKV9/compress"
-rev = "e60e122"
-hash = "fbaf0adc8efc59555b748d36aab62d40"
+rev = "80e5268"
+hash = "868db729374b97871bc30b96d0e9061f"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:zoom"
-rev = "56d6277"
+rev = "c591a36"
 hash = "e8e279463ee99c940e6945a14cf4aa9e"
 
 [[plugin.deps]]
 use = "boydaihungst/gvfs"
-rev = "cb7084d"
-hash = "364c5771e5c9f7c057916129d156913c"
+rev = "a85d659"
+hash = "1866f00532ba80f895544f7348e89e53"
 
 [[plugin.deps]]
 use = "AnirudhG07/plugins-yazi:copy-file-contents"
-rev = "71545f4"
-hash = "f8530ee84fee95dbcc26bb1d8d8019c7"
+rev = "3f4f1a3"
+hash = "421263a8558fbd2fdb07a75f074cc6e3"
 
 [[flavor.deps]]
 use = "yazi-rs/flavors:dracula"
-rev = "1a5f787"
-hash = "20624fcdfcf7e4e912de05e348065e5e"
+rev = "20b47bf"
+hash = "40136c9a02e166067a36d9ad618887f2"
 
 [[flavor.deps]]
 use = "yazi-rs/flavors:catppuccin-mocha"
-rev = "1a5f787"
-hash = "7dfe41c9c3d9be76da8a844263d0bbed"
+rev = "20b47bf"
+hash = "ce320f877fe709b189433941aba747c4"
