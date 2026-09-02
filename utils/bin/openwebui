@@ -8,7 +8,7 @@ BASE_DIR="${OPENWEBUI_DIR:-$DEFAULT_BASE_DIR}"
 
 HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-8080}"
-USE_CPU="${USE_CPU:-1}" # Default to 1 (CPU torch, avoids multi-GB CUDA wheels)
+USE_CPU="${USE_CPU:-0}" # Default to 0 (CUDA GPU runtime)
 
 usage() {
     cat <<EOF
@@ -22,8 +22,8 @@ Options:
   -p, --port <port>     Set server port (default: 8080 or \$PORT)
   -H, --host <host>     Set bind host (default: 0.0.0.0 or \$HOST)
   -d, --dir <path>      Custom base directory (default: ~/workspace/local-ai/openwebui)
-      --gpu             Allow installing PyTorch with CUDA support (downloads several GBs)
-      --cpu             Force lightweight CPU-only PyTorch build (default)
+      --gpu             Run with GPU/CUDA acceleration (default)
+      --cpu             Force lightweight CPU-only PyTorch build
   -h, --help            Show this help message
 
 Environment variables:
