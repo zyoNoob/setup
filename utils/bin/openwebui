@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# Quick runner for isolated Open WebUI instance using uvx
+set -euo pipefail
+
+# Default configuration
+DEFAULT_BASE_DIR="${HOME}/workspace/local-ai/openwebui"
+BASE_DIR="${OPENWEBUI_DIR:-$DEFAULT_BASE_DIR}"
+
+HOST="${HOST:-0.0.0.0}"
+PORT="${PORT:-8080}"
+USE_CPU="${USE_CPU:-1}" # Default to 1 (CPU torch, avoids multi-GB CUDA wheels)
+
+usage() {
+    cat <<EOF
+Usage: $(basename "$0") [options]
+
+Runs a self-contained, isolated Open WebUI instance via uvx.
+All database files, uploaded media, chat history, and uv environments
+remain strictly inside the dedicated directory.
+
+Options:
+  -p, --port <port>     Set server port (default: 8080 or \$PORT)
+  -H, --host <host>     Set bind host (default: 0.0.0.0 or \$HOST)
+  -d, --dir <path>      Custom base directory (default: ~/workspace/local-ai/openwebui)
+      --gpu             Allow installing PyTorch with CUDA support (downloads several GBs)
+      --cpu             Force lightweight CPU-only PyTorch build (default)
+  -h, --help            Show this help message
+
+Environment variables:
+  PORT, HOST, OPENWEBUI_DIR, USE_CPU
+EOF
+    exit 0
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -p|--port)
+            PORT="$2"
+            shift 2
+            ;;
+        -H|--host)
+            HOST="$2"
+            shift 2
+            ;;
+        -d|--dir)
+            BASE_DIR="$2"
+            shift 2
+            ;;
+        --gpu)
+            USE_CPU="0"
+            shift
+            ;;
+        --cpu)
+            USE_CPU="1"
+            shift
+            ;;
+        -h|--help)
+            usage
+            ;;
+        *)
+            echo "Unknown argument: $1" >&2
+            usage
+            ;;
+    esac
+done
+
+# Ensure required directories exist inside target directory
+mkdir -p "${BASE_DIR}/data" "${BASE_DIR}/uv_cache" "${BASE_DIR}/tmp"
+
+export DATA_DIR="${BASE_DIR}/data"
+export UV_CACHE_DIR="${BASE_DIR}/uv_cache"
+export TMPDIR="${BASE_DIR}/tmp"
+
+# Detect primary LAN IP for convenience
+PRIMARY_IP=$(ip -4 addr show scope global 2>/dev/null | grep -oP 'inet \K[\d.]+' | head -n1 || echo "localhost")
+
+echo "================================================="
+echo " Isolated Open WebUI"
+echo " Location:    ${BASE_DIR}"
+echo " Data Dir:    ${DATA_DIR}"
+echo " UV Cache:    ${UV_CACHE_DIR}"
+echo " Local URL:   http://localhost:${PORT}"
+if [[ "$HOST" == "0.0.0.0" && "$PRIMARY_IP" != "localhost" ]]; then
+    echo " LAN URL:     http://${PRIMARY_IP}:${PORT}"
+fi
+echo " Torch Mode:  $([ "$USE_CPU" = "1" ] && echo "CPU (lightweight, no CUDA bloat)" || echo "CUDA (NVIDIA runtime)")"
+echo "================================================="
+
+EXTRA_ARGS=()
+if [[ "$USE_CPU" == "1" ]]; then
+    # Direct uv to prefer CPU torch wheels, avoiding multi-GB CUDA downloads
+    EXTRA_ARGS+=(--index https://download.pytorch.org/whl/cpu --default-index https://pypi.org/simple)
+fi
+
+exec uvx \
+    --python 3.11 \
+    "${EXTRA_ARGS[@]}" \
+    open-webui serve \
+    --host "${HOST}" \
+    --port "${PORT}"
