@@ -71,8 +71,27 @@ export DATA_DIR="${BASE_DIR}/data"
 export UV_CACHE_DIR="${BASE_DIR}/uv_cache"
 export TMPDIR="${BASE_DIR}/tmp"
 
+# Keep WEBUI_SECRET_KEY inside DATA_DIR so it doesn't leak into current working directory
+KEY_FILE="${DATA_DIR}/.webui_secret_key"
+if [[ -z "${WEBUI_SECRET_KEY:-}" ]]; then
+    if [[ ! -f "$KEY_FILE" ]]; then
+        head -c 32 /dev/urandom | base64 > "$KEY_FILE"
+        chmod 600 "$KEY_FILE"
+    fi
+    export WEBUI_SECRET_KEY="$(<"$KEY_FILE")"
+fi
+
 # Detect primary LAN IP for convenience
 PRIMARY_IP=$(ip -4 addr show scope global 2>/dev/null | grep -oP 'inet \K[\d.]+' | head -n1 || echo "localhost")
+
+# Set clean CORS_ALLOW_ORIGIN if not explicitly provided (suppresses wildcard warning and secures local + LAN)
+if [[ -z "${CORS_ALLOW_ORIGIN:-}" ]]; then
+    CORS_ALLOW_ORIGIN="http://localhost:${PORT};http://127.0.0.1:${PORT}"
+    if [[ "$PRIMARY_IP" != "localhost" ]]; then
+        CORS_ALLOW_ORIGIN="${CORS_ALLOW_ORIGIN};http://${PRIMARY_IP}:${PORT}"
+    fi
+    export CORS_ALLOW_ORIGIN
+fi
 
 echo "================================================="
 echo " Isolated Open WebUI"
