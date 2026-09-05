@@ -114,6 +114,9 @@ SETUP_BRANCH=${SETUP_BRANCH:-main}
 # Directory for storing compiled programs
 COMPILED_PROGRAMS_DIR="$HOME/workspace/compiled-programs"
 
+# Directory for the CLIProxyAPI binary + config (claudex: Claude Code TUI on Codex models)
+CLIPROXYAPI_DIR="$HOME/.local/bin/cliproxyapi"
+
 # Environment detection
 is_wsl() {
     case "$(uname -r)" in
@@ -311,6 +314,105 @@ make_link() {
     else
         run_silent ln -s "$src" "$tgt"
         print_status "symlink $name"
+    fi
+}
+
+# CLIProxyAPI helpers (claudex)
+# Print "version|download_url" for the latest linux release, or fail.
+cliproxyapi_latest_release() {
+    local arch
+    case "$(uname -m)" in
+        x86_64|amd64) arch="linux_amd64" ;;
+        arm64|aarch64) arch="linux_aarch64" ;;
+        *) return 1 ;;
+    esac
+    local version
+    version=$(curl -fsSL "https://api.github.com/repos/router-for-me/CLIProxyAPI/releases/latest" \
+        | grep -Po '"tag_name": *"v?\K[^"]*') || return 1
+    [ -n "$version" ] || return 1
+    echo "${version}|https://github.com/router-for-me/CLIProxyAPI/releases/download/v${version}/CLIProxyAPI_${version}_${arch}.tar.gz"
+}
+
+# Download a release tarball into CLIPROXYAPI_DIR (binary, config.example.yaml, version.txt).
+cliproxyapi_fetch() {
+    local version="$1" url="$2" tmp rc=1
+    tmp=$(mktemp -d) || return 1
+    if curl -fsSL "$url" -o "$tmp/cliproxyapi.tar.gz" && tar -xzf "$tmp/cliproxyapi.tar.gz" -C "$tmp"; then
+        local bin example
+        bin=$(find "$tmp" -type f -name cli-proxy-api | head -n 1)
+        example=$(find "$tmp" -type f -name config.example.yaml | head -n 1)
+        if [ -n "$bin" ] && [ -n "$example" ]; then
+            mkdir -p "$CLIPROXYAPI_DIR" && \
+            install -m 755 "$bin" "$CLIPROXYAPI_DIR/cli-proxy-api" && \
+            install -m 644 "$example" "$CLIPROXYAPI_DIR/config.example.yaml" && \
+            echo "$version" > "$CLIPROXYAPI_DIR/version.txt" && rc=0
+        fi
+    fi
+    rm -rf "$tmp"
+    return $rc
+}
+
+# First-run config: bind localhost only, single API key stored in ~/.cli-proxy-api/client.key.
+cliproxyapi_write_config() {
+    local cfg="$CLIPROXYAPI_DIR/config.yaml"
+    local keyfile="$HOME/.cli-proxy-api/client.key"
+    [ -f "$cfg" ] && return 0
+    mkdir -p "$HOME/.cli-proxy-api" && chmod 700 "$HOME/.cli-proxy-api"
+    if [ ! -f "$keyfile" ]; then
+        (umask 077; echo "claudex-$(openssl rand -hex 24)" > "$keyfile") || return 1
+    fi
+    local key
+    key=$(<"$keyfile")
+    (umask 077; cp "$CLIPROXYAPI_DIR/config.example.yaml" "$cfg") && \
+    sed -i -e 's/^host: ""/host: "127.0.0.1"/' \
+           -e "s|\"your-api-key-1\"|\"$key\"|" \
+           -e '/"your-api-key-[0-9]"/d' "$cfg"
+}
+
+install_cliproxyapi() {
+    # Binary
+    if [ -x "$CLIPROXYAPI_DIR/cli-proxy-api" ]; then
+        print_status "install cliproxyapi" skip
+    else
+        local rel version url
+        if rel=$(cliproxyapi_latest_release); then
+            version=${rel%%|*}; url=${rel#*|}
+            if run_silent cliproxyapi_fetch "$version" "$url"; then
+                print_status "install cliproxyapi (v$version)"
+            else
+                print_status "install cliproxyapi (v$version)"
+                return 1
+            fi
+        else
+            print_status "install cliproxyapi (release lookup)"
+            return 1
+        fi
+    fi
+
+    # Config (never overwritten once present)
+    if [ -f "$CLIPROXYAPI_DIR/config.yaml" ]; then
+        print_status "cliproxyapi config" skip
+    else
+        run_silent cliproxyapi_write_config
+        print_status "cliproxyapi config"
+    fi
+
+    # User service (unit file comes from dotfiles-common/.config/systemd/user via stow)
+    if [ ! -e "$HOME/.config/systemd/user/cliproxyapi.service" ]; then
+        print_status "enable cliproxyapi service" "skip (unit not stowed)"
+    elif systemctl --user is-active --quiet cliproxyapi.service && systemctl --user is-enabled --quiet cliproxyapi.service; then
+        print_status "enable cliproxyapi service" skip
+    else
+        run_silent systemctl --user daemon-reload
+        run_silent systemctl --user enable --now cliproxyapi.service
+        print_status "enable cliproxyapi service"
+    fi
+
+    # Codex OAuth login is interactive -> POST_SETUP.md
+    if ls "$HOME/.cli-proxy-api"/codex-*.json >/dev/null 2>&1; then
+        print_status "cliproxyapi codex login" skip
+    else
+        print_status "cliproxyapi codex login" "skip (manual: cli-proxy-api -codex-login)"
     fi
 }
 
@@ -1259,6 +1361,9 @@ setup_development_tools() {
     else
         print_status "install antigravity-cli" skip
     fi
+
+    # Install CLIProxyAPI (claudex: Claude Code TUI on Codex models)
+    install_cliproxyapi
 
     # Install go
     if [ ! -x "$(command -v go)" ]; then

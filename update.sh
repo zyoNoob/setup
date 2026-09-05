@@ -121,6 +121,40 @@ is_server() {
 # Setup directories
 SETUP_DIR="$HOME/workspace/setup"
 COMPILED_PROGRAMS_DIR="$HOME/workspace/compiled-programs"
+CLIPROXYAPI_DIR="$HOME/.local/bin/cliproxyapi"
+
+# CLIProxyAPI helpers (mirrors setup.sh)
+cliproxyapi_latest_release() {
+    local arch
+    case "$(uname -m)" in
+        x86_64|amd64) arch="linux_amd64" ;;
+        arm64|aarch64) arch="linux_aarch64" ;;
+        *) return 1 ;;
+    esac
+    local version
+    version=$(curl -fsSL "https://api.github.com/repos/router-for-me/CLIProxyAPI/releases/latest" \
+        | grep -Po '"tag_name": *"v?\K[^"]*') || return 1
+    [ -n "$version" ] || return 1
+    echo "${version}|https://github.com/router-for-me/CLIProxyAPI/releases/download/v${version}/CLIProxyAPI_${version}_${arch}.tar.gz"
+}
+
+cliproxyapi_fetch() {
+    local version="$1" url="$2" tmp rc=1
+    tmp=$(mktemp -d) || return 1
+    if curl -fsSL "$url" -o "$tmp/cliproxyapi.tar.gz" && tar -xzf "$tmp/cliproxyapi.tar.gz" -C "$tmp"; then
+        local bin example
+        bin=$(find "$tmp" -type f -name cli-proxy-api | head -n 1)
+        example=$(find "$tmp" -type f -name config.example.yaml | head -n 1)
+        if [ -n "$bin" ] && [ -n "$example" ]; then
+            mkdir -p "$CLIPROXYAPI_DIR" && \
+            install -m 755 "$bin" "$CLIPROXYAPI_DIR/cli-proxy-api" && \
+            install -m 644 "$example" "$CLIPROXYAPI_DIR/config.example.yaml" && \
+            echo "$version" > "$CLIPROXYAPI_DIR/version.txt" && rc=0
+        fi
+    fi
+    rm -rf "$tmp"
+    return $rc
+}
 
 setup_nvidia_pinning() {
     log_to_both "# NVIDIA Driver Pinning Configuration"
@@ -518,6 +552,32 @@ main() {
         fi
     else
         print_status "update antigravity-cli" "skip (not installed)"
+    fi
+
+    # CLIProxyAPI (claudex proxy)
+    if [ -x "$CLIPROXYAPI_DIR/cli-proxy-api" ]; then
+        log_to_both "Updating CLIProxyAPI..."
+        local cpa_rel cpa_ver cpa_url cpa_cur
+        cpa_cur=$(cat "$CLIPROXYAPI_DIR/version.txt" 2>/dev/null)
+        if cpa_rel=$(cliproxyapi_latest_release); then
+            cpa_ver=${cpa_rel%%|*}; cpa_url=${cpa_rel#*|}
+            if [ "$cpa_ver" = "$cpa_cur" ]; then
+                print_status "update cliproxyapi (v$cpa_cur)" skip
+            else
+                run_silent systemctl --user stop cliproxyapi.service
+                if run_silent cliproxyapi_fetch "$cpa_ver" "$cpa_url"; then
+                    run_silent systemctl --user start cliproxyapi.service
+                    print_status "update cliproxyapi (v${cpa_cur:-?} -> v$cpa_ver)"
+                else
+                    run_silent systemctl --user start cliproxyapi.service
+                    false; print_status "update cliproxyapi (v$cpa_ver)"
+                fi
+            fi
+        else
+            print_status "update cliproxyapi (release lookup)"
+        fi
+    else
+        print_status "update cliproxyapi" "skip (not installed)"
     fi
 
     # Go packages

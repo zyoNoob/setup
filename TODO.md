@@ -96,6 +96,7 @@
 - [x] npm global packages (opencode-ai, @openai/codex)
 - [x] Claude Code (via curl)
 - [x] Antigravity CLI (via curl)
+- [x] CLIProxyAPI + claudex/claudexed (Claude Code TUI on Codex models, ~/.local/bin/cliproxyapi, user systemd service)
 - [x] google chrome
 - [x] fd-find rust
 - [x] nyaa rust

@@ -1,0 +1,5 @@
+#!/bin/bash
+# Wrapper for CLIProxyAPI so it always uses the setup-managed config.
+# Usage: cli-proxy-api -codex-login | -claude-login | ...   (see: cli-proxy-api --help)
+CLIPROXYAPI_DIR="$HOME/.local/bin/cliproxyapi"
+exec "$CLIPROXYAPI_DIR/cli-proxy-api" -config "$CLIPROXYAPI_DIR/config.yaml" "$@"

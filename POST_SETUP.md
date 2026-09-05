@@ -33,6 +33,13 @@ This checklist outlines manual configuration steps that might be necessary after
   ```bash
   glab auth login
   ```
+- [ ] **CLIProxyAPI / claudex (Claude Code on Codex models)**: Log in with your ChatGPT (Codex) account so the local proxy can serve GPT models to Claude Code. OAuth callback uses port 1455; add `-no-browser` to print the URL instead.
+  ```bash
+  cli-proxy-api -codex-login
+  # verify: should list gpt-* models
+  curl -s http://127.0.0.1:8317/v1/models -H "Authorization: Bearer $(<~/.cli-proxy-api/client.key)"
+  # then use: claudex / claudexed  (CLAUDEX_MODEL=gpt-5.6-sol claudex to override the model)
+  ```
 - [ ] **Spotify Player (spotify_player)**:
     - Launch `spotify_player`.
     - Follow the on-screen instructions to authenticate with your Spotify account. This usually involves opening a URL in your browser and granting permissions.
