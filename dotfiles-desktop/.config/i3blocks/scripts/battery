@@ -1,0 +1,28 @@
+#!/bin/sh
+# i3blocks battery block. Only reports on real system batteries (/sys/class/power_supply/BAT*),
+# unlike `acpi -b`, which also matches peripheral batteries (mice, keyboards, controllers)
+# and prints bogus 0%/unavailable readings for them.
+
+for bat in /sys/class/power_supply/BAT*; do
+	[ -d "$bat" ] || exit 0
+
+	status=$(cat "$bat/status" 2>/dev/null)
+	percent=$(cat "$bat/capacity" 2>/dev/null)
+	[ -n "$status" ] && [ -n "$percent" ] || continue
+
+	case "$status" in
+		Discharging) suffix=" DIS" ;;
+		Charging) suffix=" CHR" ;;
+		*) suffix="" ;;
+	esac
+
+	echo "${percent}%${suffix}"
+	echo "${percent}%${suffix}"
+
+	if [ "$status" = "Discharging" ] && [ "$percent" -lt 5 ]; then
+		exit 33
+	fi
+	exit 0
+done
+
+exit 0

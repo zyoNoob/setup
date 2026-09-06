@@ -1,0 +1,14 @@
+[Unit]
+Description=CLIProxyAPI - local LLM proxy (claudex: Claude Code on Codex models)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/.local/bin/cliproxyapi
+ExecStart=%h/.local/bin/cliproxyapi/cli-proxy-api -config %h/.local/bin/cliproxyapi/config.yaml
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

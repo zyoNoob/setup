@@ -14,7 +14,7 @@ This checklist outlines manual configuration steps that might be necessary after
   git config --global user.email "your.email@example.com"
   ```
 - [ ] **SSH Key for Git Platforms**:
-    - Add your public SSH key (`~/.ssh/id_rsa.pub`) to your GitHub, GitLab, or other Git hosting services.
+    - Add your public SSH key (`~/.ssh/id_ed25519.pub`) to your GitHub, GitLab, or other Git hosting services.
     - Test the connection:
       ```bash
       ssh -T git@github.com
@@ -32,6 +32,13 @@ This checklist outlines manual configuration steps that might be necessary after
 - [ ] **GitLab CLI Authentication**: Authenticate with GitLab.
   ```bash
   glab auth login
+  ```
+- [ ] **CLIProxyAPI / claudex (Claude Code on Codex models)**: Log in with your ChatGPT (Codex) account so the local proxy can serve GPT models to Claude Code. OAuth callback uses port 1455; add `-no-browser` to print the URL instead.
+  ```bash
+  cli-proxy-api -codex-login
+  # verify: should list gpt-* models
+  curl -s http://127.0.0.1:8317/v1/models -H "Authorization: Bearer $(<~/.cli-proxy-api/client.key)"
+  # then use: claudex / claudexed  (CLAUDEX_MODEL=gpt-5.6-sol claudex to override the model)
   ```
 - [ ] **Spotify Player (spotify_player)**:
     - Launch `spotify_player`.

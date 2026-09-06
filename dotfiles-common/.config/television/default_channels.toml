@@ -34,7 +34,7 @@ preview_command = "aws s3 ls s3://{0}"
 # Dotfiles
 [[cable_channel]]
 name = "my-dotfiles"
-source_command = "fd -t f -H . $HOME/workspace/setup/dotfiles | sed 's|.*/dotfiles/|~/|'"
+source_command = "fd -t f -H . $HOME/workspace/setup/dotfiles-common $HOME/workspace/setup/dotfiles-desktop 2>/dev/null | sed -E 's|.*/dotfiles-(common|desktop)/|~/|'"
 preview_command = ":files:"
 
 # Executable files - Local

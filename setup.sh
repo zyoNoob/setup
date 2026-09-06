@@ -70,8 +70,12 @@ print_status() {
     local time_stamp=$(timestamp)
     local output
 
-    if [ "$skip" = "skip" ]; then
-        output=$(printf "%s | %-${width}s \e[90mSKIPPED\e[0m" "$time_stamp" "$message")
+    if [ -n "$skip" ]; then
+        local skip_label="SKIPPED"
+        if [[ "$skip" =~ ^skip\ \((.*)\)$ ]]; then
+            skip_label="SKIPPED (${BASH_REMATCH[1]})"
+        fi
+        output=$(printf "%s | %-${width}s \e[90m%s\e[0m" "$time_stamp" "$message" "$skip_label")
     else
         if [ "$status" -eq 0 ]; then
             output=$(printf "%s | %-${width}s \e[32mDONE\e[0m" "$time_stamp" "$message")
@@ -110,6 +114,9 @@ SETUP_BRANCH=${SETUP_BRANCH:-main}
 # Directory for storing compiled programs
 COMPILED_PROGRAMS_DIR="$HOME/workspace/compiled-programs"
 
+# Directory for the CLIProxyAPI binary + config (claudex: Claude Code TUI on Codex models)
+CLIPROXYAPI_DIR="$HOME/.local/bin/cliproxyapi"
+
 # Environment detection
 is_wsl() {
     case "$(uname -r)" in
@@ -117,6 +124,63 @@ is_wsl() {
     *Microsoft* ) return 0 ;; # WSL 1
     * ) return 1 ;;
     esac
+}
+
+pkg_is_installed() {
+    dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "install ok installed"
+}
+
+# Returns true if any of the named packages is installed
+any_pkg_installed() {
+    local pkg
+    for pkg in "$@"; do
+        pkg_is_installed "$pkg" && return 0
+    done
+    return 1
+}
+
+_IS_SERVER_CACHED=""
+is_server() {
+    if [ -n "$_IS_SERVER_CACHED" ]; then
+        return "$_IS_SERVER_CACHED"
+    fi
+
+    # Explicit override always wins over autodetection
+    case "${SETUP_PROFILE:-}" in
+        server )  _IS_SERVER_CACHED=0; return 0 ;;
+        desktop ) _IS_SERVER_CACHED=1; return 1 ;;
+        "" )      ;;
+        * ) log_to_both "WARNING: ignoring unrecognized SETUP_PROFILE='${SETUP_PROFILE}' (expected 'server' or 'desktop'), falling back to autodetection" ;;
+    esac
+
+    # Desktop metapackages (most reliable indicator)
+    if any_pkg_installed ubuntu-desktop ubuntu-desktop-minimal kubuntu-desktop \
+                         xubuntu-desktop lubuntu-desktop; then
+        _IS_SERVER_CACHED=1; return 1
+    fi
+
+    # Display managers and desktop session packages. Nothing installs these by
+    # accident, which is what makes them safe to key off of.
+    if any_pkg_installed gdm3 sddm lightdm lxdm nodm \
+                         gnome-session ubuntu-session plasma-desktop \
+                         xfce4-session lxqt-session mate-session-manager \
+                         cinnamon-session; then
+        _IS_SERVER_CACHED=1; return 1
+    fi
+
+    # The xserver-xorg metapackage means someone deliberately asked for a full
+    # X stack (e.g. a hand-built i3 box with no display manager).
+    #
+    # Deliberately NOT xserver-xorg-core: the nvidia-driver metapackage depends
+    # on xserver-xorg-video-nvidia, which depends on xserver-xorg-core, so a
+    # headless machine gets -core the moment you install the GPU driver. Keying
+    # off it made this script take the desktop path on a server and pull in
+    # ~300 GNOME packages.
+    if any_pkg_installed xserver-xorg; then
+        _IS_SERVER_CACHED=1; return 1
+    fi
+
+    _IS_SERVER_CACHED=0; return 0
 }
 
 # Package management helpers
@@ -130,7 +194,66 @@ is_installed() {
 }
 
 has_nvidia_driver() {
+    command -v nvidia-settings &> /dev/null || command -v nvidia-smi &> /dev/null
+}
+
+has_nvidia_gui() {
     command -v nvidia-settings &> /dev/null
+}
+
+setup_nvidia_pinning() {
+    log_to_both "# NVIDIA Driver Pinning Configuration"
+    
+    if is_wsl; then
+        print_status "nvidia driver pinning" "skip (WSL detected)"
+        return
+    fi
+
+    # Check if any nvidia driver package is installed
+    local nvidia_ver
+    nvidia_ver=$(dpkg-query -W -f='${Version}\n' 'nvidia-*' 'libnvidia-*' 2>/dev/null | grep -E "^[0-9]" | head -n 1)
+    
+    if [ -z "$nvidia_ver" ]; then
+        print_status "nvidia driver pinning" "skip (no nvidia driver detected)"
+        return
+    fi
+    
+    local nvidia_major
+    nvidia_major=$(echo "$nvidia_ver" | cut -d'.' -f1)
+    
+    if [[ ! "$nvidia_major" =~ ^[0-9]+$ ]]; then
+        print_status "nvidia driver pinning" "skip (could not parse driver major version)"
+        return
+    fi
+    
+    local pin_file="/etc/apt/preferences.d/nvidia-$nvidia_major"
+    
+    if [ -f "$pin_file" ]; then
+        print_status "nvidia driver pinning (branch $nvidia_major)" skip
+    else
+        # Remove any other nvidia-* pin files in preferences.d to avoid conflicts
+        run_silent sudo rm -f /etc/apt/preferences.d/nvidia-[0-9]*
+        
+        # Create the new pin file
+        run_silent sudo tee "$pin_file" > /dev/null <<EOL
+Package: nvidia*
+Pin: version ${nvidia_major}.*
+Pin-Priority: 1001
+
+Package: libnvidia*
+Pin: version ${nvidia_major}.*
+Pin-Priority: 1001
+
+Package: xserver-xorg-video-nvidia*
+Pin: version ${nvidia_major}.*
+Pin-Priority: 1001
+
+Package: libxnvctrl*
+Pin: version ${nvidia_major}.*
+Pin-Priority: 1001
+EOL
+        print_status "nvidia driver pinning (branch $nvidia_major)"
+    fi
 }
 
 install_package() {
@@ -194,6 +317,105 @@ make_link() {
     fi
 }
 
+# CLIProxyAPI helpers (claudex)
+# Print "version|download_url" for the latest linux release, or fail.
+cliproxyapi_latest_release() {
+    local arch
+    case "$(uname -m)" in
+        x86_64|amd64) arch="linux_amd64" ;;
+        arm64|aarch64) arch="linux_aarch64" ;;
+        *) return 1 ;;
+    esac
+    local version
+    version=$(curl -fsSL "https://api.github.com/repos/router-for-me/CLIProxyAPI/releases/latest" \
+        | grep -Po '"tag_name": *"v?\K[^"]*') || return 1
+    [ -n "$version" ] || return 1
+    echo "${version}|https://github.com/router-for-me/CLIProxyAPI/releases/download/v${version}/CLIProxyAPI_${version}_${arch}.tar.gz"
+}
+
+# Download a release tarball into CLIPROXYAPI_DIR (binary, config.example.yaml, version.txt).
+cliproxyapi_fetch() {
+    local version="$1" url="$2" tmp rc=1
+    tmp=$(mktemp -d) || return 1
+    if curl -fsSL "$url" -o "$tmp/cliproxyapi.tar.gz" && tar -xzf "$tmp/cliproxyapi.tar.gz" -C "$tmp"; then
+        local bin example
+        bin=$(find "$tmp" -type f -name cli-proxy-api | head -n 1)
+        example=$(find "$tmp" -type f -name config.example.yaml | head -n 1)
+        if [ -n "$bin" ] && [ -n "$example" ]; then
+            mkdir -p "$CLIPROXYAPI_DIR" && \
+            install -m 755 "$bin" "$CLIPROXYAPI_DIR/cli-proxy-api" && \
+            install -m 644 "$example" "$CLIPROXYAPI_DIR/config.example.yaml" && \
+            echo "$version" > "$CLIPROXYAPI_DIR/version.txt" && rc=0
+        fi
+    fi
+    rm -rf "$tmp"
+    return $rc
+}
+
+# First-run config: bind localhost only, single API key stored in ~/.cli-proxy-api/client.key.
+cliproxyapi_write_config() {
+    local cfg="$CLIPROXYAPI_DIR/config.yaml"
+    local keyfile="$HOME/.cli-proxy-api/client.key"
+    [ -f "$cfg" ] && return 0
+    mkdir -p "$HOME/.cli-proxy-api" && chmod 700 "$HOME/.cli-proxy-api"
+    if [ ! -f "$keyfile" ]; then
+        (umask 077; echo "claudex-$(openssl rand -hex 24)" > "$keyfile") || return 1
+    fi
+    local key
+    key=$(<"$keyfile")
+    (umask 077; cp "$CLIPROXYAPI_DIR/config.example.yaml" "$cfg") && \
+    sed -i -e 's/^host: ""/host: "127.0.0.1"/' \
+           -e "s|\"your-api-key-1\"|\"$key\"|" \
+           -e '/"your-api-key-[0-9]"/d' "$cfg"
+}
+
+install_cliproxyapi() {
+    # Binary
+    if [ -x "$CLIPROXYAPI_DIR/cli-proxy-api" ]; then
+        print_status "install cliproxyapi" skip
+    else
+        local rel version url
+        if rel=$(cliproxyapi_latest_release); then
+            version=${rel%%|*}; url=${rel#*|}
+            if run_silent cliproxyapi_fetch "$version" "$url"; then
+                print_status "install cliproxyapi (v$version)"
+            else
+                print_status "install cliproxyapi (v$version)"
+                return 1
+            fi
+        else
+            print_status "install cliproxyapi (release lookup)"
+            return 1
+        fi
+    fi
+
+    # Config (never overwritten once present)
+    if [ -f "$CLIPROXYAPI_DIR/config.yaml" ]; then
+        print_status "cliproxyapi config" skip
+    else
+        run_silent cliproxyapi_write_config
+        print_status "cliproxyapi config"
+    fi
+
+    # User service (unit file comes from dotfiles-common/.config/systemd/user via stow)
+    if [ ! -e "$HOME/.config/systemd/user/cliproxyapi.service" ]; then
+        print_status "enable cliproxyapi service" "skip (unit not stowed)"
+    elif systemctl --user is-active --quiet cliproxyapi.service && systemctl --user is-enabled --quiet cliproxyapi.service; then
+        print_status "enable cliproxyapi service" skip
+    else
+        run_silent systemctl --user daemon-reload
+        run_silent systemctl --user enable --now cliproxyapi.service
+        print_status "enable cliproxyapi service"
+    fi
+
+    # Codex OAuth login is interactive -> POST_SETUP.md
+    if ls "$HOME/.cli-proxy-api"/codex-*.json >/dev/null 2>&1; then
+        print_status "cliproxyapi codex login" skip
+    else
+        print_status "cliproxyapi codex login" "skip (manual: cli-proxy-api -codex-login)"
+    fi
+}
+
 # ========================================
 # Initial System Setup
 # ========================================
@@ -211,15 +433,38 @@ initial_system_setup() {
         print_status "create compiled programs directory" skip
     fi
 
+    # Force APT to use IPv4 (fixes slow CDN routing)
+    local IPV4_CONF="/etc/apt/apt.conf.d/99force-ipv4"
+    if [ ! -f "$IPV4_CONF" ]; then
+        echo 'Acquire::ForceIPv4 "true";' | sudo tee "$IPV4_CONF" > /dev/null
+        print_status "configure apt force ipv4"
+    else
+        print_status "configure apt force ipv4" skip
+    fi
+
     # Update package list
     run_silent sudo apt update -y
     print_status "update package list"
+
+    # Install apt-fast for parallel downloads
+    if ! command -v apt-fast &> /dev/null; then
+        install_package "aria2"
+        run_silent sudo add-apt-repository -y ppa:apt-fast/stable
+        run_silent sudo apt update -y
+        run_silent sudo DEBIAN_FRONTEND=noninteractive apt install -y apt-fast
+        print_status "install apt-fast"
+    else
+        print_status "install apt-fast" skip
+    fi
+
+    # Pin Nvidia driver branch if present
+    setup_nvidia_pinning
 
     # Remove unnecessary packages
     remove_package "unattended-upgrades"
 
     # Reinstall Firefox from Mozilla repo
-    if ! is_wsl; then
+    if ! is_wsl && ! is_server; then
         # Remove snap version
         if snap list firefox &>/dev/null; then
             run_silent sudo snap remove firefox
@@ -275,6 +520,8 @@ EOL
         else
             print_status "remove firefox snap" skip
         fi
+    elif is_server; then
+        print_status "firefox reinstallation" "skip (server)"
     else
         print_status "firefox reinstallation" "skip (WSL detected)"
     fi
@@ -338,7 +585,6 @@ install_essential_packages() {
         python3-dev
         python3-pip
         python3-numpy
-        flatpak
         htop
         btop
         speedtest-cli
@@ -347,39 +593,51 @@ install_essential_packages() {
         unzip
         7zip
         keychain
-        maim
-        xclip
-        xdotool
         rename
-        transmission
-        policykit-1-gnome
-        network-manager-gnome
         openssh-server
         zsh
         tmux
         silversearcher-ag
         tree
-        i3
-        i3blocks
-        pavucontrol
-        pulsemixer
-        feh
-        dunst
-        rofi
-        picom
-        polybar
         avahi-daemon
         avahi-utils
         iperf3
-        aria2
-        wireplumber
-        libfuse2
+        pulsemixer
+        network-manager
     )
 
     # Install all packages
     for pkg in "${packages_core[@]}"; do
         install_package "$pkg"
     done
+
+    # Desktop-only packages
+    if ! is_server; then
+        local packages_desktop=(
+            flatpak
+            maim
+            xclip
+            xdotool
+            transmission
+            policykit-1-gnome
+            network-manager-gnome
+            i3
+            i3blocks
+            pavucontrol
+            feh
+            dunst
+            rofi
+            picom
+            polybar
+            wireplumber
+            libfuse2
+        )
+        for pkg in "${packages_desktop[@]}"; do
+            install_package "$pkg"
+        done
+    else
+        print_status "desktop packages (17 packages)" "skip (server)"
+    fi
 
     # Install fzf
     if [ ! -f "$HOME/bin/fzf" ]; then
@@ -393,13 +651,17 @@ install_essential_packages() {
         print_status "install fzf" skip
     fi
 
-    # Install brightnessctl
-    if [ ! -x "$(command -v brightnessctl)" ]; then
-        install_package "brightnessctl"
-        run_silent sudo chmod +s /usr/bin/brightnessctl
-        print_status "install brightnessctl"
+    # Install brightnessctl (desktop only)
+    if ! is_server; then
+        if [ ! -x "$(command -v brightnessctl)" ]; then
+            install_package "brightnessctl"
+            run_silent sudo chmod +s /usr/bin/brightnessctl
+            print_status "install brightnessctl"
+        else
+            print_status "install brightnessctl" skip
+        fi
     else
-        print_status "install brightnessctl" skip
+        print_status "install brightnessctl" "skip (server)"
     fi
 
     # Install Neovim
@@ -420,58 +682,63 @@ install_essential_packages() {
         print_status "install neovim" skip
     fi
 
-    # Configure flatpak
-    if ! flatpak remotes | grep -q flathub; then
-        run_silent flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-        run_silent flatpak --user override --filesystem=~/.icons/:ro
-        run_silent flatpak --user override --filesystem=~/.themes/:ro
-        run_silent flatpak --user override --filesystem=~/.fonts/:ro
-        run_silent flatpak --user override --filesystem=~/.cache/:ro
-        run_silent bash -c 'flatpak --user override --filesystem="$1"/:ro' -- "$SETUP_DIR"
-        run_silent flatpak --user override --filesystem=/usr/share/icons/:ro
-        run_silent flatpak --user override --filesystem=/usr/share/themes/:ro
-        run_silent flatpak --user override --filesystem=/usr/share/fonts/:ro
-        print_status "configure flatpak"
-    else
-        print_status "configure flatpak" skip
-    fi
+    # Configure flatpak and install desktop apps (desktop only)
+    if ! is_server; then
+        # Configure flatpak
+        if ! flatpak remotes | grep -q flathub; then
+            run_silent flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+            run_silent flatpak --user override --filesystem=~/.icons/:ro
+            run_silent flatpak --user override --filesystem=~/.themes/:ro
+            run_silent flatpak --user override --filesystem=~/.fonts/:ro
+            run_silent flatpak --user override --filesystem=~/.cache/:ro
+            run_silent bash -c 'flatpak --user override --filesystem="$1"/:ro' -- "$SETUP_DIR"
+            run_silent flatpak --user override --filesystem=/usr/share/icons/:ro
+            run_silent flatpak --user override --filesystem=/usr/share/themes/:ro
+            run_silent flatpak --user override --filesystem=/usr/share/fonts/:ro
+            print_status "configure flatpak"
+        else
+            print_status "configure flatpak" skip
+        fi
 
-    # Install Flatseal (Flatpak permissions manager)
-    if ! flatpak list | grep -q com.github.tchx84.Flatseal; then
-        run_silent flatpak install -y flathub com.github.tchx84.Flatseal
-        print_status "install flatseal"
-    else
-        print_status "install flatseal" skip
-    fi
+        # Install Flatseal (Flatpak permissions manager)
+        if ! flatpak list | grep -q com.github.tchx84.Flatseal; then
+            run_silent flatpak install -y flathub com.github.tchx84.Flatseal
+            print_status "install flatseal"
+        else
+            print_status "install flatseal" skip
+        fi
 
-    # Install Discord
-    if ! flatpak list | grep -q com.discordapp.Discord; then
-        run_silent flatpak install -y flathub com.discordapp.Discord
-        run_silent flatpak override --user --env=XCURSOR_PATH= com.discordapp.Discord
-        print_status "install discord"
-    else
-        # Ensure environment variables are set even if Discord is already installed
-        run_silent flatpak override --user --env=XCURSOR_PATH= com.discordapp.Discord
-        print_status "install discord" skip
-    fi
+        # Install Discord
+        if ! flatpak list | grep -q com.discordapp.Discord; then
+            run_silent flatpak install -y flathub com.discordapp.Discord
+            run_silent flatpak override --user --env=XCURSOR_PATH= com.discordapp.Discord
+            print_status "install discord"
+        else
+            # Ensure environment variables are set even if Discord is already installed
+            run_silent flatpak override --user --env=XCURSOR_PATH= com.discordapp.Discord
+            print_status "install discord" skip
+        fi
 
-    # Install Bolt (RS3 Launcher)
-    if ! flatpak list | grep -q com.adamcake.Bolt; then
-        run_silent flatpak install -y flathub com.adamcake.Bolt
-        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=126 com.adamcake.Bolt
-        print_status "install bolt"
-    else
-        # Ensure environment variables are set even if Bolt is already installed
-        run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=126 com.adamcake.Bolt
-        print_status "install bolt" skip
-    fi
+        # Install Bolt (RS3 Launcher)
+        if ! flatpak list | grep -q com.adamcake.Bolt; then
+            run_silent flatpak install -y flathub com.adamcake.Bolt
+            run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=126 com.adamcake.Bolt
+            print_status "install bolt"
+        else
+            # Ensure environment variables are set even if Bolt is already installed
+            run_silent flatpak override --user --env=PULSE_LATENCY_MSEC=126 com.adamcake.Bolt
+            print_status "install bolt" skip
+        fi
 
-    # Install Vibrant Linux - Saturation Manager
-    if ! flatpak list | grep -q io.github.libvibrant.vibrantLinux; then
-        run_silent flatpak install -y flathub io.github.libvibrant.vibrantLinux
-        print_status "install vibrantLinux"
+        # Install Vibrant Linux - Saturation Manager
+        if ! flatpak list | grep -q io.github.libvibrant.vibrantLinux; then
+            run_silent flatpak install -y flathub io.github.libvibrant.vibrantLinux
+            print_status "install vibrantLinux"
+        else
+            print_status "install vibrantLinux" skip
+        fi
     else
-        print_status "install vibrantLinux" skip
+        print_status "flatpak and desktop apps" "skip (server)"
     fi
 
 }
@@ -485,10 +752,14 @@ setup_desktop_environment() {
     log_to_both "# Desktop Environment Setup"
     log_to_both "--------------------------------"
 
-    # Configure monitors (non-WSL only)
+    # Configure monitors (non-WSL only, requires active display)
     if ! is_wsl; then
-        run_silent sudo "$SETUP_DIR/dotfiles/.config/scripts/set_monitors.sh"
-        print_status "setup monitors"
+        if xrandr --query &>/dev/null; then
+            run_silent "$SETUP_DIR/dotfiles-desktop/.config/scripts/set_monitors.sh"
+            print_status "setup monitors"
+        else
+            print_status "setup monitors" "skip (no display)"
+        fi
         run_silent sudo cp "$HOME/.config/monitors.xml" "/var/lib/gdm3/.config/"
         print_status "copy monitors.xml to gdm3"
         run_silent sudo chown gdm:gdm /var/lib/gdm3/.config/monitors.xml
@@ -722,8 +993,13 @@ setup_nvidia_coolbits() {
         return
     fi
 
+    if is_server; then
+        print_status "nvidia coolbits" "skip (server)"
+        return
+    fi
+
     # Check if nvidia driver is installed
-    if ! has_nvidia_driver; then
+    if ! has_nvidia_gui; then
         print_status "nvidia coolbits" "skip (no nvidia driver detected)"
         return
     fi
@@ -766,8 +1042,13 @@ setup_nvidia_overclock() {
         return
     fi
 
+    if is_server; then
+        print_status "nvidia overclock" "skip (server)"
+        return
+    fi
+
     # Check if nvidia driver is installed
-    if ! has_nvidia_driver; then
+    if ! has_nvidia_gui; then
         print_status "nvidia overclock" "skip (no nvidia driver detected)"
         return
     fi
@@ -778,7 +1059,7 @@ setup_nvidia_overclock() {
     CURRENT_USER=$(logname 2>/dev/null || echo "$SUDO_USER" || echo "$USER")
     local SUDOERS_RULE="$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/nvidia-settings"
 
-    if [ ! -f "$SUDOERS_FILE" ] || ! grep -qF "$SUDOERS_RULE" "$SUDOERS_FILE"; then
+    if [ ! -f "$SUDOERS_FILE" ] || ! sudo grep -qF "$SUDOERS_RULE" "$SUDOERS_FILE"; then
         echo "$SUDOERS_RULE" | sudo tee "$SUDOERS_FILE" > /dev/null
         sudo chmod 0440 "$SUDOERS_FILE"
         if sudo visudo -c -f "$SUDOERS_FILE" &> /dev/null; then
@@ -800,9 +1081,9 @@ setup_nvidia_overclock() {
 # Wait for the display server to be fully ready
 sleep 3
 
-logger -t nvidia-oc "Applying overclock: +200 MHz core, +6000 MHz memory"
+logger -t nvidia-oc "Applying overclock: +250 MHz core, +6000 MHz memory"
 
-if sudo nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels=200" &> /dev/null && \
+if sudo nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels=250" &> /dev/null && \
    sudo nvidia-settings -a "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels=6000" &> /dev/null; then
     CORE=$(nvidia-settings -t -q "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels" 2>/dev/null)
     MEM=$(nvidia-settings -t -q "[gpu:0]/GPUMemoryTransferRateOffsetAllPerformanceLevels" 2>/dev/null)
@@ -832,6 +1113,107 @@ EOL
 }
 
 # ========================================
+# NVIDIA Server Configuration
+# ========================================
+
+setup_nvidia_server() {
+    log_to_both "--------------------------------"
+    log_to_both "# NVIDIA Server Configuration"
+    log_to_both "--------------------------------"
+
+    if is_wsl; then
+        print_status "nvidia server setup" "skip (WSL detected)"
+        return
+    fi
+
+    if ! is_server; then
+        print_status "nvidia server setup" "skip (not a server)"
+        return
+    fi
+
+    # Check if nvidia driver is installed (via nvidia-smi on servers)
+    if ! command -v nvidia-smi &> /dev/null; then
+        print_status "nvidia server setup" "skip (no nvidia driver detected)"
+        return
+    fi
+
+    # Enable persistence mode
+    run_silent sudo nvidia-smi -pm 1
+    print_status "enable nvidia persistence mode"
+
+    # Create sudoers rule for passwordless nvidia-smi
+    local SUDOERS_FILE="/etc/sudoers.d/nvidia-oc"
+    local CURRENT_USER
+    CURRENT_USER=$(logname 2>/dev/null || echo "$SUDO_USER" || echo "$USER")
+    local SUDOERS_RULE="$CURRENT_USER ALL=(ALL) NOPASSWD: /usr/bin/nvidia-smi"
+
+    if [ ! -f "$SUDOERS_FILE" ] || ! sudo grep -qF "$SUDOERS_RULE" "$SUDOERS_FILE"; then
+        echo "$SUDOERS_RULE" | sudo tee "$SUDOERS_FILE" > /dev/null
+        sudo chmod 0440 "$SUDOERS_FILE"
+        if sudo visudo -c -f "$SUDOERS_FILE" &> /dev/null; then
+            print_status "create nvidia-smi sudoers rule"
+        else
+            sudo rm -f "$SUDOERS_FILE"
+            print_status "create nvidia-smi sudoers rule (INVALID - removed)"
+            return
+        fi
+    else
+        print_status "create nvidia-smi sudoers rule" skip
+    fi
+
+    # Create the server overclock script (always overwrite to ensure latest values)
+    local OC_SCRIPT="/usr/local/bin/nvidia-oc-server.sh"
+    sudo tee "$OC_SCRIPT" > /dev/null <<'OCSCRIPT'
+#!/bin/bash
+
+logger -t nvidia-oc "Applying server GPU configuration"
+
+# Enable persistence mode
+if ! nvidia-smi -pm 1 &> /dev/null; then
+    logger -t nvidia-oc "ERROR: Failed to enable persistence mode"
+    exit 1
+fi
+
+# Lock GPU clocks (adjust min,max values as needed)
+# nvidia-smi --lock-gpu-clocks=<min>,<max>
+# nvidia-smi --lock-memory-clocks=<freq>
+
+# Set power limit (in watts, adjust as needed)
+# nvidia-smi -pl <watts>
+
+logger -t nvidia-oc "Server GPU configuration applied"
+nvidia-smi --query-gpu=name,clocks.current.graphics,clocks.current.memory,power.draw --format=csv,noheader 2>/dev/null | \
+    while IFS= read -r line; do logger -t nvidia-oc "GPU status: $line"; done
+OCSCRIPT
+    run_silent sudo chmod +x "$OC_SCRIPT"
+    print_status "create nvidia server overclock script"
+
+    # Create systemd oneshot service
+    local SERVICE_FILE="/etc/systemd/system/nvidia-oc.service"
+    if [ ! -f "$SERVICE_FILE" ]; then
+        sudo tee "$SERVICE_FILE" > /dev/null <<EOL
+[Unit]
+Description=NVIDIA GPU Server Configuration
+After=nvidia-persistenced.service
+Wants=nvidia-persistenced.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/nvidia-oc-server.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOL
+        run_silent sudo systemctl daemon-reload
+        run_silent sudo systemctl enable nvidia-oc.service
+        print_status "create nvidia server overclock service"
+    else
+        print_status "create nvidia server overclock service" skip
+    fi
+}
+
+# ========================================
 # Development Tools Setup
 # ========================================
 
@@ -840,8 +1222,8 @@ setup_development_tools() {
     log_to_both "# Development Tools Setup"
     log_to_both "--------------------------------"
 
-    # Install VS Code (non-WSL only)
-    if ! is_wsl; then
+    # Install VS Code (non-WSL, non-server only)
+    if ! is_wsl && ! is_server; then
         if ! is_installed "code"; then
             # Download and set up Microsoft's GPG key and repository in one sequence
             run_silent bash -c '
@@ -857,7 +1239,11 @@ setup_development_tools() {
             print_status "install code" skip
         fi
     else
-        print_status "install code" "skip (WSL detected)"
+        if is_server; then
+            print_status "install code" "skip (server)"
+        else
+            print_status "install code" "skip (WSL detected)"
+        fi
     fi
 
     # Install ydiff
@@ -941,10 +1327,8 @@ setup_development_tools() {
 
     # Install global npm packages
     local npm_packages=(
-        "@google/gemini-cli"
         "opencode-ai"
         "@openai/codex"
-        "@anthropic-ai/claude-code"
     )
 
     for pkg in "${npm_packages[@]}"; do
@@ -955,6 +1339,31 @@ setup_development_tools() {
             print_status "npm install -g $pkg" skip
         fi
     done
+
+    # Install Claude Code via curl
+    if [ ! -x "$(command -v claude)" ]; then
+        if run_silent bash -c "curl -fsSL https://claude.ai/install.sh | bash"; then
+            print_status "install claude"
+        else
+            print_status "install claude"
+        fi
+    else
+        print_status "install claude" skip
+    fi
+
+    # Install Antigravity CLI via curl
+    if [ ! -x "$(command -v agy)" ] && [ ! -x "$(command -v antigravity)" ]; then
+        if run_silent bash -c "curl -fsSL https://antigravity.google/cli/install.sh | bash"; then
+            print_status "install antigravity-cli"
+        else
+            print_status "install antigravity-cli"
+        fi
+    else
+        print_status "install antigravity-cli" skip
+    fi
+
+    # Install CLIProxyAPI (claudex: Claude Code TUI on Codex models)
+    install_cliproxyapi
 
     # Install go
     if [ ! -x "$(command -v go)" ]; then
@@ -1028,11 +1437,17 @@ setup_development_tools() {
 
     # UV tool installs
     local uv_tools=(
-        "netron"
         "smassh"
         "gdown"
         "huggingface_hub[cli]"
     )
+
+    # Desktop-only UV tools
+    if ! is_server; then
+        uv_tools+=("netron")
+    else
+        print_status "uv install netron" "skip (server)"
+    fi
 
     for tool in "${uv_tools[@]}"; do
         if ! $HOME/.local/bin/uv tool list | grep -q "^${tool%%\[*}"; then
@@ -1198,16 +1613,27 @@ setup_development_tools() {
         gstreamer1.0-plugins-ugly
         gstreamer1.0-libav
         gstreamer1.0-tools
-        gstreamer1.0-x
         gstreamer1.0-alsa
         gstreamer1.0-gl
-        gstreamer1.0-gtk3
-        gstreamer1.0-qt5
         gstreamer1.0-pulseaudio
     )
     for pkg in "${gstreamer_packages[@]}"; do
         install_package "$pkg"
     done
+
+    # GStreamer GUI packages (desktop only)
+    if ! is_server; then
+        local gstreamer_desktop_packages=(
+            gstreamer1.0-x
+            gstreamer1.0-gtk3
+            gstreamer1.0-qt5
+        )
+        for pkg in "${gstreamer_desktop_packages[@]}"; do
+            install_package "$pkg"
+        done
+    else
+        print_status "gstreamer desktop packages" "skip (server)"
+    fi
 
     # Install PostgreSQL and related dev packages
     local postgres_packages=(
@@ -1230,17 +1656,32 @@ setup_development_tools() {
 
     # Install VM tools
     local vm_packages=(
-        libvirt-daemon-system 
-        libvirt-clients 
-        qemu-kvm 
-        qemu-utils 
-        virt-manager 
+        libvirt-daemon-system
+        libvirt-clients
+        qemu-kvm
+        qemu-utils
         ovmf
     )
     for pkg in "${vm_packages[@]}"; do
-        install_package "$pkg"
+        if is_server; then
+            print_status "install $pkg" "skip (server)"
+        else
+            install_package "$pkg"
+        fi
     done
-    run_silent sudo systemctl enable --now libvirtd
+
+    # virt-manager GUI (desktop only, servers use virsh)
+    if ! is_server; then
+        install_package "virt-manager"
+    else
+        print_status "install virt-manager" "skip (server)"
+    fi
+
+    if ! is_server; then
+        run_silent sudo systemctl enable --now libvirtd
+    else
+        print_status "enable libvirtd service" "skip (server)"
+    fi
 
     # C++ Dev Libraries
     local cpp_dev_packages=(
@@ -1264,9 +1705,9 @@ setup_shell_environment() {
     log_to_both "# Shell Environment Setup"
     log_to_both "--------------------------------"
 
-    # Install Ghostty if not in WSL
-    if is_wsl; then
-        print_status "install ghostty" "skip (WSL detected)"
+    # Install Ghostty if not in WSL/server
+    if is_wsl || is_server; then
+        print_status "install ghostty" "skip (WSL/server detected)"
     else
         if [ -x "$(command -v ghostty)" ]; then
             print_status "install ghostty" skip
@@ -1292,8 +1733,8 @@ setup_shell_environment() {
     fi
 
     # Install kitty
-    if is_wsl; then
-        print_status "install kitty" "skip (WSL detected)"
+    if is_wsl || is_server; then
+        print_status "install kitty" "skip (WSL/server detected)"
     else
         if [ -x "$(command -v kitty)" ]; then
             print_status "install kitty" skip
@@ -1364,8 +1805,13 @@ setup_shell_environment() {
     install_package "sshfs"
 
     # gvfs - required for gvfs.yazi plugin (mount devices, MTP, SMB, etc.)
-    install_package "gvfs"
-    install_package "gvfs-backends"
+    if ! is_server; then
+        install_package "gvfs"
+        install_package "gvfs-backends"
+    else
+        print_status "install gvfs" "skip (server)"
+        print_status "install gvfs-backends" "skip (server)"
+    fi
 
     # ImageMagick - required for zoom.yazi plugin (image zoom)
     install_package "imagemagick"
@@ -1692,16 +2138,24 @@ configure_dotfiles_and_utils() {
 
     cd "$SETUP_DIR"
 
-    # Stow dotfiles with explicit target directory and adopt existing files
-    run_silent stow --no-folding --adopt --override=.* -v -t "$HOME" dotfiles
-    print_status "stow dotfiles"
+    # Stow common dotfiles (all environments)
+    run_silent stow --no-folding --adopt --override=.* -v -t "$HOME" dotfiles-common
+    print_status "stow dotfiles-common"
+
+    # Stow desktop dotfiles (desktop only)
+    if ! is_server; then
+        run_silent stow --no-folding --adopt --override=.* -v -t "$HOME" dotfiles-desktop
+        print_status "stow dotfiles-desktop"
+    else
+        print_status "stow dotfiles-desktop" "skip (server)"
+    fi
 
     # Stow utils/bin packages
     run_silent stow --no-folding --adopt --override=.* -v -t "$HOME" utils
     print_status "stow utils"
 
     # Ensure Firefox profile exists
-    if ! is_wsl; then
+    if ! is_wsl && ! is_server; then
         FIREFOX_PROFILE_DIR=$(find "$HOME/.mozilla/firefox" -maxdepth 1 -type d -name '*.default-release' | head -n 1)
         if [ -z "$FIREFOX_PROFILE_DIR" ]; then
             print_status "creating firefox profile"
@@ -1746,11 +2200,11 @@ configure_dotfiles_and_utils() {
     copy_file "$SETUP_DIR/config/.creds" "$HOME/.creds" "Credentials .creds"
 
     # Generate SSH key
-    if [ ! -f "$HOME/.ssh/id_rsa" ]; then
+    if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
         mkdir -p "$HOME/.ssh"
-        run_silent ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N ""
-        run_silent chmod 600 "$HOME/.ssh/id_rsa"
-        run_silent chmod 644 "$HOME/.ssh/id_rsa.pub"
+        run_silent ssh-keygen -t ed25519 -f "$HOME/.ssh/id_ed25519" -N ""
+        run_silent chmod 600 "$HOME/.ssh/id_ed25519"
+        run_silent chmod 644 "$HOME/.ssh/id_ed25519.pub"
         print_status "generate ssh key"
     else
         print_status "generate ssh key" skip
@@ -1775,7 +2229,7 @@ final_setup() {
     fi
 
     # Final actions
-    if is_wsl; then
+    if is_wsl || is_server; then
         print_status "setup complete"
     else
         if [ "$XDG_SESSION_DESKTOP" = "i3" ] || [ "$DESKTOP_SESSION" = "i3" ]; then
@@ -1795,13 +2249,35 @@ final_setup() {
 main() {
     print_status "Starting setup..."
 
+    # Log detected environment
+    if is_wsl; then
+        log_to_both "Environment: WSL"
+    elif is_server; then
+        log_to_both "Environment: Ubuntu Server (headless)"
+    else
+        log_to_both "Environment: Ubuntu Desktop"
+    fi
+
     initial_system_setup
     install_essential_packages
     configure_dotfiles_and_utils
     setup_development_tools
-    setup_desktop_environment
+
+    if ! is_server; then
+        setup_desktop_environment
+    else
+        setup_nvidia_server
+        print_status "desktop environment setup" "skip (server)"
+    fi
+
     setup_shell_environment
-    create_tui_desktop_entries
+
+    if ! is_server; then
+        create_tui_desktop_entries
+    else
+        print_status "desktop entries" "skip (server)"
+    fi
+
     final_setup
 }
 

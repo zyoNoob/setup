@@ -135,11 +135,8 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
-# Zoxide
-eval "$(zoxide init zsh)"
-
 # keychain for ssh-agent
-eval $(keychain --eval id_rsa)
+eval $(keychain --eval id_ed25519 id_rsa)
 
 # Integrate television
 [ -f "$HOME/.config/television/.tvzshrc" ] && . "$HOME/.config/television/.tvzshrc"
@@ -148,9 +145,11 @@ eval $(keychain --eval id_rsa)
 # 1. The shell is interactive.
 # 2. You are not already inside a tmux session.
 # 3. No command was passed to the shell.
-# 4. The terminal is kitty or ghostty.
-if [[ $- == *i* ]] && [ -z "$TMUX" ] && [ $# -eq 0 ] && [[ "$TERM" == "xterm-kitty" || "$TERM" == "xterm-ghostty" ]]; then
-    tmux attach -t default || tmux new -s default
+# 4. The terminal is kitty/ghostty, or this is an SSH session.
+if [[ $- == *i* ]] && [ -z "$TMUX" ] && [ $# -eq 0 ]; then
+    if [[ "$TERM" == "xterm-kitty" || "$TERM" == "xterm-ghostty" ]] || [ -n "$SSH_CONNECTION" ]; then
+        tmux attach -t default || tmux new -s default
+    fi
 fi
 
 # # Set terminal program for ssh -
@@ -194,7 +193,10 @@ function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
 	yazi "$@" --cwd-file="$tmp"
 	if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-		z -- "$cwd"
+		cd -- "$cwd"
 	fi
 	rm -f -- "$tmp"
 }
+
+# Zoxide
+eval "$(zoxide init --cmd cd zsh)"
